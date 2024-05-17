@@ -44,14 +44,14 @@ export default {
         Object.entries(this.game.header()).forEach(([key, value]) => {
         console.log(`${key}: ${value}`);});
         
-        // var chess1 = new Chess();
+        var chess1 = new Chess();
        
-        // this.game.history().forEach(move => {
-        // console.log("Ovde sam MOVE: " + move);
-        // chess1.move(move);
-        // this.board.set({fen: chess1.fen()})
-        // this.loadPosition() // uvek ide kad se menja pozicija
-        // });
+        this.game.history().forEach(move => {
+        console.log("Ovde sam MOVE: " + move);
+        chess1.move(move);
+        this.board.set({fen: chess1.fen()})
+        this.loadPosition() // uvek ide kad se menja pozicija
+        });
 
         console.log(moves)
      },
