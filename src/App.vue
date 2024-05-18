@@ -45,6 +45,7 @@ export default {
       currentFen: '',
       positionInfo: null,
       currentHistoryIndex: 0,
+      currentMoveHistory: [],
       currentIndex: 0
     }
   },
@@ -57,7 +58,7 @@ export default {
       console.log(this.positionInfo.fen)
     },
     loadPrevMove() {
-      this.currentHistoryIndex = this.positionInfo.history.length - 1;
+      this.currentHistoryIndex = this.currentHistoryIndex - 1;
       console.log(this.currentHistoryIndex)
       bus.$emit('prevMove', this.positionInfo.history, this.currentHistoryIndex)
     },
@@ -72,6 +73,7 @@ export default {
       bus.$emit('undo')
     },
     loadPgnPedja() {
+      this.currentHistoryIndex = this.positionInfo.history.length;
       bus.$emit('loadPgnPedja')
     },
     loadFenPedja(fen) {
