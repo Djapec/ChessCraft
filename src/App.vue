@@ -2,11 +2,13 @@
   <div id="app">
     <h1>Simple Chessboard by Pedja</h1>
     <analysis :fen="currentFen" @onMove="showInfo"/>
-    <button class="button is-light" @click="loadFenPedja(lopez)">
+    <!-- <button class="button is-light" @click="loadFenPedja(lopez)">
       {{lopez}}
-    </button>
-    <button class="button is-light" @click="undo()">UNDO</button>
+    </button>-->
+    <button class="button is-light" @click="undo()">UNDO</button> 
     <button class="button is-light" @click="loadPgnPedja()">load pgn</button>
+    <button class="button is-light" @click="loadPrevMove()">prev move</button>
+    <button class="button is-light">next move</button>
     <div>
       {{this.positionInfo}}
     </div>
@@ -42,7 +44,8 @@ export default {
     return {
       currentFen: '',
       positionInfo: null,
-      lopez: 'rnbqkb1r/pp1ppppp/5n2/8/3N1B2/8/PPP1PPPP/RN1QKB1R b KQkq - 0 4'
+      currentHistoryIndex: 0,
+      currentIndex: 0
     }
   },
   methods: {
@@ -52,6 +55,11 @@ export default {
     loadFen(fen) {
       this.currentFen = fen
       console.log(this.positionInfo.fen)
+    },
+    loadPrevMove() {
+      this.currentHistoryIndex = this.positionInfo.history.length - 1;
+      console.log(this.currentHistoryIndex)
+      bus.$emit('prevMove', this.positionInfo.history, this.currentHistoryIndex)
     },
     promote() {
       if (confirm("Want to promote to rook? Queen by default") ) {
@@ -68,9 +76,6 @@ export default {
     },
     loadFenPedja(fen) {
       bus.$emit('loadFenPedja', fen)
-    },
-    makeMove() {
-      bus.$emit('makeMove')
     }
   },
   created() {

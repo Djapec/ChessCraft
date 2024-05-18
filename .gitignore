@@ -91,4 +91,4 @@ dist
 .tern-port
 
 # babel-loader files
-cache/babel-loader
+node_modules/.cache/babel-loader

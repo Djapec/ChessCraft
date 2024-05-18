@@ -3,6 +3,7 @@
 import { chessboard }  from 'vue-chessboard'
 import Chess from 'chess.js'
 import bus from './bus.js'
+import {previous, next} from './list-navigator.js'
 
 export default {
   name: 'analysis',
@@ -35,7 +36,6 @@ export default {
         this.game.load_pgn(pgn.join('\n'))
         
         var moves = this.game.history();
-        console.log("Ovde sam PATH: " + this.game.history())
 
         const value = this.game.header()["White"];
         console.log("Value for key 'White' is", value);
@@ -62,6 +62,31 @@ export default {
       this.game.move('e4')
       this.board.set({fen: this.game.fen()})
       this.loadPosition()
+     },
+     prevMove(gameHistory, currentHistoryIndex) {
+      var chess1 = new Chess();
+      var steps = [];
+
+      for (let i = 0; i < gameHistory.length; i++) {
+          const move = gameHistory[i];
+          chess1.move(move);
+
+          // Odredi vrednost polja "turn" na osnovu parnosti iteratora
+          var turn = i % 2 === 0 ? 'white' : 'black';
+
+          var chessMoveObj = {
+            id : i,
+            move: move,
+            moveFen: chess1.fen(),
+            turn: turn
+          };
+          steps.push(chessMoveObj)
+
+        //this.loadPosition(); // uvek ide kad se menja pozicija
+      }
+
+      console.log(previous(steps, currentHistoryIndex))
+
      }
   },
   created() {
@@ -74,8 +99,8 @@ export default {
     bus.$on('loadFenPedja', (fen) => {
       this.loadFenPedja(fen)
     }),
-    bus.$on('makeMove', () => {
-      this.makeMove()
+    bus.$on('prevMove', (gameHistory, currentHistoryIndex) => {
+      this.prevMove(gameHistory, currentHistoryIndex)
     })
   }
 
