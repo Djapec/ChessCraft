@@ -88,7 +88,7 @@ export default {
       console.log(previous(steps, currentHistoryIndex))
       var step = previous(steps, currentHistoryIndex)
 
-      this.game.load(step.element.moveFen)
+      chess1.load(step.element.moveFen)
       this.board.set({fen: step.element.moveFen})
       this.loadPosition();
      }
