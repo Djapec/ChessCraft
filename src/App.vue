@@ -2,15 +2,17 @@
   <div id="app">
     <h1>Simple Chessboard by Pedja</h1>
     <analysis :fen="currentFen" @onMove="showInfo"/>
-    <!-- <button class="button is-light" @click="loadFenPedja(lopez)">
-      {{lopez}}
-    </button>-->
-    <button class="button is-light" @click="undo()">UNDO</button> 
-    <button class="button is-light" @click="loadPgnPedja()">load pgn</button>
+    <!-- <button class="button is-light" @click="undo()">UNDO</button> -->
+    <button class="button is-light" @click="loadPgn()">load pgn</button>
+    <button class="button is-light" @click="loadFirstMove()">first move</button>
     <button class="button is-light" @click="loadPrevMove()">prev move</button>
-    <button class="button is-light">next move</button>
+    <button class="button is-light" @click="loadNextMove()">next move</button>
+    <button class="button is-light" @click="loadPgn()">last move</button>
+    
     <div>
       {{this.positionInfo}}
+      <br>
+      {{ this.currentMoveHistory }}
     </div>
 
     <h1>Simple Chessboard that shows threats for current position and player</h1>
@@ -58,9 +60,22 @@ export default {
       console.log(this.positionInfo.fen)
     },
     loadPrevMove() {
-      this.currentHistoryIndex = this.currentHistoryIndex - 1;
-      console.log(this.currentHistoryIndex)
-      bus.$emit('prevMove', this.positionInfo.history, this.currentHistoryIndex)
+      if (this.currentHistoryIndex !== 0) {
+        this.currentHistoryIndex = this.currentHistoryIndex - 1;
+        bus.$emit('prevMove', this.positionInfo.history)
+      }
+    },
+    loadNextMove() {
+      if (this.currentHistoryIndex != this.currentMoveHistory.length) {
+        this.currentHistoryIndex = this.currentHistoryIndex + 1;
+        bus.$emit('nextMove', this.currentHistoryIndex, this.currentMoveHistory)
+      }
+    },
+    loadFirstMove() {
+      if (this.currentHistoryIndex >= 2) {
+        this.currentHistoryIndex = 2
+        bus.$emit('firstMove', this.currentMoveHistory)
+      }
     },
     promote() {
       if (confirm("Want to promote to rook? Queen by default") ) {
@@ -72,13 +87,11 @@ export default {
     undo() {
       bus.$emit('undo')
     },
-    loadPgnPedja() {
+    loadPgn() {
+      bus.$emit('loadGamePgn')
       this.currentHistoryIndex = this.positionInfo.history.length;
-      bus.$emit('loadPgnPedja')
+      this.currentMoveHistory = this.positionInfo.history
     },
-    loadFenPedja(fen) {
-      bus.$emit('loadFenPedja', fen)
-    }
   },
   created() {
     this.fens = ['5rr1/3nqpk1/p3p2p/Pp1pP1pP/2pP1PN1/2P1Q3/2P3P1/R4RK1 b - f3 0 28',

@@ -1,111 +1,101 @@
-
 <script>
-import { chessboard }  from 'vue-chessboard'
+import { chessboard } from 'vue-chessboard'
 import Chess from 'chess.js'
 import bus from './bus.js'
-import {previous, next} from './list-navigator.js'
 
 export default {
   name: 'analysis',
   extends: chessboard,
   methods: {
-     loadFenPedja(fen) {
-        this.game.load(fen)
-        this.board.set({fen: this.game.fen()})
-        console.log(fen)
-        this.loadPosition()
-     },
-     undo() {
+    undo() {
       this.game.undo()
-      this.board.set({fen: this.game.fen()})
+      this.board.set({ fen: this.game.fen() })
       this.loadPosition() // uvek ide kad se menja pozicija
     },
-     loadPgnPedja() {
+    loadGamePgn() {
       var pgn = [
-          '[Event "?"]',                                                          
-           '[Site "?"]',                                                           
-           '[Date "2015.11.26"]',                                                  
-           '[Round "?"]',                                                          
-           '[White "Anish Giri"]',
-           '[Black "Teimour Radjabov"]',                                                          
-           '[Result "*"]',                                                         
-           '[ECO "C31"]',                                                          
-           '[PlyCount "8"]\n',                                                     
-           '1. e4 {[%clk 1:30:57]}  e5 {[%clk 1:30:57]} 2. Nf3 {[%clk 1:31:20]}  Nc6 {[%clk 1:31:23]} 3. Bc4 {[%clk 1:31:40]}  Bc5 {[%clk 1:31:48]} 4. c3 {[%clk 1:31:58]}  Nf6 {[%clk 1:32:10]} 5. d3 {[%clk 1:32:22]}  d6 {[%clk 1:32:26]} 6. a4 {[%clk 1:32:22]}  a6 {[%clk 1:32:47]} 7. O-O {[%clk 1:32:32]}  h6 {[%clk 1:32:55]} 8. b4 {[%clk 1:31:58]}  Ba7 {[%clk 1:33:08]} 9. Re1 {[%clk 1:32:06]}  O-O {[%clk 1:32:55]}'];
-           
-        this.game.load_pgn(pgn.join('\n'))
-        
-        var moves = this.game.history();
+        '[Event "?"]',
+        '[Site "?"]',
+        '[Date "2015.11.26"]',
+        '[Round "?"]',
+        '[White "Anish Giri"]',
+        '[Black "Teimour Radjabov"]',
+        '[Result "*"]',
+        '[ECO "C31"]',
+        '[PlyCount "8"]\n',
+        '1. e4 {[%clk 1:30:57]}  e5 {[%clk 1:30:57]} 2. Nf3 {[%clk 1:31:20]}  Nc6 {[%clk 1:31:23]} 3. Bc4 {[%clk 1:31:40]}  Bc5 {[%clk 1:31:48]} 4. c3 {[%clk 1:31:58]}  Nf6 {[%clk 1:32:10]} 5. d3 {[%clk 1:32:22]}  d6 {[%clk 1:32:26]} 6. a4 {[%clk 1:32:22]}  a6 {[%clk 1:32:47]} 7. O-O {[%clk 1:32:32]}  h6 {[%clk 1:32:55]} 8. b4 {[%clk 1:31:58]}  Ba7 {[%clk 1:33:08]} 9. Re1 {[%clk 1:32:06]}  O-O {[%clk 1:32:55]}'];
 
-        const value = this.game.header()["White"];
-        console.log("Value for key 'White' is", value);
+      this.game.load_pgn(pgn.join('\n'))
 
-        console.log("Ovde sam Header: " + this.game.header())
-        Object.entries(this.game.header()).forEach(([key, value]) => {
-        console.log(`${key}: ${value}`);});
-        
-        var chess1 = new Chess();
-       
-        this.game.history().forEach(move => {
-        console.log("Ovde sam MOVE: " + move);
-        chess1.move(move);
-        this.board.set({fen: chess1.fen()})
+      // console.log("Ovde sam Header: " + this.game.header())
+      // Object.entries(this.game.header()).forEach(([key, value]) => {
+      //   console.log(`${key}: ${value}`);
+      // });
+
+      var chess = new Chess();
+      this.game.history().forEach(move => {
+        chess.move(move);
+        this.board.set({ fen: chess.fen() })
         this.loadPosition() // uvek ide kad se menja pozicija
-        });
-
-        console.log(moves)
-     },
-     provideHistory() {
-        console.log(this.game.history())
-     },
-     makeMove() {
-      this.game.move('e4')
-      this.board.set({fen: this.game.fen()})
+      });
+    },
+    makeMove(move) {
+      this.game.move(move)
+      this.board.set({ fen: this.game.fen() })
       this.loadPosition()
-     },
-     prevMove(gameHistory, currentHistoryIndex) {
-      var chess1 = new Chess();
-      var steps = [];
+    },
+    prevMove(gameHistory) {
+      var chess = new Chess();
 
-      for (let i = 0; i < gameHistory.length; i++) {
-          const move = gameHistory[i];
-          chess1.move(move);
-
-          // Odredi vrednost polja "turn" na osnovu parnosti iteratora
-          var turn = i % 2 === 0 ? 'white' : 'black';
-
-          var chessMoveObj = {
-            id : i,
-            move: move,
-            moveFen: chess1.fen(),
-            turn: turn
-          };
-          steps.push(chessMoveObj)
-
-        //this.loadPosition(); // uvek ide kad se menja pozicija
+      for (let i = 0; i < gameHistory.length - 1; i++) {
+        let move = gameHistory[i];
+        chess.move(move);
       }
 
-      console.log(previous(steps, currentHistoryIndex))
-      var step = previous(steps, currentHistoryIndex)
-
-      chess1.load(step.element.moveFen)
-      this.board.set({fen: step.element.moveFen})
+      this.game = chess
+      this.board.set({ fen: this.game.fen() })
       this.loadPosition();
-     }
+    },
+    firstMove(gameHistory) {
+      var chess = new Chess();
+
+      for (let i = 0; i < 2; i++) {
+        let move = gameHistory[i];
+        chess.move(move);
+      }
+
+      this.game = chess
+      this.board.set({ fen: this.game.fen() })
+      this.loadPosition();
+    },
+    nextMove(currentHistoryIndex, currentMoveHistory) {
+      var startIndex = currentHistoryIndex - 1
+      var lastGameMove = this.game.history()[this.game.history().length - 1]
+
+      // proveravam da li su poslednji potezi identicni
+      if (lastGameMove == currentMoveHistory[startIndex - 1]) {
+        this.game.move(currentMoveHistory[startIndex])
+        this.board.set({ fen: this.game.fen() })
+        this.loadPosition()
+      }
+    }
   },
   created() {
-    bus.$on('undo', () => {
-      this.undo()
-    }),
-    bus.$on('loadPgnPedja', () => {
-      this.loadPgnPedja()
-    }),
-    bus.$on('loadFenPedja', (fen) => {
-      this.loadFenPedja(fen)
-    }),
-    bus.$on('prevMove', (gameHistory, currentHistoryIndex) => {
-      this.prevMove(gameHistory, currentHistoryIndex)
-    })
+      bus.$on('undo', () => {
+        this.undo()
+      }),
+      bus.$on('loadGamePgn', () => {
+        this.loadGamePgn()
+      })
+      bus.$on('prevMove', (gameHistory) => {
+        this.prevMove(gameHistory)
+      }),
+      bus.$on('nextMove', (currentHistoryIndex, currentMoveHistory) => {
+        this.nextMove(currentHistoryIndex, currentMoveHistory)
+      }),
+      bus.$on('firstMove', (gameHistory) => {
+        this.firstMove(gameHistory)
+      })
   }
 
 }
