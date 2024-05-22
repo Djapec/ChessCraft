@@ -2,12 +2,13 @@
   <div id="app">
     <h1>Simple Chessboard by Pedja</h1>
     <analysis :fen="currentFen" @onMove="showInfo"/>
-    <!-- <button class="button is-light" @click="undo()">UNDO</button> -->
-    <button class="button is-light" @click="loadPgn()">load pgn</button>
-    <button class="button is-light" @click="loadFirstMove()">first move</button>
-    <button class="button is-light" @click="loadPrevMove()">prev move</button>
-    <button class="button is-light" @click="loadNextMove()">next move</button>
-    <button class="button is-light" @click="loadPgn()">last move</button>
+    <button class="button is-light" @click="undo()" :disabled="!buttonsDisabled">UNDO</button>
+    <button class="button is-light" @click="loadPgn()" :disabled="buttonsDisabled">load pgn</button>
+    <button class="button is-light" @click="loadFirstMove()" :disabled="buttonsDisabled">first move</button>
+    <button class="button is-light" @click="loadPrevMove()" :disabled="buttonsDisabled">prev move</button>
+    <button class="button is-light" @click="loadNextMove()" :disabled="buttonsDisabled">next move</button>
+    <button class="button is-light" @click="loadPgn()" :disabled="buttonsDisabled">last move</button>
+    <button @click="toggleMovement()">{{ isViewOnly ? 'Enable' : 'Disable' }} Movement</button>
     
     <div>
       {{this.positionInfo}}
@@ -29,17 +30,13 @@
 <script>
 import {chessboard} from 'vue-chessboard'
 import 'vue-chessboard/dist/vue-chessboard.css'
-import newboard from './newboard.vue'
 import analysis from './analysis-board.vue'
-import editor from './editor.vue'
 import bus from './bus.js'
 
 export default {
   name: 'app',
   components: {
     chessboard,
-    newboard,
-    editor,
     analysis
   },
   data () {
@@ -48,7 +45,9 @@ export default {
       positionInfo: null,
       currentHistoryIndex: 0,
       currentMoveHistory: [],
-      currentIndex: 0
+      currentIndex: 0,
+      isViewOnly: true,
+      buttonsDisabled: false,
     }
   },
   methods: {
@@ -58,6 +57,11 @@ export default {
     loadFen(fen) {
       this.currentFen = fen
       console.log(this.positionInfo.fen)
+    },
+    toggleMovement() {
+      this.isViewOnly = !this.isViewOnly;
+      this.buttonsDisabled = !this.buttonsDisabled;
+      bus.$emit('toggleMovement', this.isViewOnly)
     },
     loadPrevMove() {
       if (this.currentHistoryIndex !== 0) {

@@ -11,6 +11,16 @@ export default {
       this.game.undo()
       this.board.set({fen: this.game.fen()})
     },
+    toggleMovement() {
+      this.isDraggable = !this.isDraggable;
+      if (this.chessground) {
+        this.chessground.set({
+          draggable: {
+            enabled: this.isDraggable,
+          },
+        });
+      }
+    },
     userPlay() {
       return (orig, dest) => {
         if (this.isPromotion(orig, dest)) {
