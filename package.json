@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.4",
+    "stockfish": "^16.0.0",
     "vue": "^2.6.11",
     "vue-chessboard": "^0.6.6"
   },
@@ -19,5 +20,8 @@
     "@vue/cli-plugin-babel": "~4.2.0",
     "@vue/cli-service": "~4.2.0",
     "vue-template-compiler": "^2.6.11"
+  },
+  "compilerOptions": {
+    "skipLibCheck": true
   }
 }
