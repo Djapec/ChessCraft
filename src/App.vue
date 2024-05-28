@@ -31,8 +31,8 @@
 <script>
 import { chessboard } from 'vue-chessboard';
 import 'vue-chessboard/dist/vue-chessboard.css';
-import analysis from './analysis-board.vue';
-import engine from './stockfish.vue';
+import analysis from './components/AnalysisBoard.vue';
+import engine from './components/Stockfish.vue';
 import bus from './bus.js';
 
 export default {

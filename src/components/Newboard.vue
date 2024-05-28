@@ -1,7 +1,7 @@
 
 <script>
 import { chessboard }  from 'vue-chessboard'
-import bus from './bus.js'
+import bus from '../bus.js'
 
 export default {
   name: 'newboard',
