@@ -1,6 +1,6 @@
 <script>
 import { chessboard } from 'vue-chessboard'
-import Chess from 'chess.js'
+import  Chess  from 'chess.js'
 import bus from '../bus.js'
 
 export default {
@@ -33,11 +33,6 @@ export default {
         this.setOnlyViewMod(isViewOnly); 
         this.currentGamePgn = this.game.pgn();
       }
-
-    },
-    analysisMod() {
-      let originalPGN = this.game.pgn()
-
     },
     loadGamePgn() {
       var pgn = [
@@ -86,8 +81,11 @@ export default {
     firstMove(gameHistory) {
       var chess = new Chess();
 
+      // console.log(getAllMethods(this.game));
+
       for (let i = 0; i < 2; i++) {
         let move = gameHistory[i];
+        console.log("OVDE SAM");
         chess.move(move);
       }
 
@@ -100,7 +98,7 @@ export default {
       var lastGameMove = this.game.history()[this.game.history().length - 1]
 
       // proveravam da li su poslednji potezi identicni
-      if (lastGameMove == currentMoveHistory[startIndex - 1]) {
+      if (lastGameMove === currentMoveHistory[startIndex - 1]) {
         this.game.move(currentMoveHistory[startIndex])
         this.loadPosition()
         this.setOnlyViewMod(true)
