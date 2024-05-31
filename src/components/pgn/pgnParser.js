@@ -1,4 +1,4 @@
-import { Chess } from 'chess.js';
+import  Chess  from 'chess.js';
 
 export function parsePGN(pgn) {
     const [metadataPart, movesPart] = pgn.split('\n\n');
@@ -45,6 +45,7 @@ export function parsePGN(pgn) {
 
     return {
         metadata,
-        moves
+        moves,
+        chess
     };
 }

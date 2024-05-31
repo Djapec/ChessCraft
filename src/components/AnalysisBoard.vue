@@ -1,26 +1,25 @@
 <script>
 import { chessboard } from 'vue-chessboard'
-import  Chess  from 'chess.js'
+import Chess from 'chess.js'
 import bus from '../bus.js'
 
 export default {
   name: 'analysis',
   extends: chessboard,
-  data () {
+  data() {
     return {
-      currentGamePgn: null
+      currentGamePgn: null,
+      currentChessGame: null,
+      currentHistoryIndex: 0,
+      currentMoveHistory: []
     }
   },
   methods: {
     undo() {
       this.game.undo()
-      this.loadPosition() // uvek ide kad se menja pozicija
+      this.loadPosition()
     },
     toggleMovement(isViewOnly) {
-      // console.log(getAllMethods(this));
-      // console.log(getAllMethods(this.game));
-      // console.log(getAllMethods(this.board));
-
       if (isViewOnly) { //true
         this.setOnlyViewMod(isViewOnly);
         if (this.currentGamePgn !== null) {
@@ -30,78 +29,70 @@ export default {
           this.currentGamePgn = null;
         }
       } else { //false
-        this.setOnlyViewMod(isViewOnly); 
+        this.setOnlyViewMod(isViewOnly);
         this.currentGamePgn = this.game.pgn();
       }
     },
-    loadGamePgn() {
-      var pgn = [
-        '[Event "?"]',
-        '[Site "?"]',
-        '[Date "2015.11.26"]',
-        '[Round "?"]',
-        '[White "Anish Giri"]',
-        '[Black "Teimour Radjabov"]',
-        '[Result "*"]',
-        '[ECO "C31"]',
-        '[PlyCount "8"]\n',
-        '1. e4 {[%clk 1:30:57]}  e5 {[%clk 1:30:57]} 2. Nf3 {[%clk 1:31:20]}  Nc6 {[%clk 1:31:23]} 3. Bc4 {[%clk 1:31:40]}  Bc5 {[%clk 1:31:48]} 4. c3 {[%clk 1:31:58]}  Nf6 {[%clk 1:32:10]} 5. d3 {[%clk 1:32:22]}  d6 {[%clk 1:32:26]} 6. a4 {[%clk 1:32:22]}  a6 {[%clk 1:32:47]} 7. O-O {[%clk 1:32:32]}  h6 {[%clk 1:32:55]} 8. b4 {[%clk 1:31:58]}  Ba7 {[%clk 1:33:08]} 9. Re1 {[%clk 1:32:06]}  O-O {[%clk 1:32:55]}'];
-
-      this.game.load_pgn(pgn.join('\n'))
-
-      // console.log("Ovde sam Header: " + this.game.header())
-      // Object.entries(this.game.header()).forEach(([key, value]) => {
-      //   console.log(`${key}: ${value}`);
-      // });
-
-      var chess = new Chess();
-      this.game.history().forEach(move => {
-        chess.move(move);
-        this.loadPosition() // uvek ide kad se menja pozicija
-      });
-      this.setOnlyViewMod(true)
-    },
-    makeMove(move) {
-      this.game.move(move)
-      this.loadPosition()
-      this.setOnlyViewMod(true)
-    },
-    prevMove(gameHistory) {
-      var chess = new Chess();
-
-      for (let i = 0; i < gameHistory.length - 1; i++) {
-        let move = gameHistory[i];
-        chess.move(move);
-      }
-
+    loadGame(chess) {
       this.game = chess
       this.loadPosition();
       this.setOnlyViewMod(true)
+      this.currentChessGame = chess;
+      this.currentHistoryIndex = this.game.history().length;
+      this.currentMoveHistory = this.game.history();
     },
-    firstMove(gameHistory) {
-      var chess = new Chess();
+    prevMove() {
+      if (this.currentHistoryIndex !== 0) {
+        this.currentHistoryIndex = this.currentHistoryIndex - 1;
+        let chess = new Chess();
 
-      // console.log(getAllMethods(this.game));
+        for (let i = 0; i < this.game.history().length - 1; i++) {
+          let move = this.currentMoveHistory[i];
+          chess.move(move);
+        }
 
-      for (let i = 0; i < 2; i++) {
-        let move = gameHistory[i];
-        console.log("OVDE SAM");
-        chess.move(move);
+        this.game = chess
+        this.loadPosition();
+        this.setOnlyViewMod(true)
       }
-
-      this.game = chess
-      this.loadPosition();
-      this.setOnlyViewMod(true)
     },
-    nextMove(currentHistoryIndex, currentMoveHistory) {
-      var startIndex = currentHistoryIndex - 1
-      var lastGameMove = this.game.history()[this.game.history().length - 1]
+    firstMove() {
+      if (this.currentHistoryIndex >= 2) {
+        this.currentHistoryIndex = 2;
+        let chess = new Chess();
 
-      // proveravam da li su poslednji potezi identicni
-      if (lastGameMove === currentMoveHistory[startIndex - 1]) {
-        this.game.move(currentMoveHistory[startIndex])
+        for (let i = 0; i < 2; i++) {
+          let move = this.currentMoveHistory[i];
+          chess.move(move);
+        }
+
+        this.game = chess
+        this.loadPosition();
+        this.setOnlyViewMod(true)
+      }
+    },
+    nextMove() {
+      if (this.currentHistoryIndex !== this.currentMoveHistory.length) {
+        this.currentHistoryIndex = this.currentHistoryIndex + 1;
+
+        let startIndex = this.currentHistoryIndex - 1;
+        let lastGameMove = this.game.history()[this.game.history().length - 1];
+
+        // proveravam da li su poslednji potezi identicni
+        if (lastGameMove === this.currentMoveHistory[startIndex - 1]) {
+          this.game.move(this.currentMoveHistory[startIndex])
+          this.loadPosition()
+          this.setOnlyViewMod(true)
+        }
+      }
+    },
+    lastMove() {
+      if (this.currentChessGame !== null) {
+        this.game = this.currentChessGame
         this.loadPosition()
         this.setOnlyViewMod(true)
+        this.currentHistoryIndex = this.game.history().length;
+        this.currentMoveHistory = this.game.history();
       }
     },
     setOnlyViewMod(isViewOnly) {
@@ -117,20 +108,23 @@ export default {
     bus.$on('undo', () => {
       this.undo()
     }),
-      bus.$on('loadGamePgn', () => {
-        this.loadGamePgn()
-      })
-    bus.$on('prevMove', (gameHistory) => {
-      this.prevMove(gameHistory)
-    }),
-      bus.$on('nextMove', (currentHistoryIndex, currentMoveHistory) => {
-        this.nextMove(currentHistoryIndex, currentMoveHistory)
+      bus.$on('prevMove', () => {
+        this.prevMove()
       }),
-      bus.$on('firstMove', (gameHistory) => {
-        this.firstMove(gameHistory)
+      bus.$on('nextMove', () => {
+        this.nextMove()
+      }),
+      bus.$on('firstMove', () => {
+        this.firstMove()
+      }),
+      bus.$on('lastMove', () => {
+        this.lastMove()
       }),
       bus.$on('toggleMovement', (isViewOnly) => {
         this.toggleMovement(isViewOnly)
+      }),
+      bus.$on('loadGame', (chess) => {
+        this.loadGame(chess)
       })
   },
 }

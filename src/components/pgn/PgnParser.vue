@@ -31,7 +31,8 @@ export default {
     return {
       parsedPGN: {
         metadata: {},
-        moves: []
+        moves: [],
+        chess: null
       }
     };
   },

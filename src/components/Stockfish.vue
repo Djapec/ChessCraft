@@ -78,7 +78,7 @@ export default {
       this.worker.postMessage('uci');
       this.worker.postMessage('isready');
       this.worker.postMessage(`position fen ${this.fen}`);
-      this.worker.postMessage('setoption name MultiPV value 10');
+      this.worker.postMessage('setoption name MultiPV value 5');
       this.worker.postMessage('go depth 15');
     }
   },

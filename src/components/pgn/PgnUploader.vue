@@ -4,7 +4,7 @@
     <div v-if="games.length">
       <h2>Games List</h2>
       <ul>
-        <li v-for="(game, index) in games" :key="index">
+        <li v-for="(game, index) in games" :key="index" @click="logGame(game.parsedData.chess)">
           <strong>{{ game.name }}</strong>
         </li>
       </ul>
@@ -15,6 +15,7 @@
 <script>
 import { parsePGN } from './pgnParser';
 import PGNParser from './PgnParser.vue';
+import bus from "@/bus";
 
 export default {
   name: 'PGNUploader',
@@ -55,6 +56,9 @@ export default {
       } else {
         alert('Please upload a valid .pgn file');
       }
+    },
+    logGame(chess) {
+      bus.$emit('loadGame', chess);
     }
   }
 };
