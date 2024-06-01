@@ -1,8 +1,18 @@
 <template>
   <div>
     <h1>Stockfish Engine</h1>
-    <input v-model="fen" placeholder="Enter FEN" />
-    <button @click="analyzePosition">Analyze Position</button>
+    <button @click="toggleStockfish">
+      {{ isActive ? 'Turn off' : 'Turn on' }}
+    </button>
+    <div>
+      <label for="depth">Choose engine depth: </label>
+      <select id="depth" v-model="searchDepth">
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
+      </select>
+    </div>
     <div v-if="evaluation !== null">
       <h2>Evaluation</h2>
       <p>{{ evaluation }}</p>
@@ -19,6 +29,8 @@
 </template>
 
 <script>
+import bus from "@/bus";
+
 export default {
   name: 'engine',
   data() {
@@ -26,15 +38,18 @@ export default {
       worker: null,
       bestMoves: [],
       evaluation: null,
-      fen: 'r4rk1/pp1b3p/6p1/8/3NpP2/1P4P1/P2K3P/R6R w - - 0 22' // Početna pozicija kao primer
+      startPositionFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // Početna pozicija kao primer
+      isActive: true, // Dodato polje za praćenje statusa Stockfish-a
+      searchDepth: 15 // Dubina pretrage
     };
   },
   methods: {
     initializeWorker() {
+      if (this.worker) return; // Ako je radnik već pokrenut, ne pokreći ga ponovo
       this.worker = new Worker('stockfish.js');
       this.worker.onmessage = (event) => {
         const message = event.data;
-        if (message.startsWith('info depth 15')) {
+        if (message.startsWith('info depth ' + this.searchDepth)) {
           const evalMatch = this.parseEvaluation(message);
           if (evalMatch) {
             this.evaluation = evalMatch;
@@ -45,6 +60,30 @@ export default {
           }
         }
       };
+    },
+    terminateWorker() {
+      if (this.worker) {
+        this.worker.terminate();
+        this.worker = null;
+      }
+    },
+    analyzePosition(fen) {
+      if (!this.isActive || fen === this.startPositionFen) return;
+      this.bestMoves = [];
+      this.evaluation = null;
+      this.worker.postMessage('uci');
+      this.worker.postMessage('isready');
+      this.worker.postMessage(`position fen ${fen}`);
+      this.worker.postMessage('setoption name MultiPV value 5');
+      this.worker.postMessage(`go depth ${this.searchDepth}`);
+    },
+    toggleStockfish() {
+      this.isActive = !this.isActive;
+      if (this.isActive) {
+        this.initializeWorker();
+      } else {
+        this.terminateWorker();
+      }
     },
     parseEvaluation(message) {
       const evalRegex = /score (\w+) (-?\d+)/;
@@ -71,16 +110,12 @@ export default {
         if (lines.length >= 10) break; // Uzmi samo 10 najboljih varijanti
       }
       return lines;
-    },
-    analyzePosition() {
-      this.bestMoves = [];
-      this.evaluation = null;
-      this.worker.postMessage('uci');
-      this.worker.postMessage('isready');
-      this.worker.postMessage(`position fen ${this.fen}`);
-      this.worker.postMessage('setoption name MultiPV value 5');
-      this.worker.postMessage('go depth 15');
     }
+  },
+  created() {
+    bus.$on('analyzePosition', (fen) => {
+      this.analyzePosition(fen);
+    });
   },
   mounted() {
     this.initializeWorker();

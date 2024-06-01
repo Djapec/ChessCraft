@@ -105,9 +105,9 @@ export default {
     })
   },
   created() {
-    bus.$on('undo', () => {
-      this.undo()
-    }),
+      bus.$on('undo', () => {
+        this.undo()
+      }),
       bus.$on('prevMove', () => {
         this.prevMove()
       }),

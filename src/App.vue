@@ -61,6 +61,7 @@ export default {
   methods: {
     showInfo(data) {
       this.positionInfo = data;
+      bus.$emit('analyzePosition', this.positionInfo.fen);
     },
     loadFen(fen) {
       this.currentFen = fen;
