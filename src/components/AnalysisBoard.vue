@@ -35,6 +35,7 @@ export default {
     },
     loadGame(chess) {
       this.game = chess
+      console.log(getAllProperties(this.game))
       this.loadPosition();
       this.setOnlyViewMod(true)
       this.currentChessGame = chess;
@@ -129,13 +130,18 @@ export default {
   },
 }
 
-function getAllMethods(obj) {
-  let properties = new Set()
-  let currentObj = obj
+function getAllProperties(obj) {
+  let properties = new Set();
+  let currentObj = obj;
+
   do {
-    Object.getOwnPropertyNames(currentObj).map(item => properties.add(item))
-  } while ((currentObj = Object.getPrototypeOf(currentObj)))
-  return [...properties.keys()].filter(item => typeof obj[item] === 'function')
+    Object.getOwnPropertyNames(currentObj).map(item => properties.add(item));
+  } while ((currentObj = Object.getPrototypeOf(currentObj)));
+
+  return {
+    methods: [...properties.keys()].filter(item => typeof obj[item] === 'function'),
+    fields: [...properties.keys()].filter(item => typeof obj[item] !== 'function')
+  };
 }
 
 </script>
