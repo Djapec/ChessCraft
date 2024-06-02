@@ -31,8 +31,6 @@
 </template>
 
 <script>
-import { chessboard } from 'vue-chessboard';
-import 'vue-chessboard/dist/vue-chessboard.css';
 import analysis from './components/AnalysisBoard.vue';
 import engine from './components/Stockfish.vue';
 import PGNUploader from './components/pgn/PgnUploader.vue';
@@ -41,10 +39,9 @@ import bus from './bus.js';
 export default {
   name: 'app',
   components: {
-    chessboard,
     analysis,
     engine,
-    PGNUploader
+    PGNUploader,
   },
   data() {
     return {

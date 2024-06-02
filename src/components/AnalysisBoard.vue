@@ -1,11 +1,11 @@
 <script>
-import { chessboard } from 'vue-chessboard'
+import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
 import Chess from 'chess.js'
 import bus from '../bus.js'
 
 export default {
   name: 'analysis',
-  extends: chessboard,
+  extends: chessBoardCraft,
   data() {
     return {
       currentGamePgn: null,
@@ -17,8 +17,8 @@ export default {
   methods: {
     undo() {
       this.game.undo()
-      this.loadPosition()
-    },
+      this.loadPosition() // bice potrebna verzija viewOnly = false
+    }, // ovde sad moze da se odradi na laksi nacin
     toggleMovement(isViewOnly) {
       if (isViewOnly) { //true
         this.setOnlyViewMod(isViewOnly);
@@ -32,17 +32,16 @@ export default {
         this.setOnlyViewMod(isViewOnly);
         this.currentGamePgn = this.game.pgn();
       }
-    },
+    }, // ovo bi trebalo da se spusti u chess board craft
     loadGame(chess) {
       this.game = chess
-      console.log(getAllProperties(this.game))
       this.loadPosition();
       this.setOnlyViewMod(true)
       this.currentChessGame = chess;
       this.currentHistoryIndex = this.game.history().length;
       this.currentMoveHistory = this.game.history();
     },
-    prevMove() {
+    prevMove() { // ostaje
       if (this.currentHistoryIndex !== 0) {
         this.currentHistoryIndex = this.currentHistoryIndex - 1;
         let chess = new Chess();
@@ -57,7 +56,7 @@ export default {
         this.setOnlyViewMod(true)
       }
     },
-    firstMove() {
+    firstMove() { // ostaje
       if (this.currentHistoryIndex >= 2) {
         this.currentHistoryIndex = 2;
         let chess = new Chess();
@@ -72,7 +71,7 @@ export default {
         this.setOnlyViewMod(true)
       }
     },
-    nextMove() {
+    nextMove() { // ostaje
       if (this.currentHistoryIndex !== this.currentMoveHistory.length) {
         this.currentHistoryIndex = this.currentHistoryIndex + 1;
 
@@ -87,7 +86,7 @@ export default {
         }
       }
     },
-    lastMove() {
+    lastMove() { // ostaje
       if (this.currentChessGame !== null) {
         this.game = this.currentChessGame
         this.loadPosition()
@@ -96,11 +95,11 @@ export default {
         this.currentMoveHistory = this.game.history();
       }
     },
-    setOnlyViewMod(isViewOnly) {
+    setOnlyViewMod(isViewOnly) { // redizajn, mozda ce biti izbaceno
       this.board.set({ viewOnly: isViewOnly })
     }
   },
-  mounted() {
+  mounted() { // po difoltu napraviti da loadPosition bude u view only modu
     this.board.set({
       viewOnly: true
     })
@@ -129,19 +128,4 @@ export default {
       })
   },
 }
-
-function getAllProperties(obj) {
-  let properties = new Set();
-  let currentObj = obj;
-
-  do {
-    Object.getOwnPropertyNames(currentObj).map(item => properties.add(item));
-  } while ((currentObj = Object.getPrototypeOf(currentObj)));
-
-  return {
-    methods: [...properties.keys()].filter(item => typeof obj[item] === 'function'),
-    fields: [...properties.keys()].filter(item => typeof obj[item] !== 'function')
-  };
-}
-
 </script>
