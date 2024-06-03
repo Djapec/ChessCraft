@@ -106,8 +106,12 @@ export default {
       // todo: check if viewOnly is active
       if (this.parsedPgnData !== null) {
         const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
-        this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] = movesInfo.currentMoveInfo.clock;
-        this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] = movesInfo.previousMoveInfo.clock;
+        this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
+            movesInfo.currentMoveInfo.clock;
+        if (movesInfo.previousMoveInfo !== null) {
+          this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
+              movesInfo.previousMoveInfo.clock;
+        }
       }
     }
   },
