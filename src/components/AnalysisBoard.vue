@@ -1,5 +1,6 @@
 <script>
 import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
+import { getAllProperties, getMove } from '@/components/chessboard/Util.js'
 import Chess from 'chess.js'
 import bus from '../bus.js'
 
@@ -17,8 +18,8 @@ export default {
   methods: {
     undo() {
       this.game.undo()
-      this.loadPosition() // bice potrebna verzija viewOnly = false
-    }, // ovde sad moze da se odradi na laksi nacin
+      this.loadPosition()
+    },
     toggleMovement(isViewOnly) {
       if (isViewOnly) { //true
         this.setOnlyViewMod(isViewOnly);
@@ -29,19 +30,24 @@ export default {
           this.currentGamePgn = null;
         }
       } else { //false
+        this.board.set({ highlight: {lastMove: false} }) // todo: fix bug
         this.setOnlyViewMod(isViewOnly);
         this.currentGamePgn = this.game.pgn();
       }
-    }, // ovo bi trebalo da se spusti u chess board craft
-    loadGame(chess) {
-      this.game = chess
+    },
+    loadGame(parsedData) {
+      this.game = parsedData.chess
+      this.parsedPgnData = parsedData
+      console.log(getAllProperties(this.parsedPgnData.moves))
+      console.log(getAllProperties(this.parsedPgnData.metadata))
+      this.loadPlayers()
       this.loadPosition();
       this.setOnlyViewMod(true)
-      this.currentChessGame = chess;
+      this.currentChessGame = parsedData.chess;
       this.currentHistoryIndex = this.game.history().length;
       this.currentMoveHistory = this.game.history();
     },
-    prevMove() { // ostaje
+    prevMove() {
       if (this.currentHistoryIndex !== 0) {
         this.currentHistoryIndex = this.currentHistoryIndex - 1;
         let chess = new Chess();
@@ -56,7 +62,7 @@ export default {
         this.setOnlyViewMod(true)
       }
     },
-    firstMove() { // ostaje
+    firstMove() {
       if (this.currentHistoryIndex >= 2) {
         this.currentHistoryIndex = 2;
         let chess = new Chess();
@@ -71,7 +77,7 @@ export default {
         this.setOnlyViewMod(true)
       }
     },
-    nextMove() { // ostaje
+    nextMove() {
       if (this.currentHistoryIndex !== this.currentMoveHistory.length) {
         this.currentHistoryIndex = this.currentHistoryIndex + 1;
 
@@ -86,7 +92,7 @@ export default {
         }
       }
     },
-    lastMove() { // ostaje
+    lastMove() {
       if (this.currentChessGame !== null) {
         this.game = this.currentChessGame
         this.loadPosition()
@@ -95,16 +101,24 @@ export default {
         this.currentMoveHistory = this.game.history();
       }
     },
-    setOnlyViewMod(isViewOnly) { // redizajn, mozda ce biti izbaceno
+    setOnlyViewMod(isViewOnly) {
       this.board.set({ viewOnly: isViewOnly })
+    },
+    updatePlayersClock(moveDetails) {
+      // todo: check if this.parsedPgnData is not null
+      const moveInfo = getMove(this.parsedPgnData, moveDetails)
+      console.log(moveInfo)
     }
   },
-  mounted() { // po difoltu napraviti da loadPosition bude u view only modu
+  mounted() {
     this.board.set({
       viewOnly: true
     })
   },
   created() {
+      bus.$on('updatePlayersClock', (moveDetails) => {
+        this.updatePlayersClock(moveDetails)
+      }),
       bus.$on('undo', () => {
         this.undo()
       }),

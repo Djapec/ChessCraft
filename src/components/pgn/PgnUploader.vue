@@ -4,7 +4,7 @@
     <div v-if="games.length">
       <h2>Games List</h2>
       <ul>
-        <li v-for="(game, index) in games" :key="index" @click="loadGame(game.parsedData.chess)">
+        <li v-for="(game, index) in games" :key="index" @click="loadGame(game.parsedData)">
           <strong>{{ game.name }}</strong>
         </li>
       </ul>
@@ -57,8 +57,8 @@ export default {
         alert('Please upload a valid .pgn file');
       }
     },
-    loadGame(chess) {
-      bus.$emit('loadGame', chess);
+    loadGame(parsedData) {
+      bus.$emit('loadGame', parsedData);
     }
   }
 };

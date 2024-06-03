@@ -59,10 +59,9 @@ export default {
     showInfo(data) {
       this.positionInfo = data;
       bus.$emit('analyzePosition', this.positionInfo.fen);
-    },
-    loadFen(fen) {
-      this.currentFen = fen;
-      console.log(this.positionInfo.fen);
+      if (this.positionInfo.history.length !== 0) {
+        bus.$emit('updatePlayersClock', getLastMove(this.positionInfo.history, this.positionInfo.turn));
+      }
     },
     toggleMovement() {
       this.isViewOnly = !this.isViewOnly;
@@ -89,4 +88,19 @@ export default {
     },
   }
 };
+
+function getLastMove(history, turn) {
+  let color = "";
+  if (turn === 'white') {
+    color = 'black';
+  } else {
+    color = 'white';
+  }
+  return {
+    moveNumber: Math.ceil(history.length / 2),
+    color: color,
+    playedMove: history[history.length - 1]
+  };
+}
+
 </script>

@@ -1,19 +1,29 @@
 <template>
   <div>
+    <div><p> {{blackPlayer}} | {{blackPlayerClock}} </p></div>
     <div class="blue merida">
       <div ref="board" class="cg-board-wrap"></div> <br>
     </div>
+    <div><p> {{whitePlayer}} | {{whitePlayerClock}} </p></div>
   </div>
 </template>
 
 <script>
 import Chess from 'chess.js'
 import { Chessground } from 'chessground'
-import {getAllProperties, uniques} from './Util.js'
+import { getAllProperties, uniques } from './Util.js'
 import "./style/theme.css"
 
 export default {
   name: 'chessboardCraft',
+  data() {
+    return {
+      whitePlayer: "Player 1",
+      blackPlayer: "Player 2",
+      whitePlayerClock: "",
+      blackPlayerClock: "",
+    }
+  },
   props: {
     fen: {
       type: String,
@@ -185,11 +195,16 @@ export default {
         })
       }
 
-      console.log(getAllProperties(this.board))
-
       this.calculatePromotions()
       this.afterMove()
     },
+    loadPlayers() {
+      this.whitePlayer = this.parsedPgnData.metadata.White;
+      this.blackPlayer = this.parsedPgnData.metadata.Black;
+    },
+    loadClock() {
+
+    }
   },
   mounted() {
     this.loadPosition()
@@ -199,6 +214,7 @@ export default {
     this.board = null
     this.promotions = []
     this.promoteTo = 'q'
+    this.parsedPgnData = null;
   },
 }
 </script>
