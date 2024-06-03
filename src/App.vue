@@ -97,7 +97,7 @@ function getLastMove(history, turn) {
     color = 'white';
   }
   return {
-    moveNumber: Math.ceil(history.length / 2),
+    moveNumber: history.length - 1,
     color: color,
     playedMove: history[history.length - 1]
   };

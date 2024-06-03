@@ -1,43 +1,45 @@
-import { Chess } from "../../../public/chess.min.js"
+import { Chess } from "../../../public/chess.min.js" // version 0.13.4
 
 export function parsePGN(pgn) {
     const [metadataPart, movesPart] = pgn.split('\n\n');
 
-    const metadataLines = metadataPart ? metadataPart.split('\n') : [];
-    const metadata = {};
-    metadataLines.forEach(line => {
-        const match = line.match(/^\[(\w+)\s+"(.+)"\]$/);
-        if (match) {
-            const [_, key, value] = match;
-            metadata[key] = value;
-        }
-    });
+    const metadata = metadataPart ? Object.fromEntries(
+        metadataPart.split('\n').map(line => {
+            const match = line.match(/^\[(\w+)\s+"(.+)"\]$/);
+            return match ? [match[1], match[2]] : null;
+        }).filter(Boolean)
+    ) : {};
 
     const chess = new Chess();
     const moves = [];
+    const halfMoves = []; // Initialize the list to store each half-move
+
     if (movesPart) {
-        const moveLines = movesPart.split(/\d+\./).slice(1);
-        moveLines.forEach(line => {
-            const moveMatch = line.trim().match(/([^\s]+)\s*({\[%clk\s*([0-9:]+)\]})?\s*({\[%emt\s*([0-9:]+)\]})?\s*([^\s]+)?\s*({\[%clk\s*([0-9:]+)\]})?\s*({\[%emt\s*([0-9:]+)\]})?/);
+        movesPart.split(/\d+\./).slice(1).forEach(line => {
+            const moveMatch = line.trim().match(/([^\s]+)\s*(?:{\[%clk\s*([0-9:]+)\]})?\s*(?:{\[%emt\s*([0-9:]+)\]})?\s*([^\s]+)?\s*(?:{\[%clk\s*([0-9:]+)\]})?\s*(?:{\[%emt\s*([0-9:]+)\]})?/);
             if (moveMatch) {
-                const [_, whiteMove, , whiteClockTime, , whiteEMTTime, blackMove, , blackClockTime, , blackEMTTime] = moveMatch;
+                const [_, whiteMove, whiteClockTime, whiteEMTTime, blackMove, blackClockTime, blackEMTTime] = moveMatch;
 
                 if (chess.move(whiteMove, { sloppy: true })) {
-                    moves.push({
-                        white: {
-                            move: whiteMove,
-                            clock: whiteClockTime || null,
-                            emt: whiteEMTTime || null
-                        }
-                    });
+                    const whiteHalfMove = {
+                        color: "white",
+                        move: whiteMove,
+                        clock: whiteClockTime || null,
+                        emt: whiteEMTTime || null
+                    };
+                    moves.push({ white: whiteHalfMove });
+                    halfMoves.push(whiteHalfMove); // Add the white move to halfMoves
                 }
 
                 if (blackMove && chess.move(blackMove, { sloppy: true })) {
-                    moves[moves.length - 1].black = {
+                    const blackHalfMove = {
+                        color: "black",
                         move: blackMove,
                         clock: blackClockTime || null,
                         emt: blackEMTTime || null
                     };
+                    moves[moves.length - 1].black = blackHalfMove;
+                    halfMoves.push(blackHalfMove); // Add the black move to halfMoves
                 }
             }
         });
@@ -46,6 +48,7 @@ export function parsePGN(pgn) {
     return {
         metadata,
         moves,
-        chess
+        chess,
+        halfMoves, // Include the halfMoves list in the return object
     };
 }

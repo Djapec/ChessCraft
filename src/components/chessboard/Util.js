@@ -4,29 +4,20 @@ export function uniques (arr) {
   })
 }
 
-export function getMove(parsedPGN, moveDetails) {
+export function getInfoForLastTwoMoves(parsedPGN, moveDetails) {
   const { moveNumber, color, playedMove } = moveDetails;
-  const { moves } = parsedPGN;
+  const { halfMoves } = parsedPGN;
 
-  if (moveNumber < 1 || moveNumber > moves.length) {
-    return null; // Invalid move number
+  if (moveNumber < 0 || moveNumber >= halfMoves.length ||
+      halfMoves[moveNumber].color !== color ||
+      halfMoves[moveNumber].move !== playedMove) {
+    return null; // Invalid move number or move details do not match
   }
 
-  var moveInfo = null
-
-  if (color === "white") {
-    moveInfo = moves[moveNumber - 1].white
-  } else if (color === "black") {
-    moveInfo = moves[moveNumber - 1].black
-  } else {
-    return null; // Invalid color
-  }
-
-  if (moveInfo.move !== playedMove) {
-    return null; // Move not found or played move does not match
-  }
-
-  return moveInfo; // Return the move object for the given color and played move
+  return {
+    currentMoveInfo: halfMoves[moveNumber],
+    previousMoveInfo: moveNumber > 0 ? halfMoves[moveNumber - 1] : null
+  };
 }
 
 export function getAllProperties(obj) {

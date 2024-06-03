@@ -1,6 +1,6 @@
 <script>
 import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
-import { getAllProperties, getMove } from '@/components/chessboard/Util.js'
+import { getAllProperties, getInfoForLastTwoMoves } from '@/components/chessboard/Util.js'
 import { Chess } from "../../public/chess.min.js"
 import bus from '../bus.js'
 
@@ -38,8 +38,6 @@ export default {
     loadGame(parsedData) {
       this.game = parsedData.chess
       this.parsedPgnData = parsedData
-      console.log(getAllProperties(this.parsedPgnData.moves))
-      console.log(getAllProperties(this.parsedPgnData.metadata))
       this.loadPlayers()
       this.loadPosition();
       this.setOnlyViewMod(true)
@@ -105,9 +103,12 @@ export default {
       this.board.set({ viewOnly: isViewOnly })
     },
     updatePlayersClock(moveDetails) {
-      // todo: check if this.parsedPgnData is not null
-      const moveInfo = getMove(this.parsedPgnData, moveDetails)
-      console.log(moveInfo)
+      // todo: check if viewOnly is active
+      if (this.parsedPgnData !== null) {
+        const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
+        this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] = movesInfo.currentMoveInfo.clock;
+        this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] = movesInfo.previousMoveInfo.clock;
+      }
     }
   },
   mounted() {
