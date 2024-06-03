@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import Chess from 'chess.js'
+import { Chess } from "../../../public/chess.min.js"
 import { Chessground } from 'chessground'
 import { getAllProperties, uniques } from './Util.js'
 import "./style/theme.css"
@@ -64,11 +64,23 @@ export default {
   methods: {
     possibleMoves() {
       const dests = new Map()
-      this.game.SQUARES.forEach(s => {
+      const squares = this.getSquares()
+      squares.forEach(s => {
         const ms = this.game.moves({ square: s, verbose: true })
         if (ms.length) dests.set(s, ms.map(m => m.to))
       })
       return dests
+    },
+    getSquares() {
+      const squares = []
+      const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+      const ranks = ['1', '2', '3', '4', '5', '6', '7', '8']
+      for (const file of files) {
+        for (const rank of ranks) {
+          squares.push(file + rank)
+        }
+      }
+      return squares
     },
     opponentMoves() {
       let originalPGN = this.game.pgn()

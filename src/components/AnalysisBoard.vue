@@ -1,7 +1,7 @@
 <script>
 import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
 import { getAllProperties, getMove } from '@/components/chessboard/Util.js'
-import Chess from 'chess.js'
+import { Chess } from "../../public/chess.min.js"
 import bus from '../bus.js'
 
 export default {

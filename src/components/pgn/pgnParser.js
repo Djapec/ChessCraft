@@ -1,4 +1,4 @@
-import  Chess  from 'chess.js';
+import { Chess } from "../../../public/chess.min.js"
 
 export function parsePGN(pgn) {
     const [metadataPart, movesPart] = pgn.split('\n\n');
