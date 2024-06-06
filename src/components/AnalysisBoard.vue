@@ -12,7 +12,8 @@ export default {
       currentGamePgn: null,
       currentChessGame: null,
       currentHistoryIndex: 0,
-      currentMoveHistory: []
+      currentMoveHistory: [],
+      viewOnly: true
     }
   },
   methods: {
@@ -30,7 +31,6 @@ export default {
           this.currentGamePgn = null;
         }
       } else { //false
-        this.board.set({ highlight: {lastMove: false} }) // todo: fix bug
         this.setOnlyViewMod(isViewOnly);
         this.currentGamePgn = this.game.pgn();
       }
@@ -100,17 +100,19 @@ export default {
       }
     },
     setOnlyViewMod(isViewOnly) {
+      this.viewOnly = isViewOnly;
       this.board.set({ viewOnly: isViewOnly })
     },
     updatePlayersClock(moveDetails) {
-      // todo: check if viewOnly is active
-      if (this.parsedPgnData !== null) {
-        const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
-        this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
-            movesInfo.currentMoveInfo.clock;
-        if (movesInfo.previousMoveInfo !== null) {
-          this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
-              movesInfo.previousMoveInfo.clock;
+      if (this.viewOnly) {
+        if (this.parsedPgnData !== null) {
+          const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
+          this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
+              movesInfo.currentMoveInfo.clock;
+          if (movesInfo.previousMoveInfo !== null) {
+            this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
+                movesInfo.previousMoveInfo.clock;
+          }
         }
       }
     }
