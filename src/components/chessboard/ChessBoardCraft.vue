@@ -39,7 +39,13 @@ export default {
     },
     onPromotion: {
       type: Function,
-      default: () => 'q',
+      default: () => {
+        let piece;
+        while (!['q', 'r', 'b', 'n'].includes(piece)) {
+          piece = prompt("Promote pawn to (q - queen, r - rook, b - bishop, n - knight):").toLowerCase();
+        }
+        return piece || 'q';
+      },
     },
     orientation: {
       type: String,
@@ -109,6 +115,7 @@ export default {
           if (move['captured']) {
             threats.push({orig: move.from, dest: move.to, brush: 'red'})
           }
+
           if (move['san'].includes('+')) {
             threats.push({orig: move.from, dest: move.to, brush: 'blue'})
           }
