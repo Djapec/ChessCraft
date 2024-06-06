@@ -55,7 +55,7 @@ export default {
     },
     showThreats: function (st) {
       if (st) {
-        this.paintThreats()
+        this.paintThreats(st)
       } else {
         this.board.setShapes([])
       }
@@ -99,19 +99,45 @@ export default {
     toColor() {
       return (this.game.turn() === 'w') ? 'white' : 'black'
     },
-    paintThreats() {
+    paintThreats(showAllThreats) {
+      let history = this.game.history({ verbose: true });
       let moves = this.game.moves({ verbose: true })
       let threats = []
-      moves.forEach(function (move) {
-        threats.push({ orig: move.to, brush: 'yellow' })
-        if (move['captured']) {
-          threats.push({ orig: move.from, dest: move.to, brush: 'red' })
+      if (showAllThreats) {
+        moves.forEach(function (move) {
+          threats.push({orig: move.to, brush: 'yellow'})
+          if (move['captured']) {
+            threats.push({orig: move.from, dest: move.to, brush: 'red'})
+          }
+          if (move['san'].includes('+')) {
+            threats.push({orig: move.from, dest: move.to, brush: 'blue'})
+          }
+        });
+      }
+
+      if (this.game.in_check()) {
+        threats.push({ orig: this.getKingSquare(), brush: 'red' });
+      }
+
+      if (history.length > 0) {
+        const lastMove = history[history.length - 1];
+        threats.push({ orig: lastMove.from, dest: lastMove.to, brush: 'green' });
+      }
+
+      this.board.setShapes(threats);
+    },
+    getKingSquare() {
+      const board = this.game.board();
+      for (let row of board) {
+        for (let piece of row) {
+          if (piece && piece.type === 'k' && piece.color === this.game.turn()) {
+            const file = 'abcdefgh'[row.indexOf(piece)];
+            const rank = 8 - board.indexOf(row);
+            return file + rank;
+          }
         }
-        if (move['san'].includes('+')) {
-          threats.push({ orig: move.from, dest: move.to, brush: 'blue' })
-        }
-      })
-      this.board.setShapes(threats)
+      }
+      return null;
     },
     calculatePromotions() {
       let moves = this.game.moves({ verbose: true })
@@ -145,9 +171,8 @@ export default {
       }
     },
     afterMove() {
-      if (this.showThreats) {
-        this.paintThreats()
-      }
+      this.paintThreats(this.showThreats)
+
       let threats = this.countThreats(this.toColor()) || {}
       threats['history'] = this.game.history()
       threats['fen'] = this.game.fen()
@@ -183,6 +208,7 @@ export default {
       if (this.board) {
         this.board.set({
           fen: this.game.fen(),
+          highlight: {lastMove: false, check: false},
           turnColor: this.toColor(),
           movable: {
             color: this.toColor(),
@@ -195,6 +221,7 @@ export default {
         this.board = Chessground(this.$refs.board, {
           fen: this.game.fen(),
           turnColor: this.toColor(),
+          highlight: {lastMove: false, check: false},
           movable: {
             color: this.toColor(),
             free: this.free,
