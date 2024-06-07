@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1>Simple Chessboard by Pedja</h1>
-    <analysis :fen="currentFen" @onMove="showInfo"/>
+    <analysis :fen="currentFen" @onMove="showInfo" :showThreats="false"/>
     <button class="button is-light" @click="undo()" :disabled="!buttonsDisabled">UNDO</button>
     <button class="button is-light" @click="loadFirstMove()" :disabled="buttonsDisabled">first move</button>
     <button class="button is-light" @click="loadPrevMove()" :disabled="buttonsDisabled">prev move</button>
@@ -76,9 +76,6 @@ export default {
     },
     loadFirstMove() {
       bus.$emit('firstMove');
-    },
-    promote() {
-      return confirm("Want to promote to rook? Queen by default") ? 'r' : 'q';
     },
     undo() {
       bus.$emit('undo');

@@ -15,7 +15,7 @@
 <script>
 import { parsePGN } from './pgnParser';
 import PGNParser from './PgnParser.vue';
-import bus from "@/bus";
+import bus from "../../bus";
 
 export default {
   name: 'PGNUploader',

@@ -1,8 +1,9 @@
 <script>
-import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
-import { getAllProperties, getInfoForLastTwoMoves } from '@/components/chessboard/Util.js'
+
 import { Chess } from "../../public/chess.min.js"
 import bus from '../bus.js'
+import chessBoardCraft from "./chessboard/ChessBoardCraft.vue";
+import { getInfoForLastTwoMoves } from "./chessboard/Util";
 
 export default {
   name: 'analysis',
