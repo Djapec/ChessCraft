@@ -22,6 +22,11 @@
 <!--    </div>-->
 
     <div>
+      <h1>fetch PGN</h1>
+      <fetchPgn />
+    </div>
+
+    <div>
       <h1>PGN parser</h1>
       <PGNUploader />
     </div>
@@ -35,10 +40,12 @@ import analysis from './components/AnalysisBoard.vue';
 import engine from './components/Stockfish.vue';
 import PGNUploader from './components/pgn/PgnUploader.vue';
 import bus from './bus.js';
+import fetchPgn from "./components/pgn/FetchPgn.vue";
 
 export default {
   name: 'app',
   components: {
+    fetchPgn,
     analysis,
     engine,
     PGNUploader,
