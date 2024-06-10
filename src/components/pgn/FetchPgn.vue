@@ -8,19 +8,21 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
-import { generatePgnForRound } from './api/round/getRound.ts';
+import { ref } from 'vue';
+import { validateNumber, fetchTournament } from '/src/components/pgn/lib/utils'; // Prilagodite putanju u skladu sa vašom strukturom projekta
 
-export default defineComponent({
-  name: 'FetchPgn',
+export default {
+  name: 'fetchPgn',
   setup() {
     const tournamentId = ref('');
     const round = ref('');
 
     const fetchPgn = async () => {
       try {
-        const pgn = await generatePgnForRound(tournamentId.value, round.value);
-        console.log('Generated PGN:', pgn);
+        const validatedRound = validateNumber(round.value);
+        const tournament = await fetchTournament(tournamentId.value);
+        console.log('Validated Round:', validatedRound);
+        console.log('Fetched Tournament:', tournament);
       } catch (error) {
         console.error('Error fetching PGN:', error);
       }
@@ -32,7 +34,7 @@ export default defineComponent({
       fetchPgn,
     };
   },
-});
+};
 </script>
 
 <style scoped>

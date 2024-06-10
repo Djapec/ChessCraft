@@ -5,17 +5,16 @@ import {
     generatePgn,
     getExtendedGamesUrls,
     getGamesData,
-    validateNumber
-} from "@/components/pgn/lib/utils";
+    getRoundsWithGames
+} from "../../lib/utils.js";
 
-
-export async function generatePgnForRound(tournamentId: string, roundStr: string): Promise<string> {
+export async function generatePgnForTournament(tournamentId) {
     try {
         const tournament = await fetchTournament(tournamentId);
-        const round = validateNumber(roundStr);
-        const indexData = await fetchIndexData(tournamentId, [round]);
+        const roundsWithGames = getRoundsWithGames(tournament.rounds);
+        const indexData = await fetchIndexData(tournamentId, roundsWithGames);
 
-        const extendedGamesUrls = getExtendedGamesUrls(tournamentId, [round], indexData);
+        const extendedGamesUrls = getExtendedGamesUrls(tournamentId, roundsWithGames, indexData);
         const lookupMap = createGameLookupMap(extendedGamesUrls);
         const gamesData = await getGamesData(extendedGamesUrls);
         return generatePgn(

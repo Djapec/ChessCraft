@@ -1,42 +1,33 @@
-import {Game, GameResult, Index, Pairing, Player, Round, Tournament} from "../types/dgt";
-import {ExtendedGameUrl, LookupMap} from "../types/utility";
-
-
-export function getTourneyUrl(id: string): string {
+export function getTourneyUrl(id) {
     return `https://1.pool.livechesscloud.com/get/${id}/tournament.json`;
 }
 
-export function getIndexUrl(id: string, round: number): string {
+export function getIndexUrl(id, round) {
     return `https://1.pool.livechesscloud.com/get/${id}/round-${round}/index.json`;
 }
 
-export function getGameUrl(id: string, round: number, game: number): string {
+export function getGameUrl(id, round, game) {
     return `https://1.pool.livechesscloud.com/get/${id}/round-${round}/game-${game}.json?poll`;
 }
 
-export function validateNumber(strNum: string): number {
+export function validateNumber(strNum) {
     const num = parseInt(strNum);
     if (isNaN(num) || num <= 0) throw new Error();
     return num;
 }
 
-export async function fetchTournament(id: string): Promise<Tournament> {
+export async function fetchTournament(id) {
     const tournamentRes = await fetch(getTourneyUrl(id));
     return await tournamentRes.json();
 }
 
-export async function fetchIndexData(
-    id: string,
-    rounds: number[]
-): Promise<Index[]> {
+export async function fetchIndexData(id, rounds) {
     const indexPromises = rounds.map((round) => fetch(getIndexUrl(id, round)));
     const indexResponses = await Promise.all(indexPromises);
     return await Promise.all(indexResponses.map((prom) => prom.json()));
 }
 
-export async function getGamesData(
-    games: ExtendedGameUrl[]
-): Promise<PromiseSettledResult<Game>[]> {
+export async function getGamesData(games) {
     const gamesPromises = games.map((game) =>
         fetch(game.url, { cache: 'no-store' })
     );
@@ -44,11 +35,7 @@ export async function getGamesData(
     return await Promise.allSettled(gamesResponses.map((prom) => prom.json()));
 }
 
-export function getExtendedGamesUrls(
-    id: string,
-    roundsWithGames: number[],
-    indexData: Index[]
-) {
+export function getExtendedGamesUrls(id, roundsWithGames, indexData) {
     return roundsWithGames.flatMap((round, rndIdx) => {
         return Array.from({ length: indexData[rndIdx].pairings.length }, (_, i) => {
             return {
@@ -60,24 +47,24 @@ export function getExtendedGamesUrls(
     });
 }
 
-function getGameResult(code: GameResult): string {
+function getGameResult(code) {
     switch (code) {
-        case GameResult.WHITEWIN:
+        case 'WHITEWIN':
             return '1-0';
-        case GameResult.BLACKWIN:
+        case 'BLACKWIN':
             return '0-1';
-        case GameResult.DRAW:
+        case 'DRAW':
             return '1/2-1/2';
         default:
             return '*';
     }
 }
 
-function convertDateFormat(inputDate: string): string {
+function convertDateFormat(inputDate) {
     return inputDate.split('-').join('.');
 }
 
-function getFormattedMoves(moves: string[]): string {
+function getFormattedMoves(moves) {
     let str = '';
     for (let i = 0; i < moves.length; i++) {
         if (i % 2 == 0) {
@@ -89,20 +76,12 @@ function getFormattedMoves(moves: string[]): string {
     return str;
 }
 
-function getPlayerFullName(player: Player): string {
-    const full = `${player.lname || ''}, ${player.fname || ''} ${
-        player.mname || ''
-    }`;
+function getPlayerFullName(player) {
+    const full = `${player.lname || ''}, ${player.fname || ''} ${player.mname || ''}`;
     return full.trim() === ',' ? '?' : full;
 }
 
-export function parseToPgn(
-    tournament: Tournament,
-    pairing: Pairing,
-    game: Game,
-    round: number,
-    date: string
-): string {
+export function parseToPgn(tournament, pairing, game, round, date) {
     const event = tournament.name || '?';
     const site = tournament.location || '?';
     const formattedDate = date ? convertDateFormat(date) : '?';
@@ -127,8 +106,8 @@ export function parseToPgn(
     return pgn;
 }
 
-export function createGameLookupMap(games: ExtendedGameUrl[]) {
-    return games.reduce((acc: LookupMap, curr) => {
+export function createGameLookupMap(games) {
+    return games.reduce((acc, curr) => {
         acc[curr.url] = {
             round: curr.round,
             game: curr.game,
@@ -137,22 +116,16 @@ export function createGameLookupMap(games: ExtendedGameUrl[]) {
     }, {});
 }
 
-export function getRoundsWithGames(rounds: Round[]) {
-    return rounds.reduce((acc: number[], curr, idx) => {
+export function getRoundsWithGames(rounds) {
+    return rounds.reduce((acc, curr, idx) => {
         if (curr.count > 0) acc.push(idx + 1);
         return acc;
     }, []);
 }
 
-export function generatePgn(
-    tournament: Tournament,
-    indexData: Index[],
-    gamesData: PromiseSettledResult<Game>[],
-    extendedGamesUrls: ExtendedGameUrl[],
-    lookupMap: LookupMap
-): string {
+export function generatePgn(tournament, indexData, gamesData, extendedGamesUrls, lookupMap) {
     const pgn = gamesData
-        .reduce((acc: string[], curr, idx) => {
+        .reduce((acc, curr, idx) => {
             if (curr.status !== 'fulfilled') return acc;
             const rndAndGame = lookupMap[extendedGamesUrls[idx].url];
             const index = indexData[rndAndGame.round - 1] || indexData[0];
