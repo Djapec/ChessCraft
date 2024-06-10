@@ -9,7 +9,8 @@
 
 <script>
 import { ref } from 'vue';
-import { validateNumber, fetchTournament } from '/src/components/pgn/lib/utils'; // Prilagodite putanju u skladu sa vašom strukturom projekta
+import {generatePgnForRound} from "@/components/pgn/api/round/getRound";
+
 
 export default {
   name: 'fetchPgn',
@@ -19,10 +20,8 @@ export default {
 
     const fetchPgn = async () => {
       try {
-        const validatedRound = validateNumber(round.value);
-        const tournament = await fetchTournament(tournamentId.value);
-        console.log('Validated Round:', validatedRound);
-        console.log('Fetched Tournament:', tournament);
+        const pgn = await generatePgnForRound(tournamentId.value, round.value);
+        console.log('Generated PGN:', pgn);
       } catch (error) {
         console.error('Error fetching PGN:', error);
       }
