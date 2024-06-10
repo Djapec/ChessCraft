@@ -24,14 +24,5 @@ module.exports = {
                 __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
                 __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false),
             }]);
-
-        // Dodavanje podrške za TypeScript
-        config.module
-            .rule('ts')
-            .test(/\.ts$/)
-            .use('ts-loader')
-            .loader('ts-loader')
-            .options({ appendTsSuffixTo: [/\.vue$/] })
-            .end();
     }
 };

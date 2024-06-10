@@ -22,7 +22,6 @@
 <!--    </div>-->
 
     <div>
-      <h1>fetch PGN</h1>
       <fetchPgn />
     </div>
 

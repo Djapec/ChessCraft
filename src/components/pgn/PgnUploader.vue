@@ -30,7 +30,6 @@ export default {
   methods: {
     parseMultiplePGNs(fileContent) {
       const pgns = fileContent.split(/\n\n(?=\[)/); // Split by double newline followed by "["
-
       return pgns.map(pgn => {
         const parsedData = parsePGN(pgn);
         const whitePlayer = parsedData.metadata.White;
@@ -59,7 +58,15 @@ export default {
     },
     loadGame(parsedData) {
       bus.$emit('loadGame', parsedData);
+    },
+    apiGameLoader(content) {
+      this.games = this.parseMultiplePGNs(content);
     }
+  },
+  created() {
+    bus.$on('apiGameLoader', (content) => {
+      this.apiGameLoader(content)
+    })
   }
 };
 </script>
