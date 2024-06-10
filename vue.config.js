@@ -24,5 +24,6 @@ module.exports = {
                 __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
                 __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false),
             }]);
-    }
+    },
+    publicPath: process.env.NODE_ENV = '/',
 };
