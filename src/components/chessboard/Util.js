@@ -5,11 +5,10 @@ export function uniques (arr) {
 }
 
 export function getInfoForLastTwoMoves(parsedPGN, moveDetails) {
-  const { moveNumber, color, playedMove } = moveDetails;
+  const { moveNumber, playedMove } = moveDetails;
   const { halfMoves } = parsedPGN;
 
   if (moveNumber < 0 || moveNumber >= halfMoves.length ||
-      halfMoves[moveNumber].color !== color ||
       halfMoves[moveNumber].move !== playedMove) {
     return null; // Invalid move number or move details do not match
   }

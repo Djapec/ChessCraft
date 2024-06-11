@@ -90,10 +90,22 @@ function getFormattedMoves(moves) {
         if (i % 2 === 0) {
             str += `${Math.ceil((i + 1) / 2).toString()}. `;
         }
+
         const [move, time] = moves[i].split(' ');
-        const seconds = parseInt(time.split('+')[0]);
-        const clockTime = convertSecondsToClock(seconds);
-        str += `${move} {[%clk ${clockTime}]} `;
+
+        if (!move) {
+            console.error(`Invalid move format at index ${i}: ${moves[i]}`);
+            continue;
+        }
+
+        if (!time || isNaN(parseInt(time.split('+')[0]))) {
+            // If time is missing or invalid, just add the move without the clock time
+            str += `${move} `;
+        } else {
+            const seconds = parseInt(time.split('+')[0]);
+            const clockTime = convertSecondsToClock(seconds);
+            str += `${move} {[%clk ${clockTime}]} `;
+        }
     }
 
     str = str.trim();
