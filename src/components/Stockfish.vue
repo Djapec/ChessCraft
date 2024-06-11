@@ -29,8 +29,6 @@
 </template>
 
 <script>
-
-
 import bus from "../bus";
 
 export default {
@@ -69,14 +67,16 @@ export default {
         this.worker = null;
       }
     },
-    analyzePosition(fen) {
+    analyzePosition(fen, playerToMove) {
       if (!this.isActive || fen === this.startPositionFen) return;
       this.bestMoves = [];
       this.evaluation = null;
       this.worker.postMessage('uci');
       this.worker.postMessage('isready');
-      this.worker.postMessage(`position fen ${fen}`);
-      this.worker.postMessage('setoption name MultiPV value 5');
+      // Dodavanje informacije ko je na potezu
+      const fullFen = `${fen} ${playerToMove} KQkq - 0 1`;
+      this.worker.postMessage(`position fen ${fullFen}`);
+      this.worker.postMessage('setoption name MultiPV value 1');
       this.worker.postMessage(`go depth ${this.searchDepth}`);
     },
     toggleStockfish() {
@@ -115,8 +115,8 @@ export default {
     }
   },
   created() {
-    bus.$on('analyzePosition', (fen) => {
-      this.analyzePosition(fen);
+    bus.$on('analyzePosition', (fen, playerToMove) => {
+      this.analyzePosition(fen, playerToMove);
     });
   },
   mounted() {

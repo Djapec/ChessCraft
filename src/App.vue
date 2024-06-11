@@ -64,7 +64,7 @@ export default {
   methods: {
     showInfo(data) {
       this.positionInfo = data;
-      bus.$emit('analyzePosition', this.positionInfo.fen);
+      bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn));
       if (this.positionInfo.history.length !== 0) {
         bus.$emit('updatePlayersClock', getLastMove(this.positionInfo.history, this.positionInfo.turn));
       }
@@ -104,6 +104,13 @@ function getLastMove(history, turn) {
     color: color,
     playedMove: history[history.length - 1]
   };
+}
+
+function getFirstLetter(str) {
+  if (typeof str !== 'string' || str.length === 0) {
+    return '';
+  }
+  return str.charAt(0);
 }
 
 </script>
