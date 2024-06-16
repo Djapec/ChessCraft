@@ -1,4 +1,4 @@
-import { Chess } from "../../../public/chess.min.js" // version 0.13.4
+import { Chess } from "../../../public/chess.min.js"; // version 0.13.4
 
 export function parsePGN(pgn) {
     const [metadataPart, movesPart] = pgn.split('\n\n');
@@ -12,7 +12,8 @@ export function parsePGN(pgn) {
 
     const chess = new Chess();
     const moves = [];
-    const halfMoves = []; // Initialize the list to store each half-move
+    const halfMoves = [];
+    let halfMoveId = 1; // Initialize the half-move ID counter
 
     if (movesPart) {
         movesPart.split(/\d+\./).slice(1).forEach(line => {
@@ -22,24 +23,26 @@ export function parsePGN(pgn) {
 
                 if (chess.move(whiteMove, { sloppy: true })) {
                     const whiteHalfMove = {
+                        id: halfMoveId++,
                         color: "white",
                         move: whiteMove,
                         clock: whiteClockTime || null,
                         emt: whiteEMTTime || null
                     };
                     moves.push({ white: whiteHalfMove });
-                    halfMoves.push(whiteHalfMove); // Add the white move to halfMoves
+                    halfMoves.push(whiteHalfMove);
                 }
 
                 if (blackMove && chess.move(blackMove, { sloppy: true })) {
                     const blackHalfMove = {
+                        id: halfMoveId++,
                         color: "black",
                         move: blackMove,
                         clock: blackClockTime || null,
                         emt: blackEMTTime || null
                     };
                     moves[moves.length - 1].black = blackHalfMove;
-                    halfMoves.push(blackHalfMove); // Add the black move to halfMoves
+                    halfMoves.push(blackHalfMove);
                 }
             }
         });
@@ -49,6 +52,6 @@ export function parsePGN(pgn) {
         metadata,
         moves,
         chess,
-        halfMoves, // Include the halfMoves list in the return object
+        halfMoves,
     };
 }
