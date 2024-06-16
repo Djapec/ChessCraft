@@ -4,10 +4,6 @@
     <analysis :fen="currentFen" @onMove="showInfo" :showThreats="false"/>
     <movesControlBoard/>
 
-    <div>
-      {{ this.positionInfo }}
-    </div>
-
 <!--    <h1>Simple Chessboard that shows threats for current position and player</h1>-->
 <!--    <chessboard :showThreats="true"/>-->
 
@@ -17,12 +13,7 @@
 <!--    </div>-->
 
     <div>
-      <fetchPgn />
-    </div>
-
-    <div>
-      <h1>PGN parser</h1>
-      <PGNUploader />
+      <fetchPgn/>
     </div>
 
     <engine/>

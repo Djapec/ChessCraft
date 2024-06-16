@@ -47,6 +47,21 @@ export default {
       this.currentMoveHistory = this.game.history();
       this.initControlBoardMoveList()
     },
+    loadRandomMove(move) {
+      console.log(move)
+      console.log(this.currentMoveHistory[move.id - 1]);
+      this.currentHistoryIndex = move.id
+      let chess = new Chess();
+
+      for (let i = 0; i < this.currentHistoryIndex; i++) {
+        let move = this.currentMoveHistory[i];
+        chess.move(move);
+      }
+
+      this.game = chess
+      this.loadPosition();
+      this.setOnlyViewMod(true)
+    },
     prevMove() {
       if (this.currentHistoryIndex !== 0) {
         this.currentHistoryIndex = this.currentHistoryIndex - 1;
@@ -111,6 +126,7 @@ export default {
           const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
           this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
               movesInfo.currentMoveInfo.clock;
+          bus.$emit('updateCurrentMove', movesInfo.currentMoveInfo.id)
           if (movesInfo.previousMoveInfo !== null) {
             this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
                 movesInfo.previousMoveInfo.clock;
@@ -119,7 +135,7 @@ export default {
       }
     },
     initControlBoardMoveList() {
-      bus.$emit('loadGameMoveList', this.currentMoveHistory, this.parsedPgnData);
+      bus.$emit('loadGameMoveList', this.parsedPgnData);
     },
   },
   mounted() {
@@ -130,6 +146,9 @@ export default {
   created() {
       bus.$on('updatePlayersClock', (moveDetails) => {
         this.updatePlayersClock(moveDetails)
+      })
+      bus.$on('loadRandomMove', (move) => {
+        this.loadRandomMove(move)
       })
       bus.$on('undo', () => {
         this.undo()

@@ -8,7 +8,7 @@
       </label>
     </div>
     <div class="move-list">
-      <table>
+      <table ref="moveTable">
         <thead>
         <tr>
           <th></th>
@@ -19,19 +19,31 @@
         <tbody>
         <tr v-for="(move, index) in movePairs" :key="index">
           <td>{{ index + 1 }}.</td>
-          <td @click="logMove(move.white)" v-if="move.white">{{ move.white.move }}</td>
-          <td @click="logMove(move.black)" v-if="move.black">{{ move.black.move }}</td>
+          <td
+              :class="{ active: isActiveMove(move.white) }"
+              @click="logMove(move.white)"
+              v-if="move.white"
+          >
+            {{ move.white.move }}
+          </td>
+          <td
+              :class="{ active: isActiveMove(move.black) }"
+              @click="logMove(move.black)"
+              v-if="move.black"
+          >
+            {{ move.black.move }}
+          </td>
         </tr>
         </tbody>
       </table>
     </div>
     <div class="move-controls">
-      <button @click="loadFirstMove()" :disabled="!isButtonsDisabled">&#171;</button>
-      <button @click="loadPrevMove()" :disabled="!isButtonsDisabled">&#8249;</button>
+      <button @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
+      <button @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
       <button>&#9654;</button>
-<!--      <button class="button is-light" @click="undo()" :disabled="!isButtonsDisabled">UNDO</button>-->
-      <button @click="loadNextMove()" :disabled="!isButtonsDisabled">&#8250;</button>
-      <button @click="loadLastMove()" :disabled="!isButtonsDisabled">&#187;</button>
+      <!--      <button class="button is-light" @click="undo()" :disabled="!isButtonsDisabled">UNDO</button>-->
+      <button @click="loadNextMove()" :disabled="isButtonsDisabled">&#8250;</button>
+      <button @click="loadLastMove()" :disabled="isButtonsDisabled">&#187;</button>
     </div>
   </div>
 </template>
@@ -43,8 +55,9 @@ export default {
   name: "movesControlBoard",
   data() {
     return {
-      isViewOnlyMod: true,
+      isViewOnlyMod: false,
       isButtonsDisabled: false,
+      currentMoveIndex: 1, // Dodajemo currentMoveIndex
       parsedPgnGameData: {
         halfMoves: []
       }
@@ -64,12 +77,17 @@ export default {
     }
   },
   methods: {
+    isActiveMove(move) {
+      if (!move) return false;
+      this.scrollToActiveMove();
+      return this.currentMoveIndex === move.id;
+    },
     toggleMovement() {
       this.isButtonsDisabled = !this.isButtonsDisabled;
       bus.$emit('toggleMovement', this.isViewOnlyMod);
     },
     logMove(move) {
-      console.log(move);
+      bus.$emit('loadRandomMove', move);
     },
     loadFirstMove() {
       bus.$emit('firstMove');
@@ -83,17 +101,28 @@ export default {
     loadLastMove() {
       bus.$emit('lastMove');
     },
-    loadGameMoveList(currentMoveHistory, parsedPgnData) {
+    loadGameMoveList(parsedPgnData) {
       this.parsedPgnGameData = parsedPgnData;
-      this.currentGameMoveHistory = currentMoveHistory;
-      console.log(this.currentGameMoveHistory);
+      this.scrollToActiveMove();
+    },
+    scrollToActiveMove() {
+      this.$nextTick(() => {
+        const activeMove = this.$el.querySelector('.active');
+        if (activeMove) {
+          const moveList = this.$el.querySelector('.move-list');
+          const moveListRect = moveList.getBoundingClientRect();
+          const activeMoveRect = activeMove.getBoundingClientRect();
+          moveList.scrollTop += activeMoveRect.top - moveListRect.top - moveListRect.height / 2 + activeMoveRect.height / 2;
+        }
+      });
     }
   },
   created() {
-    this.currentGameMoveHistory = [];
-
-    bus.$on('loadGameMoveList', (currentMoveHistory, parsedPgnData) => {
-      this.loadGameMoveList(currentMoveHistory, parsedPgnData);
+    bus.$on('updateCurrentMove', (moveIndex) => {
+      this.currentMoveIndex = moveIndex;
+    });
+    bus.$on('loadGameMoveList', (parsedPgnData) => {
+      this.loadGameMoveList(parsedPgnData);
     });
   }
 };
@@ -105,8 +134,9 @@ export default {
   border-radius: 8px;
   padding: 16px;
   max-width: 600px;
-  margin: 0 auto;
+  height: 50%;
   background-color: #fff;
+  margin-left: 0; /* Dodajemo margine da bude levo poravnat */
 }
 
 .header {
@@ -154,7 +184,7 @@ export default {
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: #90A4AE;
 }
 
 input:checked + .slider:before {
@@ -162,7 +192,7 @@ input:checked + .slider:before {
 }
 
 .move-list {
-  max-height: 300px;
+  max-height: 240px;
   overflow-y: auto;
   margin-bottom: 8px;
 }
@@ -181,7 +211,7 @@ th, td {
 .move-controls {
   display: flex;
   justify-content: center;
-  gap: 8px; /* Ovdje dodajemo razmak između dugmića */
+  gap: 8px;
 }
 
 .move-controls button {
@@ -189,6 +219,13 @@ th, td {
   border: none;
   cursor: pointer;
   font-size: 20px;
-  margin: 0 20px; /* Ovdje dodajemo horizontalni razmak između dugmića */
+  margin: 0 20px;
+}
+
+.active {
+  background-color: #90A4AE;
+  transition: background-color 0.3s ease;
 }
 </style>
+
+
