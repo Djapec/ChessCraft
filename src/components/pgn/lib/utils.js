@@ -64,18 +64,6 @@ function convertDateFormat(inputDate) {
     return inputDate.split('-').join('.');
 }
 
-// function getFormattedMoves(moves) {
-//     let str = '';
-//     for (let i = 0; i < moves.length; i++) {
-//         if (i % 2 == 0) {
-//             str += `${Math.ceil((i + 1) / 2).toString()}. `;
-//         }
-//         str += `${moves[i].split(' ')[0]} `;
-//     }
-//     str = str.trim();
-//     return str;
-// }
-
 function getFormattedMoves(moves) {
     let str = '';
 

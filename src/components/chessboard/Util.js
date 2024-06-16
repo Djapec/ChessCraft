@@ -8,7 +8,9 @@ export function getInfoForLastTwoMoves(parsedPGN, moveDetails) {
   const { moveNumber, playedMove } = moveDetails;
   const { halfMoves } = parsedPGN;
 
-  if (moveNumber < 0 || moveNumber >= halfMoves.length ||
+  // todo: dodati i proveru boje ali ne za pobednici potez jer je on uvek jedinstven
+  if (moveNumber < 0 ||
+      moveNumber >= halfMoves.length ||
       halfMoves[moveNumber].move !== playedMove) {
     return null; // Invalid move number or move details do not match
   }

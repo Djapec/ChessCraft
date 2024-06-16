@@ -11,7 +11,7 @@
 <script>
 import { Chess } from "../../../public/chess.min.js"
 import { Chessground } from 'chessground'
-import { getAllProperties, uniques } from './Util.js'
+import { uniques } from './Util.js'
 import "./style/theme.css"
 
 export default {
@@ -160,7 +160,7 @@ export default {
       return filteredPromotions.length > 0
     },
     changeTurn() {
-      return (orig, dest, metadata) => {
+      return (orig, dest) => {
         if (this.isPromotion(orig, dest)) {
           this.promoteTo = this.onPromotion()
         }
@@ -247,9 +247,6 @@ export default {
     loadPlayers() {
       this.whitePlayer = this.parsedPgnData.metadata.White;
       this.blackPlayer = this.parsedPgnData.metadata.Black;
-    },
-    loadClock() {
-
     }
   },
   mounted() {

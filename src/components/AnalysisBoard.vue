@@ -45,6 +45,7 @@ export default {
       this.currentChessGame = parsedData.chess;
       this.currentHistoryIndex = this.game.history().length;
       this.currentMoveHistory = this.game.history();
+      this.initControlBoardMoveList()
     },
     prevMove() {
       if (this.currentHistoryIndex !== 0) {
@@ -97,7 +98,7 @@ export default {
         this.loadPosition()
         this.setOnlyViewMod(true)
         this.currentHistoryIndex = this.game.history().length;
-        this.currentMoveHistory = this.game.history();
+        this.currentMoveHistory = this.game.history(); // todo: check if this is needed
       }
     },
     setOnlyViewMod(isViewOnly) {
@@ -116,7 +117,10 @@ export default {
           }
         }
       }
-    }
+    },
+    initControlBoardMoveList() {
+      bus.$emit('loadGameMoveList', this.currentMoveHistory, this.parsedPgnData);
+    },
   },
   mounted() {
     this.board.set({
@@ -126,25 +130,25 @@ export default {
   created() {
       bus.$on('updatePlayersClock', (moveDetails) => {
         this.updatePlayersClock(moveDetails)
-      }),
+      })
       bus.$on('undo', () => {
         this.undo()
-      }),
+      })
       bus.$on('prevMove', () => {
         this.prevMove()
-      }),
+      })
       bus.$on('nextMove', () => {
         this.nextMove()
-      }),
+      })
       bus.$on('firstMove', () => {
         this.firstMove()
-      }),
+      })
       bus.$on('lastMove', () => {
         this.lastMove()
-      }),
+      })
       bus.$on('toggleMovement', (isViewOnly) => {
         this.toggleMovement(isViewOnly)
-      }),
+      })
       bus.$on('loadGame', (chess) => {
         this.loadGame(chess)
       })

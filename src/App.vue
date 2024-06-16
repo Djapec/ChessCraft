@@ -2,12 +2,7 @@
   <div id="app">
     <h1>Simple Chessboard by Pedja</h1>
     <analysis :fen="currentFen" @onMove="showInfo" :showThreats="false"/>
-    <button class="button is-light" @click="undo()" :disabled="!buttonsDisabled">UNDO</button>
-    <button class="button is-light" @click="loadFirstMove()" :disabled="buttonsDisabled">first move</button>
-    <button class="button is-light" @click="loadPrevMove()" :disabled="buttonsDisabled">prev move</button>
-    <button class="button is-light" @click="loadNextMove()" :disabled="buttonsDisabled">next move</button>
-    <button class="button is-light" @click="loadLastMove()" :disabled="buttonsDisabled">last move</button>
-    <button @click="toggleMovement()">{{ isViewOnly ? 'Enable' : 'Disable' }} Movement</button>
+    <movesControlBoard/>
 
     <div>
       {{ this.positionInfo }}
@@ -36,6 +31,7 @@
 
 <script>
 import analysis from './components/AnalysisBoard.vue';
+import movesControlBoard from './components/MovesControlBoard.vue';
 import engine from './components/Stockfish.vue';
 import PGNUploader from './components/pgn/PgnUploader.vue';
 import bus from './bus.js';
@@ -48,6 +44,7 @@ export default {
     analysis,
     engine,
     PGNUploader,
+    movesControlBoard,
   },
   data() {
     return {
@@ -68,27 +65,7 @@ export default {
       if (this.positionInfo.history.length !== 0) {
         bus.$emit('updatePlayersClock', getLastMove(this.positionInfo.history, this.positionInfo.turn));
       }
-    },
-    toggleMovement() {
-      this.isViewOnly = !this.isViewOnly;
-      this.buttonsDisabled = !this.buttonsDisabled;
-      bus.$emit('toggleMovement', this.isViewOnly);
-    },
-    loadPrevMove() {
-      bus.$emit('prevMove');
-    },
-    loadNextMove() {
-      bus.$emit('nextMove');
-    },
-    loadFirstMove() {
-      bus.$emit('firstMove');
-    },
-    undo() {
-      bus.$emit('undo');
-    },
-    loadLastMove() {
-      bus.$emit('lastMove');
-    },
+    }
   }
 };
 
