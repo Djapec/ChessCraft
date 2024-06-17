@@ -57,7 +57,7 @@ export default {
     return {
       isViewOnlyMod: false,
       isButtonsDisabled: false,
-      currentMoveIndex: 1, // Dodajemo currentMoveIndex
+      currentMoveIndex: 1,
       parsedPgnGameData: {
         halfMoves: []
       }
@@ -136,7 +136,7 @@ export default {
   max-width: 600px;
   height: 50%;
   background-color: #fff;
-  margin-left: 0; /* Dodajemo margine da bude levo poravnat */
+  margin-left: 0;
 }
 
 .header {

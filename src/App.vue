@@ -13,7 +13,11 @@
 <!--    </div>-->
 
     <div>
-      <fetchPgn/>
+      <fetchPgn />
+    </div>
+
+    <div>
+      <PGNUploader />
     </div>
 
     <engine/>
