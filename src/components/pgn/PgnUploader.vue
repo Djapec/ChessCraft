@@ -21,12 +21,12 @@
   </div>
 </template>
 
-
-
 <script>
 import { parsePGN } from './pgnParser';
 import PGNParser from './PgnParser.vue';
 import bus from "../../bus";
+import {fetchTournament} from "./lib/utils";
+import {generatePgnForRound} from "./api/round/getRound";
 
 export default {
   name: 'PGNUploader',
@@ -39,7 +39,8 @@ export default {
       loading: false,
       search: '',
       selectedRound: '',
-      rounds: ['1st Round - EWCC 20 April 2024', '2nd Round - EWCC 21 April 2024', '3rd Round - EWCC 22 April 2024']
+      tournamentId: '6c053e0e-5411-4310-bff8-8f4c1d7338db',
+      rounds: []
     };
   },
   computed: {
@@ -47,7 +48,16 @@ export default {
       return this.games.filter(game => game.name.toLowerCase().includes(this.search.toLowerCase()));
     }
   },
+  watch: {
+    selectedRound: 'apiGameLoader' // Watcher za promenu vrednosti selectedRound
+  },
   methods: {
+    async fetchRounds() {
+      const tournament = await fetchTournament(this.tournamentId);
+      let roundsNumber = tournament.rounds.length;
+      this.rounds = Array.from({ length: roundsNumber }, (_, i) => i + 1);
+      this.selectedRound = this.rounds[0]; // Postavljanje prve opcije kao podrazumevane
+    },
     parseMultiplePGNs(fileContent) {
       const pgns = fileContent.split(/\n\n(?=\[)/);
       return pgns.map(pgn => {
@@ -88,21 +98,23 @@ export default {
     loadGame(parsedData) {
       bus.$emit('loadGame', parsedData);
     },
-    apiGameLoader(content) {
-      this.games = this.parseMultiplePGNs(content);
+    async apiGameLoader() {
+      if (this.selectedRound) {
+        const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
+        this.games = this.parseMultiplePGNs(pgn);
+      }
     }
   },
-  created() {
-    bus.$on('apiGameLoader', (content) => {
-      this.apiGameLoader(content)
-    })
+  async created() {
+    await this.apiGameLoader();
+    await this.fetchRounds();
   }
 };
 </script>
 
 <style scoped>
 .pgn-uploader {
-  padding: 20px;
+  padding: 16px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
@@ -121,6 +133,7 @@ export default {
 }
 .header select.round-select {
   padding: 5px;
+  min-width: 60px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 8px; /* Zaobljene ivice */

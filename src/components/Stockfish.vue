@@ -1,29 +1,39 @@
 <template>
-  <div>
-    <h1>Stockfish Engine</h1>
-    <button @click="toggleStockfish">
-      {{ isActive ? 'Turn off' : 'Turn on' }}
-    </button>
-    <div>
-      <label for="depth">Choose engine depth: </label>
-      <select id="depth" v-model="searchDepth">
-        <option value="15">15</option>
-        <option value="20">20</option>
-        <option value="25">25</option>
-        <option value="30">30</option>
-      </select>
+  <div class="analysis-container">
+    <div class="header">
+      <h2>Analysis</h2>
+      <div class="controls">
+        <button class="hide-button" @click="toggleHide">
+          {{ isHidden ? 'Show' : 'Hide' }}
+        </button>
+        <div class="dropdown-container">
+          <label for="depth">Depth: </label>
+          <select id="depth" v-model="searchDepth">
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+      </div>
     </div>
-    <div v-if="evaluation !== null">
-      <h2>Evaluation</h2>
-      <p>{{ evaluation }}</p>
-    </div>
-    <div v-if="bestMoves.length">
-      <h2>Best Moves</h2>
-      <ul>
-        <li v-for="(line, index) in bestMoves" :key="index">
-          Line {{ index + 1 }}: {{ line.join(' ') }}
-        </li>
-      </ul>
+    <div v-if="!isHidden" class="analysis-content">
+      <table>
+        <thead>
+        <tr>
+          <th>Engine</th>
+          <th>Eval</th>
+          <th>Moves</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-if="evaluation !== null && bestMoves.length">
+          <td>Stockfish</td>
+          <td>{{ evaluation }}</td>
+          <td>{{ formattedMoves }}</td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -40,8 +50,14 @@ export default {
       evaluation: null,
       startPositionFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // Početna pozicija kao primer
       isActive: true, // Dodato polje za praćenje statusa Stockfish-a
-      searchDepth: 15 // Dubina pretrage
+      searchDepth: 15, // Dubina pretrage
+      isHidden: false
     };
+  },
+  computed: {
+    formattedMoves() {
+      return this.bestMoves.map(line => line.join(' ')).join(' ');
+    }
   },
   methods: {
     initializeWorker() {
@@ -87,6 +103,9 @@ export default {
         this.terminateWorker();
       }
     },
+    toggleHide() {
+      this.isHidden = !this.isHidden;
+    },
     parseEvaluation(message) {
       const evalRegex = /score (\w+) (-?\d+)/;
       const match = evalRegex.exec(message);
@@ -107,9 +126,9 @@ export default {
       const lines = [];
 
       while ((match = regex.exec(message)) !== null) {
-        const pv = match[2].trim().split(' ');
+        const pv = match[2].trim().split(' ').slice(0, 10);
         lines.push(pv);
-        if (lines.length >= 10) break; // Uzmi samo 10 najboljih varijanti
+        if (lines.length >= 3) break;
       }
       return lines;
     }
@@ -126,7 +145,33 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-  color: #42b983;
+.analysis-container {
+  border: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  padding: 16px;
+  max-width: 600px;
+  background-color: #f9f9f9;
+  margin-left: 0;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  height: 50px; /* Adjust this value to make the header smaller */
+}
+.controls {
+  display: flex;
+  gap: 10px; /* Small gap between buttons */
+  align-items: center;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 </style>

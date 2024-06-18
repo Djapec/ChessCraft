@@ -131,12 +131,12 @@ export default {
 <style scoped>
 .move-list-container {
   border: 1px solid #ddd;
-  border-radius: 8px;
   padding: 16px;
   max-width: 600px;
   height: 50%;
-  background-color: #fff;
+  background-color: #f9f9f9;
   margin-left: 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .header {

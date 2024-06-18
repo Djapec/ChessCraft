@@ -10,8 +10,8 @@
 <script>
 import bus from "@/bus";
 import { generatePgnForRound } from "@/components/pgn/api/round/getRound";
-import { fetchTournament } from "./lib/utils";
 
+// info: The component will remain only for testing purposes. Unused currently.
 export default {
   name: 'fetchPgn',
   data() {
@@ -25,14 +25,6 @@ export default {
       try {
         const pgn = await generatePgnForRound(this.tournamentId, this.round);
         this.apiGameLoader(pgn);
-      } catch (error) {
-        console.error('Error fetching PGN:', error);
-      }
-    },
-    async fetchTournamentRoundsNumber() {
-      try {
-        const tournament = await fetchTournament(this.tournamentId);
-        console.log(tournament.rounds.length);
       } catch (error) {
         console.error('Error fetching PGN:', error);
       }

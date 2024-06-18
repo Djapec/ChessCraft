@@ -1,28 +1,36 @@
 <template>
   <div id="app">
-    <h1>Simple Chessboard by Pedja</h1>
     <analysis :fen="currentFen" @onMove="showInfo" :showThreats="false"/>
-    <movesControlBoard/>
-
-<!--    <h1>Simple Chessboard that shows threats for current position and player</h1>-->
-<!--    <chessboard :showThreats="true"/>-->
-
-<!--    <h1>Multiple Chessboards with different fens. </h1>-->
-<!--    <div v-for="fen in fens" :key="fen">-->
-<!--      <chessboard :fen="fen" />-->
-<!--    </div>-->
-
-    <div>
-      <fetchPgn />
-    </div>
-
-    <div>
+    <div class="main-container">
       <PGNUploader />
+      <div class="side-container">
+        <movesControlBoard/>
+        <engine/>
+      </div>
     </div>
-
-    <engine/>
   </div>
 </template>
+
+<style scoped>
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.main-container {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 20px; /* Razmak između analysis i ostalih komponenti */
+}
+
+.side-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px; /* Razmak između PGNUploader i side-container */
+}
+</style>
+
 
 <script>
 import analysis from './components/AnalysisBoard.vue';
