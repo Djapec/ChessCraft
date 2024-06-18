@@ -84,7 +84,7 @@ export default {
     },
     toggleMovement() {
       this.isButtonsDisabled = !this.isButtonsDisabled;
-      bus.$emit('toggleMovement', this.isViewOnlyMod);
+      bus.$emit('toggleMovement', !this.isViewOnlyMod);
     },
     logMove(move) {
       bus.$emit('loadRandomMove', move);
