@@ -105,6 +105,7 @@ export default {
     },
     toggleHide() {
       this.isHidden = !this.isHidden;
+      this.toggleStockfish();
     },
     parseEvaluation(message) {
       const evalRegex = /score (\w+) (-?\d+)/;
@@ -149,7 +150,7 @@ export default {
   border: 1px solid #ddd;
   border-radius: 0 0 8px 8px;
   padding: 16px;
-  max-width: 600px;
+  width: 500px;
   background-color: #f9f9f9;
   margin-left: 0;
 }
