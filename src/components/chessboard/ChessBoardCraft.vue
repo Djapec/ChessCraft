@@ -119,11 +119,11 @@ export default {
           if (move['san'].includes('+')) {
             threats.push({orig: move.from, dest: move.to, brush: 'blue'})
           }
-        });
-      }
 
-      if (this.game.in_check()) {
-        threats.push({ orig: this.getKingSquare(), brush: 'red' });
+          if (this.game.in_check()) {
+            threats.push({ orig: this.getKingSquare(), brush: 'red' });
+          }
+        });
       }
 
       if (history.length > 0) {

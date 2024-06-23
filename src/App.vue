@@ -11,39 +11,16 @@
   </div>
 </template>
 
-<style scoped>
-#app {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.main-container {
-  display: flex;
-  align-items: flex-start;
-  margin-top: 20px; /* Razmak između analysis i ostalih komponenti */
-}
-
-.side-container {
-  display: flex;
-  flex-direction: column;
-  margin-left: 20px; /* Razmak između PGNUploader i side-container */
-}
-</style>
-
-
 <script>
 import analysis from './components/AnalysisBoard.vue';
 import movesControlBoard from './components/MovesControlBoard.vue';
 import engine from './components/Stockfish.vue';
 import PGNUploader from './components/pgn/PgnUploader.vue';
 import bus from './bus.js';
-import fetchPgn from "./components/pgn/FetchPgn.vue";
 
 export default {
   name: 'app',
   components: {
-    fetchPgn,
     analysis,
     engine,
     PGNUploader,
@@ -94,3 +71,23 @@ function getFirstLetter(str) {
 }
 
 </script>
+
+<style scoped>
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.main-container {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.side-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 20px;
+}
+</style>

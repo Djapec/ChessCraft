@@ -39,17 +39,15 @@ export default {
     loadGame(parsedData) {
       this.game = parsedData.chess
       this.parsedPgnData = parsedData
-      this.loadPlayers()
-      this.loadPosition();
-      this.setOnlyViewMod(true)
+      this.loadPlayers() // ne azuriraj ovo
+      this.loadPosition(); // ne azuriraj ovo
+      this.setOnlyViewMod(true) // ne azuriraj ovo
       this.currentChessGame = parsedData.chess;
-      this.currentHistoryIndex = this.game.history().length;
+      this.currentHistoryIndex = this.game.history().length; // ne azuriraj ovo
       this.currentMoveHistory = this.game.history();
       this.initControlBoardMoveList()
     },
     loadRandomMove(move) {
-      console.log(move)
-      console.log(this.currentMoveHistory[move.id - 1]);
       this.currentHistoryIndex = move.id
       let chess = new Chess();
 

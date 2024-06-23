@@ -105,7 +105,7 @@ export default {
       this.parsedPgnGameData = parsedPgnData;
       this.scrollToActiveMove();
     },
-    scrollToActiveMove() {
+    scrollToActiveMove() { // moze da pravi problem
       this.$nextTick(() => {
         const activeMove = this.$el.querySelector('.active');
         if (activeMove) {
@@ -132,7 +132,7 @@ export default {
 .move-list-container {
   border: 1px solid #ddd;
   padding: 16px;
-  max-width: 600px;
+  width: 500px;
   height: 50%;
   background-color: #f9f9f9;
   margin-left: 0;

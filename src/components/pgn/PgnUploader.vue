@@ -2,16 +2,17 @@
   <div class="pgn-uploader">
     <div class="header">
       <h2>Choose Round</h2>
-      <!-- Dropdown za biranje rundi -->
       <select v-model="selectedRound" class="round-select">
         <option v-for="round in rounds" :key="round" :value="round">{{ round }}</option>
       </select>
     </div>
-    <!-- Input za pretragu -->
     <input type="text" v-model="search" placeholder="Search..." class="search-input" />
     <div v-if="games.length" class="games-list">
       <ul>
-        <li v-for="(game, index) in filteredGames" :key="index" @click="loadGame(game.parsedData)">
+        <li v-for="(game, index) in filteredGames"
+            :key="index"
+            @click="selectGame(index, game)"
+            :class="{ 'focused': index === currentGameIndex }">
           <span class="game-index">{{ index + 1 }}.</span>
           <span class="game-name">{{ game.name }}</span>
           <span class="game-result">{{ game.result }}</span>
@@ -25,8 +26,15 @@
 import { parsePGN } from './pgnParser';
 import PGNParser from './PgnParser.vue';
 import bus from "../../bus";
-import {fetchTournament} from "./lib/utils";
-import {generatePgnForRound} from "./api/round/getRound";
+import {
+  createGameLookupMap,
+  fetchIndexData,
+  fetchTournament, generatePgn,
+  getExtendedGamesUrls,
+  getGamesData,
+  validateNumber
+} from "./lib/utils";
+import { generatePgnForRound } from "./api/round/getRound";
 
 export default {
   name: 'PGNUploader',
@@ -36,11 +44,15 @@ export default {
   data() {
     return {
       games: [],
-      loading: false,
       search: '',
       selectedRound: '',
-      tournamentId: '6c053e0e-5411-4310-bff8-8f4c1d7338db',
-      rounds: []
+      tournamentId: 'e634fe2c-f0c1-4b07-9519-2ffaaf2c8fd2', // 'e634fe2c-f0c1-4b07-9519-2ffaaf2c8fd2',
+      rounds: [],
+      intervalId: null,
+      currentGameIndex: null,
+      previousGameIndex: null,
+      currentActiveGame: null,
+      previousResponseMoveLength: 0,
     };
   },
   computed: {
@@ -49,14 +61,18 @@ export default {
     }
   },
   watch: {
-    selectedRound: 'apiGameLoader' // Watcher za promenu vrednosti selectedRound
+    selectedRound: 'apiGameLoader'
   },
   methods: {
     async fetchRounds() {
-      const tournament = await fetchTournament(this.tournamentId);
-      let roundsNumber = tournament.rounds.length;
-      this.rounds = Array.from({ length: roundsNumber }, (_, i) => i + 1);
-      this.selectedRound = this.rounds[0]; // Postavljanje prve opcije kao podrazumevane
+      try {
+        const tournament = await fetchTournament(this.tournamentId);
+        let roundsNumber = tournament.rounds.length;
+        this.rounds = Array.from({ length: roundsNumber }, (_, i) => i + 1);
+        this.selectedRound = this.rounds[0];
+      } catch (error) {
+        console.error("Error fetching rounds: ", error);
+      }
     },
     parseMultiplePGNs(fileContent) {
       const pgns = fileContent.split(/\n\n(?=\[)/);
@@ -75,25 +91,62 @@ export default {
         };
       });
     },
-    handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file && file.name.endsWith('.pgn')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target.result;
-          try {
-            this.loading = true;
-            this.games = this.parseMultiplePGNs(content);
-          } catch (error) {
-            alert('Error parsing PGN file');
-          } finally {
-            this.loading = false;
-          }
-        };
-        reader.readAsText(file);
+    selectGame(index, game) {
+      this.currentGameIndex = index;
+      this.currentActiveGame = game;
+      if (this.currentActiveGame.result === '*') {
+        this.fetchActiveGame()
       } else {
-        alert('Please upload a valid .pgn file');
+        this.loadGame(game.parsedData);
       }
+    },
+    async fetchActiveGame() {
+      if (this.currentGameIndex !== null && this.currentActiveGame.result === '*') {
+        const gameStr = this.currentGameIndex + 1;
+        try {
+          const tournament = await fetchTournament(this.tournamentId);
+          const round = validateNumber(this.selectedRound);
+          const game = validateNumber(gameStr);
+          const indexData = await fetchIndexData(this.tournamentId, [round]);
+
+          const extendedGamesUrls = getExtendedGamesUrls(
+              this.tournamentId,
+              [round],
+              indexData
+          ).filter((g) => g.game === game);
+
+          const gamesData = await getGamesData(extendedGamesUrls);
+          const isMoveListChange = this.previousResponseMoveLength !== gamesData[0].value.moves.length
+          const isActiveGameChange = this.previousGameIndex !== this.currentGameIndex
+
+          if (isMoveListChange || isActiveGameChange) {
+            this.previousResponseMoveLength = gamesData[0].value.moves.length;
+            this.previousGameIndex = this.currentGameIndex;
+            const lookupMap = createGameLookupMap(extendedGamesUrls);
+            const pgn = generatePgn(
+                tournament,
+                indexData,
+                gamesData,
+                extendedGamesUrls,
+                lookupMap
+            );
+            this.loadActiveGame(pgn)
+          }
+        } catch (error) {
+          throw new Error(error);
+        }
+      }
+    },
+    updateGameList(newGameData) {
+      const index = this.currentGameIndex; // Indeks drugog elementa (indeksiranje počinje od 0)
+      if (index >= 0 && index < this.games.length) {
+        this.$set(this.games, index, newGameData); // Ažuriramo element u reaktivnom nizu
+      }
+    },
+    loadActiveGame(pgn) {
+      this.currentActiveGame = this.parseMultiplePGNs(pgn)[0];
+      this.updateGameList(this.currentActiveGame)
+      this.loadGame(this.currentActiveGame.parsedData);
     },
     loadGame(parsedData) {
       bus.$emit('loadGame', parsedData);
@@ -105,9 +158,16 @@ export default {
       }
     }
   },
+  // todo: Ako se response API-ja nije promenio nemoj nista raditi. DONE
+  // todo: Probati samo neako da se doda sledeci potez u vec postojeci mec bez da se sve ucita ponovo
+  // todo: Da se updejtuju rezultati unutar liste kada se promeni live count u responsu
   async created() {
-    await this.apiGameLoader();
     await this.fetchRounds();
+    await this.apiGameLoader();
+    this.intervalId = setInterval(this.fetchActiveGame, 5000);
+  },
+  beforeUnmount() {
+    clearInterval(this.intervalId);
   }
 };
 </script>
@@ -118,7 +178,7 @@ export default {
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
-  max-width: 600px;
+  width: 500px;
   margin-left: 0;
 }
 .header {
@@ -136,12 +196,11 @@ export default {
   min-width: 60px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 8px; /* Zaobljene ivice */
+  border-radius: 8px;
   outline: none;
 }
-/* Stilovi za input za pretragu */
 .search-input {
-  width: calc(100% - 20px); /* Širina u liniji sa pgn-uploader */
+  width: calc(100% - 20px);
   padding: 10px;
   margin-bottom: 20px;
   border: 1px solid #ccc;
@@ -170,5 +229,8 @@ export default {
 .game-result {
   width: 50px;
   text-align: right;
+}
+.games-list li.focused {
+  background-color: #e0e0e0;
 }
 </style>
