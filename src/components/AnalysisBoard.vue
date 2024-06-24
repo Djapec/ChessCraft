@@ -47,6 +47,13 @@ export default {
       this.currentMoveHistory = this.game.history();
       this.initControlBoardMoveList()
     },
+    updateGame(parsedData) {
+      this.game = parsedData.chess
+      this.parsedPgnData = parsedData
+      this.currentChessGame = parsedData.chess;
+      this.currentMoveHistory = this.game.history();
+      this.initControlBoardMoveList() // ovo moze da me zezne
+    },
     loadRandomMove(move) {
       this.currentHistoryIndex = move.id
       let chess = new Chess();
@@ -168,6 +175,9 @@ export default {
       })
       bus.$on('loadGame', (chess) => {
         this.loadGame(chess)
+      })
+      bus.$on('updateGame', (chess) => {
+        this.updateGame(chess)
       })
   },
 }

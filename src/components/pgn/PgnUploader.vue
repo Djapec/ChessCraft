@@ -53,6 +53,7 @@ export default {
       previousGameIndex: null,
       currentActiveGame: null,
       previousResponseMoveLength: 0,
+      isMoveListChangeForCurrentGame: false,
     };
   },
   computed: {
@@ -118,6 +119,7 @@ export default {
           const gamesData = await getGamesData(extendedGamesUrls);
           const isMoveListChange = this.previousResponseMoveLength !== gamesData[0].value.moves.length
           const isActiveGameChange = this.previousGameIndex !== this.currentGameIndex
+          this.isMoveListChangeForCurrentGame = isMoveListChange && !isActiveGameChange
 
           if (isMoveListChange || isActiveGameChange) {
             this.previousResponseMoveLength = gamesData[0].value.moves.length;
@@ -146,10 +148,17 @@ export default {
     loadActiveGame(pgn) {
       this.currentActiveGame = this.parseMultiplePGNs(pgn)[0];
       this.updateGameList(this.currentActiveGame)
-      this.loadGame(this.currentActiveGame.parsedData);
+      if (this.isMoveListChangeForCurrentGame) {
+        this.updateGame(this.currentActiveGame.parsedData);
+      } else {
+        this.loadGame(this.currentActiveGame.parsedData);
+      }
     },
     loadGame(parsedData) {
       bus.$emit('loadGame', parsedData);
+    },
+    updateGame(parsedData) {
+      bus.$emit('updateGame', parsedData);
     },
     async apiGameLoader() {
       if (this.selectedRound) {
@@ -159,7 +168,7 @@ export default {
     }
   },
   // todo: Ako se response API-ja nije promenio nemoj nista raditi. DONE
-  // todo: Probati samo neako da se doda sledeci potez u vec postojeci mec bez da se sve ucita ponovo
+  // todo: Probati samo neako da se doda sledeci potez u vec postojeci mec bez da se sve ucita ponovo. DONE ali treba jos testirati
   // todo: Da se updejtuju rezultati unutar liste kada se promeni live count u responsu
   async created() {
     await this.fetchRounds();
