@@ -17,6 +17,21 @@ export default {
       viewOnly: true
     }
   },
+  props: {
+    parsedGameData: {
+      type: Object,
+    }
+  },
+  watch: {
+    parsedGameData: {
+      immediate: true,
+      handler(newData) {
+        console.log('data')
+        console.log(newData);
+        console.log('newData')
+      }
+    }
+  },
   methods: {
     undo() {
       this.game.undo()
@@ -53,6 +68,10 @@ export default {
       this.currentChessGame = parsedData.chess;
       this.currentMoveHistory = this.game.history();
       this.initControlBoardMoveList() // ovo moze da me zezne
+      if (this.currentHistoryIndex === this.game.history().length - 1) {
+        this.currentHistoryIndex = this.game.history().length;
+        this.loadPosition();
+      }
     },
     loadRandomMove(move) {
       this.currentHistoryIndex = move.id
@@ -146,7 +165,11 @@ export default {
   mounted() {
     this.board.set({
       viewOnly: true
-    })
+    });
+
+    if (this.parsedGameData) {
+      this.loadGame(this.parsedGameData);
+    }
   },
   created() {
       bus.$on('updatePlayersClock', (moveDetails) => {
