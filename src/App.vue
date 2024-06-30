@@ -8,6 +8,7 @@
         <engine/>
       </div>
     </div>
+    <mosaic-view/>
   </div>
 </template>
 
@@ -17,10 +18,12 @@ import movesControlBoard from './components/MovesControlBoard.vue';
 import engine from './components/Stockfish.vue';
 import PGNUploader from './components/pgn/PgnUploader.vue';
 import bus from './bus.js';
+import MosaicView from "@/components/mosaic-view/MosaicView.vue";
 
 export default {
   name: 'app',
   components: {
+    MosaicView,
     analysis,
     engine,
     PGNUploader,
