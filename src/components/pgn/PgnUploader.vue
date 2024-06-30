@@ -6,16 +6,41 @@
         <option v-for="round in rounds" :key="round" :value="round">{{ round }}</option>
       </select>
     </div>
+    <div class="">
+      <input
+          type="checkbox"
+          name="mosaic-view-select-games"
+          id="mosaic-view-select-games"
+          v-model="isMosaicViewEnabled"
+          @click="toggleMosaicViewEnabled()"
+      >
+      Select games for mosaic view
+      <button
+          v-if="this.mosaicViewArray.length > 0"
+          @click="loadMosaicView()"
+      >
+        load mosaic view
+      </button>
+    </div>
     <input type="text" v-model="search" placeholder="Search..." class="search-input" />
     <div v-if="games.length" class="games-list">
       <ul>
         <li v-for="(game, index) in filteredGames"
             :key="index"
-            @click="selectGame(index, game)"
-            :class="{ 'focused': index === currentGameIndex }">
-          <span class="game-index">{{ index + 1 }}.</span>
-          <span class="game-name">{{ game.name }}</span>
-          <span class="game-result">{{ game.result }}</span>
+            :class="{ 'focused': index === currentGameIndex }"
+        >
+          <input
+              type="checkbox"
+              v-if="isMosaicViewEnabled"
+              :disabled="mosaicViewArray.length >= 4 && mosaicViewArray.indexOf(index) === -1"
+              name="mosaic-view-option"
+              @click="addGameToMosaicView(index, game.parsedData)"
+          >
+          <div class="filtered-game-container" @click="selectGame(index, game)">
+            <span class="game-index">{{ index + 1 }}.</span>
+            <span class="game-name">{{ game.name }}</span>
+            <span class="game-result">{{ game.result }}</span>
+          </div>
         </li>
       </ul>
     </div>
@@ -43,6 +68,8 @@ export default {
   },
   data() {
     return {
+      isMosaicViewEnabled: false,
+      mosaicViewArray: [],
       games: [],
       search: '',
       selectedRound: '',
@@ -91,6 +118,31 @@ export default {
           result
         };
       });
+    },
+    addGameToMosaicView(index) {
+      const itemIndex = this.mosaicViewArray.indexOf(index);
+
+      if (this.mosaicViewArray.length < 4 &&
+          itemIndex === -1) {
+        this.mosaicViewArray.push(index);
+      } else if (itemIndex > -1) {
+        this.mosaicViewArray.splice(itemIndex, 1);
+      }
+      console.log(this.mosaicViewArray);
+    },
+    toggleMosaicViewEnabled() {
+      this.isMosaicViewEnabled = !this.isMosaicViewEnabled;
+      if (!this.isMosaicViewEnabled) {
+        this.mosaicViewArray = [];
+      }
+    },
+    loadMosaicView() {
+      const parsedDataArray = [];
+      for (const index of this.mosaicViewArray) {
+        parsedDataArray.push(this.filteredGames[index].parsedData);
+      }
+
+      bus.$emit('loadMosaicView', parsedDataArray);
     },
     selectGame(index, game) {
       this.currentGameIndex = index;
@@ -219,14 +271,19 @@ export default {
   list-style-type: none;
   padding: 0;
 }
-.games-list li {
+.games-list ul li {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
+}
+.filtered-game-container  {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  width: 100%;
   border-bottom: 1px solid #ddd;
   cursor: pointer;
 }
-.games-list li:hover {
+.filtered-game-container:hover {
   background-color: #f0f0f0;
 }
 .game-index {
