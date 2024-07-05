@@ -86,13 +86,15 @@ function getFormattedMoves(moves) {
             continue;
         }
 
-        if (!time || isNaN(parseInt(time.split('+')[0]))) {
+        if (!time || isNaN(parseInt(time.split('+')[0])) || isNaN(parseInt(time.split('+')[1]))) {
             // If time is missing or invalid, just add the move without the clock time
             str += `${move} `;
         } else {
-            const seconds = parseInt(time.split('+')[0]);
-            const clockTime = convertSecondsToClock(seconds);
-            str += `${move} {[%clk ${clockTime}]} `;
+            const mainTimeSeconds = parseInt(time.split('+')[0]);
+            const emtSeconds = parseInt(time.split('+')[1]);
+            const mainTime = convertSecondsToClock(mainTimeSeconds);
+            const emtTime = convertSecondsToClock(emtSeconds);
+            str += `${move} {[%clk ${mainTime}]} {[%emt ${emtTime}]} `;
         }
     }
 
@@ -108,6 +110,7 @@ function getPlayerFullName(player) {
 export function parseToPgn(tournament, pairing, game, round, date) {
     const event = tournament.name || '?';
     const site = tournament.location || '?';
+    const timeControl = tournament.timecontrol || '?';
     const formattedDate = date ? convertDateFormat(date) : '?';
     const white = getPlayerFullName(pairing.white);
     const black = getPlayerFullName(pairing.black);
@@ -122,6 +125,7 @@ export function parseToPgn(tournament, pairing, game, round, date) {
         `[Black "${black}"]`,
         `[Result "${result}"]`,
         `[PlyCount "${plyCount}"]`,
+        `[TimeControl "${timeControl}"]`,
     ].join('\n');
     let pgn = meta;
     pgn += '\n\n';

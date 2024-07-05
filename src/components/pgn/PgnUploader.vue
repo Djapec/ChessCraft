@@ -48,7 +48,6 @@
 </template>
 
 <script>
-import { parsePGN } from './pgnParser';
 import PGNParser from './PgnParser.vue';
 import bus from "../../bus";
 import {
@@ -60,6 +59,7 @@ import {
   validateNumber
 } from "./lib/utils";
 import { generatePgnForRound } from "./api/round/getRound";
+import {addDelayToTime, clonePGN, getCurrentMove, parsePgnWithDelay, parseTimeToDate} from "./pgnParserWithDelay";
 
 export default {
   name: 'PGNUploader',
@@ -81,6 +81,9 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
+      delay: 5,
+      startTournamentTime: new Date(new Date().setHours(8, 29, 0, 0)),
+      timeoutIds: []
     };
   },
   computed: {
@@ -105,7 +108,8 @@ export default {
     parseMultiplePGNs(fileContent) {
       const pgns = fileContent.split(/\n\n(?=\[)/);
       return pgns.map(pgn => {
-        const parsedData = parsePGN(pgn);
+        const parsedData = parsePgnWithDelay(pgn, this.startTournamentTime, this.delay)
+        //const parsedData = parsePGN(pgn);
         const whitePlayer = parsedData.metadata.White || "Unknown";
         const blackPlayer = parsedData.metadata.Black || "Unknown";
         const result = parsedData.metadata.Result || "N/A";
@@ -145,7 +149,13 @@ export default {
     selectGame(index, game) {
       this.currentGameIndex = index;
       this.currentActiveGame = game;
-      if (this.currentActiveGame.result === '*') {
+      if (this.delay > 0) {
+        // game.parsedData.halfMoves.forEach((nextMove) => {
+        //   console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}\n`)
+        // })
+        this.clearAllTimeouts()
+        this.presentGameWithDelay()
+      } else if (this.currentActiveGame.result === '*') {
         this.fetchActiveGame()
       } else {
         this.loadGame(game.parsedData);
@@ -188,6 +198,66 @@ export default {
           throw new Error(error);
         }
       }
+    },
+    presentGameWithDelay() {
+      const test = getCurrentMove(this.currentActiveGame.parsedData.halfMoves, new Date())
+      if (test) {
+        let game = clonePGN(this.currentActiveGame.parsedData, test.id)
+        this.loadGame(game); // ovo gore treba da ide u startMoveIntervals2
+        this.startMoveIntervals(this.currentActiveGame.parsedData)
+      }
+    },
+    startMoveIntervals(parsedData) {
+      // Prvo očisti sve postojeće tajmere
+      this.clearAllTimeouts();
+
+      const now = new Date();
+
+      // Filtriraj poteze koji su već prošli
+      const futureMoves = parsedData.halfMoves.filter(move => {
+        const targetTime = parseTimeToDate(move.time);
+        return targetTime > now;
+      });
+
+      // Ako nema budućih poteza, izađi iz funkcije
+      if (futureMoves.length === 0) {
+        console.log("Svi potezi su već prošli.");
+        this.loadGame(parsedData);
+        return;
+      }
+
+      const scheduleNextMove = (moves, index) => {
+        if (index >= moves.length) return;
+
+        const move = moves[index];
+        const targetTime = parseTimeToDate(move.time);
+        const delay = targetTime - new Date(); // Kašnjenje u milisekundama
+
+        const timeoutId = setTimeout(() => {
+          const test = getCurrentMove(this.currentActiveGame.parsedData.halfMoves, new Date());
+          let game = clonePGN(this.currentActiveGame.parsedData, test.id);
+
+          console.log(`Move ${test.id}: ${move.color} plays ${move.move} at ${move.time}`);
+          this.loadGame(game);
+
+          // Planiraj sledeći potez
+          scheduleNextMove(moves, index + 1);
+        }, delay);
+
+        this.timeoutIds.push(timeoutId);
+      };
+
+      // Planiraj prvi budući potez
+      scheduleNextMove(futureMoves, 0);
+
+      // Prikaz prvog poteza odmah ako je propušten
+      const nextMove = futureMoves[0];
+      console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}`);
+    },
+
+    clearAllTimeouts() {
+      this.timeoutIds.forEach(timeoutId => clearTimeout(timeoutId));
+      this.timeoutIds = [];
     },
     updateGameList(newGameData) {
       const index = this.currentGameIndex; // Indeks drugog elementa (indeksiranje počinje od 0)
