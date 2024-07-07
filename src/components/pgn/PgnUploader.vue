@@ -17,7 +17,7 @@
       Select games for mosaic view
       <button
           v-if="this.mosaicViewArray.length > 0"
-          @click="loadMosaicView()"
+          @click="sendParsedGamesToMosaicView()"
       >
         load mosaic view
       </button>
@@ -34,7 +34,7 @@
               v-if="isMosaicViewEnabled"
               :disabled="mosaicViewArray.length >= 4 && mosaicViewArray.indexOf(index) === -1"
               name="mosaic-view-option"
-              @click="addGameToMosaicView(index, game.parsedData)"
+              @click="addGameToMosaicView(index)"
           >
           <div class="filtered-game-container" @click="selectGame(index, game)">
             <span class="game-index">{{ index + 1 }}.</span>
@@ -119,30 +119,28 @@ export default {
         };
       });
     },
-    addGameToMosaicView(index) {
-      const itemIndex = this.mosaicViewArray.indexOf(index);
-
-      if (this.mosaicViewArray.length < 4 &&
-          itemIndex === -1) {
-        this.mosaicViewArray.push(index);
-      } else if (itemIndex > -1) {
-        this.mosaicViewArray.splice(itemIndex, 1);
-      }
-      console.log(this.mosaicViewArray);
-    },
     toggleMosaicViewEnabled() {
       this.isMosaicViewEnabled = !this.isMosaicViewEnabled;
       if (!this.isMosaicViewEnabled) {
         this.mosaicViewArray = [];
       }
     },
-    loadMosaicView() {
+    addGameToMosaicView(index) {
+      const itemIndex = this.mosaicViewArray.indexOf(index);
+
+      if (this.mosaicViewArray.length < 4 && itemIndex === -1) {
+        this.mosaicViewArray.push(index);
+      } else if (itemIndex > -1) {
+        this.mosaicViewArray.splice(itemIndex, 1);
+      }
+    },
+    sendParsedGamesToMosaicView() {
       const parsedDataArray = [];
       for (const index of this.mosaicViewArray) {
         parsedDataArray.push(this.filteredGames[index].parsedData);
       }
 
-      bus.$emit('loadMosaicView', parsedDataArray);
+      bus.$emit('generateMosaicView', parsedDataArray);
     },
     selectGame(index, game) {
       this.currentGameIndex = index;
