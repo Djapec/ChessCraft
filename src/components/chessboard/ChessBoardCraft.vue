@@ -1,10 +1,18 @@
 <template>
-  <div>
-    <div><p> {{blackPlayer}} | {{blackPlayerClock}} </p></div>
+  <div class='chessboard-craft-container'>
+    <div class='player-name-clock'>
+      <p>
+        {{blackPlayer}} | {{blackPlayerClock}}
+      </p>
+    </div>
     <div class="blue merida">
       <div ref="board" class="cg-board-wrap"></div> <br>
     </div>
-    <div><p> {{whitePlayer}} | {{whitePlayerClock}} </p></div>
+    <div class='player-name-clock'>
+      <p>
+        {{whitePlayer}} | {{whitePlayerClock}}
+      </p>
+    </div>
   </div>
 </template>
 
@@ -40,11 +48,11 @@ export default {
     onPromotion: {
       type: Function,
       default: () => {
-        let piece;
+        let piece = 'q';
         while (!['q', 'r', 'b', 'n'].includes(piece)) {
           piece = prompt("Promote pawn to (q - queen, r - rook, b - bishop, n - knight):").toLowerCase();
         }
-        return piece || 'q';
+        return piece;
       },
     },
     orientation: {

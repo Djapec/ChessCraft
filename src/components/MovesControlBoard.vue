@@ -1,7 +1,7 @@
 <template>
   <div class="move-list-container">
     <div class="header">
-      <span>Enable movements</span>
+      <span>Enable movement</span>
       <label class="switch">
         <input type="checkbox" v-model="isViewOnlyMod" @change="toggleMovement">
         <span class="slider round"></span>
