@@ -17,21 +17,6 @@ export default {
       viewOnly: true
     }
   },
-  props: {
-    parsedGameData: {
-      type: Object,
-    }
-  },
-  watch: {
-    parsedGameData: {
-      immediate: true,
-      handler(newData) {
-        console.log('data')
-        console.log(newData);
-        console.log('newData')
-      }
-    }
-  },
   methods: {
     undo() {
       this.game.undo()
@@ -166,10 +151,6 @@ export default {
     this.board.set({
       viewOnly: true
     });
-
-    if (this.parsedGameData) {
-      this.loadGame(this.parsedGameData);
-    }
   },
   created() {
       bus.$on('updatePlayersClock', (moveDetails) => {
