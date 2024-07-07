@@ -59,7 +59,12 @@ import {
   validateNumber
 } from "./lib/utils";
 import { generatePgnForRound } from "./api/round/getRound";
-import {addDelayToTime, clonePGN, getCurrentMove, parsePgnWithDelay, parseTimeToDate} from "./pgnParserWithDelay";
+import {
+  partlyClonePgn,
+  getCurrentMoveScheduledByTime,
+  parsePgnWithDelay,
+  parseTimeToDate
+} from "./pgnParserWithDelay";
 
 export default {
   name: 'PGNUploader',
@@ -75,14 +80,15 @@ export default {
       selectedRound: '',
       tournamentId: 'e634fe2c-f0c1-4b07-9519-2ffaaf2c8fd2', // 'e634fe2c-f0c1-4b07-9519-2ffaaf2c8fd2',
       rounds: [],
-      intervalId: null,
+      intervalActiveGameFetch: null,
+      intervalActiveRoundFetch: null,
       currentGameIndex: null,
       previousGameIndex: null,
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 5,
-      startTournamentTime: new Date(new Date().setHours(8, 29, 0, 0)),
+      delay: 15,
+      startTournamentTime: new Date(new Date().setHours(15, 17, 0, 0)),
       timeoutIds: []
     };
   },
@@ -92,7 +98,7 @@ export default {
     }
   },
   watch: {
-    selectedRound: 'apiGameLoader'
+    selectedRound: 'generatePgnForActiveRound'
   },
   methods: {
     async fetchRounds() {
@@ -197,20 +203,20 @@ export default {
         } catch (error) {
           throw new Error(error);
         }
+      } else {
+        clearInterval(this.intervalActiveGameFetch);
       }
     },
     presentGameWithDelay() {
-      const test = getCurrentMove(this.currentActiveGame.parsedData.halfMoves, new Date())
-      if (test) {
-        let game = clonePGN(this.currentActiveGame.parsedData, test.id)
-        this.loadGame(game); // ovo gore treba da ide u startMoveIntervals2
+      const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date())
+      if (moveScheduledByTime) {
+        let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveScheduledByTime.id)
+        this.loadGame(partlyClonedGame); // ovo gore treba da ide u startMoveIntervals2
         this.startMoveIntervals(this.currentActiveGame.parsedData)
       }
     },
     startMoveIntervals(parsedData) {
-      // Prvo očisti sve postojeće tajmere
       this.clearAllTimeouts();
-
       const now = new Date();
 
       // Filtriraj poteze koji su već prošli
@@ -234,11 +240,11 @@ export default {
         const delay = targetTime - new Date(); // Kašnjenje u milisekundama
 
         const timeoutId = setTimeout(() => {
-          const test = getCurrentMove(this.currentActiveGame.parsedData.halfMoves, new Date());
-          let game = clonePGN(this.currentActiveGame.parsedData, test.id);
+          const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date());
+          let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveScheduledByTime.id);
 
-          console.log(`Move ${test.id}: ${move.color} plays ${move.move} at ${move.time}`);
-          this.loadGame(game);
+          console.log(`Move ${moveScheduledByTime.id}: ${move.color} plays ${move.move} at ${move.time}`);
+          this.updateGame(partlyClonedGame);
 
           // Planiraj sledeći potez
           scheduleNextMove(moves, index + 1);
@@ -254,7 +260,6 @@ export default {
       const nextMove = futureMoves[0];
       console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}`);
     },
-
     clearAllTimeouts() {
       this.timeoutIds.forEach(timeoutId => clearTimeout(timeoutId));
       this.timeoutIds = [];
@@ -280,23 +285,32 @@ export default {
     updateGame(parsedData) {
       bus.$emit('updateGame', parsedData);
     },
-    async apiGameLoader() {
+    async generatePgnForActiveRound() {
       if (this.selectedRound) {
         const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
         this.games = this.parseMultiplePGNs(pgn);
       }
+    },
+    //todo: testirati ovo, ne bi smelo da ima uticaj na igru
+    async fetchActiveRound() {
+      const isRoundHaveUnfinishedGames = this.games.filter(game => game.result === '*').length === 0;
+      if (!isRoundHaveUnfinishedGames) {
+        await this.generatePgnForActiveRound()
+      } else {
+        clearInterval(this.intervalActiveRoundFetch);
+      }
     }
   },
-  // todo: Ako se response API-ja nije promenio nemoj nista raditi. DONE
-  // todo: Probati samo neako da se doda sledeci potez u vec postojeci mec bez da se sve ucita ponovo. DONE ali treba jos testirati
-  // todo: Da se updejtuju rezultati unutar liste kada se promeni live count u responsu
   async created() {
     await this.fetchRounds();
-    await this.apiGameLoader();
-    this.intervalId = setInterval(this.fetchActiveGame, 5000);
+    await this.generatePgnForActiveRound();
+    this.intervalActiveGameFetch = setInterval(this.fetchActiveGame, 5000);
+    this.intervalActiveRoundFetch =
+        setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay - 1) * 60000));
   },
   beforeUnmount() {
-    clearInterval(this.intervalId);
+    clearInterval(this.intervalActiveGameFetch);
+    clearInterval(this.intervalActiveRoundFetch);
   }
 };
 </script>

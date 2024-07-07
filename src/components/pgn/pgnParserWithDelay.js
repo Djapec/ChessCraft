@@ -83,7 +83,7 @@ function parseTimeToSeconds(timeStr) {
     return hours * 3600 + minutes * 60 + seconds;
 }
 
-export function clonePGN(parsedPGN, moveLimit) {
+export function partlyClonePgn(parsedPGN, moveLimit) {
     const { metadata, moves, chess: originalChess, halfMoves: originalHalfMoves } = parsedPGN;
 
     // Create a new Chess instance and apply moves up to the moveLimit
@@ -125,7 +125,7 @@ export function parseTimeStringToTimeObject(timeString) {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
 }
 
-export function getCurrentMove(halfMoves, currentTime) {
+export function getCurrentMoveScheduledByTime(halfMoves, currentTime) {
     let lastMove = null;
 
     for (const move of halfMoves) {

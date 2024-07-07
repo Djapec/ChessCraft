@@ -39,11 +39,11 @@ export default {
     loadGame(parsedData) {
       this.game = parsedData.chess
       this.parsedPgnData = parsedData
-      this.loadPlayers() // ne azuriraj ovo
-      this.loadPosition(); // ne azuriraj ovo
-      this.setOnlyViewMod(true) // ne azuriraj ovo
+      this.loadPlayers()
+      this.loadPosition();
+      this.setOnlyViewMod(true)
       this.currentChessGame = parsedData.chess;
-      this.currentHistoryIndex = this.game.history().length; // ne azuriraj ovo
+      this.currentHistoryIndex = this.game.history().length;
       this.currentMoveHistory = this.game.history();
       this.initControlBoardMoveList()
     },
@@ -52,11 +52,11 @@ export default {
       this.parsedPgnData = parsedData
       this.currentChessGame = parsedData.chess;
       this.currentMoveHistory = this.game.history();
-      this.initControlBoardMoveList() // ovo moze da me zezne
       if (this.currentHistoryIndex === this.game.history().length - 1) {
         this.currentHistoryIndex = this.game.history().length;
-        this.loadPosition();
+        this.loadPosition()
       }
+      this.initControlBoardMoveList()
     },
     loadRandomMove(move) {
       this.currentHistoryIndex = move.id
