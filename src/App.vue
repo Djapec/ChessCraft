@@ -1,14 +1,24 @@
 <template>
   <div id="app">
-    <analysis :fen="currentFen" @onMove="showInfo" :showThreats="false"/>
-    <div class="main-container">
-      <PGNUploader />
-      <div class="side-container">
-        <movesControlBoard/>
-        <engine/>
+    <div class="left-side">
+      <div class="main-container">
+        <PGNUploader />
+      </div>
+      <div class="board-with-controls">
+        <analysis
+            :fen="currentFen"
+            :showThreats="false"
+            @onMove="showInfo"
+        />
+        <div class="side-container">
+          <movesControlBoard/>
+          <engine/>
+        </div>
       </div>
     </div>
-    <mosaic-view/>
+    <div class="right-side">
+      <mosaic-view/>
+    </div>
   </div>
 </template>
 
@@ -76,21 +86,40 @@ function getFirstLetter(str) {
 </script>
 
 <style scoped>
-#app {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
+  #app {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
 
-.main-container {
-  display: flex;
-  align-items: flex-start;
-  margin-top: 20px;
-}
+    @media screen and (max-width: 2100px) {
+      flex-direction: column;
+    }
+  }
 
-.side-container {
-  display: flex;
-  flex-direction: column;
-  margin-left: 20px;
-}
+  .left-side {
+    display: flex;
+
+    .board-with-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      .side-container {
+        display: flex;
+        flex-direction: column;
+        margin-left: 20px;
+      }
+    }
+
+    .main-container {
+      display: flex;
+      align-items: flex-start;
+      margin-top: 20px;
+    }
+  }
+
+  .right-side {
+
+  }
 </style>
