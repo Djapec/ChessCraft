@@ -8,30 +8,69 @@
 </template>
 
 <script>
-  import MosaicViewBoard from "@/components/mosaic-view/MosaicViewBoard.vue";
-  import bus from "@/bus";
+import MosaicViewBoard from "@/components/mosaic-view/MosaicViewBoard.vue";
+import bus from "@/bus";
+import {getCurrentMoveScheduledByTime, partlyClonePgn} from "../pgn/pgnParserWithDelay";
 
-  export default {
-    name: 'MosaicView',
-    components: { MosaicViewBoard },
-    data () {
-      return {
-        parsedGames: [{}, {}, {}, {}],
-      }
-    },
-    created() {
-      bus.$on('generateMosaicView', (items) => {
-        this.parsedGames = items;
+export default {
+  name: 'MosaicView',
+  components: { MosaicViewBoard },
+  data() {
+    return {
+      parsedGames: [{}, {}, {}, {}],
+      workers: []
+    }
+  },
+  created() {
+    bus.$on('generateMosaicView', (items) => {
+      this.parsedGames = items;
+      this.startProcessingGames();
+    });
+  },
+  methods: {
+    startProcessingGames() {
+      this.parsedGames.forEach((game, index) => {
+        if (game?.chess) {
+          this.presentGameWithDelay(game, index)
+          // game, {index, game.halfMoves[index]}
+          this.startWorkerForGame(game, index);
+        }
       });
     },
+    presentGameWithDelay(parsedData, index) {
+      const moveScheduledByTime = getCurrentMoveScheduledByTime(parsedData.halfMoves, new Date())
+      if (moveScheduledByTime) {
+        let partlyClonedGame = partlyClonePgn(parsedData, moveScheduledByTime.id)
+        this.updateParsedGame(partlyClonedGame, index)
+      }
+    },
+    startWorkerForGame(parsedData, gameIndex) {
+      const worker = new Worker("mosaicViewWorker.js");
+
+      worker.onmessage = (e) => {
+        if (e.data.status === "complete" || e.data.status === "stopped") {
+          worker.terminate();
+        } else if (e.data.status === "update") {
+          let partlyClonedGame = partlyClonePgn(parsedData ,e.data.moveScheduledByTime.id)
+          this.updateParsedGame(partlyClonedGame, e.data.gameIndex)
+        }
+      };
+
+      worker.postMessage({ gameIndex, parsedData: JSON.parse(JSON.stringify(parsedData)) });
+      this.workers.push(worker);
+    },
+    updateParsedGame(newGameData, gameIndex) {
+      this.parsedGames[gameIndex] = newGameData;
+    }
   }
+}
 </script>
 
 <style scoped>
-  .mosaic-view-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    grid-gap: 4rem;
-  }
+.mosaic-view-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  grid-gap: 4rem;
+}
 </style>
