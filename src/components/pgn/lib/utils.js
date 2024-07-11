@@ -35,7 +35,7 @@ export async function getGamesData(games) {
     return await Promise.allSettled(gamesResponses.map((prom) => prom.json()));
 }
 
-export function getExtendedGamesUrls(id, roundsWithGames, indexData) {
+export function getExtendedGamesUrls(id, roundsWithGames, indexData, desiredPairs = null) {
     return roundsWithGames.flatMap((round, rndIdx) => {
         return Array.from({ length: indexData[rndIdx].pairings.length }, (_, i) => {
             return {
@@ -43,7 +43,7 @@ export function getExtendedGamesUrls(id, roundsWithGames, indexData) {
                 round: round,
                 game: i + 1,
             };
-        });
+        }).filter(pair => !desiredPairs || desiredPairs.includes(pair.game));
     });
 }
 
