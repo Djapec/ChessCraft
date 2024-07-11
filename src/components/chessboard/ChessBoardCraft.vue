@@ -119,7 +119,7 @@ export default {
       let threats = []
       if (showAllThreats) {
         moves.forEach(function (move) {
-          threats.push({orig: move.to, brush: 'yellow'})
+          threats.push({orig: move.to, brush: 'green'})
           if (move['captured']) {
             threats.push({orig: move.from, dest: move.to, brush: 'red'})
           }
@@ -128,15 +128,15 @@ export default {
             threats.push({orig: move.from, dest: move.to, brush: 'blue'})
           }
 
-          if (this.game.in_check()) {
-            threats.push({ orig: this.getKingSquare(), brush: 'red' });
-          }
+          // if (this.game.in_check()) {
+          //   threats.push({ orig: this.getKingSquare(), brush: 'red' });
+          // }
         });
       }
 
       if (history.length > 0) {
         const lastMove = history[history.length - 1];
-        threats.push({ orig: lastMove.from, dest: lastMove.to, brush: 'green' });
+        threats.push({ orig: lastMove.from, dest: lastMove.to, brush: 'yellow' });
       }
 
       this.board.setShapes(threats);
