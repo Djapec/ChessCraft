@@ -16,7 +16,7 @@
       >
       Select games for mosaic view
       <button
-          v-if="this.mosaicViewArray.length > 0"
+          v-if="this.mosaicViewGamesIndices.length > 0"
           @click="sendParsedGamesToMosaicView()"
       >
         load mosaic view
@@ -32,7 +32,7 @@
           <input
               type="checkbox"
               v-if="isMosaicViewEnabled"
-              :disabled="mosaicViewArray.length >= 4 && mosaicViewArray.indexOf(index) === -1"
+              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.indexOf(index) === -1"
               name="mosaic-view-option"
               @click="addGameToMosaicView(index)"
           >
@@ -74,7 +74,7 @@ export default {
   data() {
     return {
       isMosaicViewEnabled: false,
-      mosaicViewArray: [],
+      mosaicViewGamesIndices: [],
       games: [],
       search: '',
       selectedRound: '',
@@ -87,8 +87,8 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 15,
-      startTournamentTime: new Date(new Date().setHours(15, 17, 0, 0)),
+      delay: 14,
+      startTournamentTime: new Date(new Date().setHours(13, 6, 0, 0)),
       timeoutIds: []
     };
   },
@@ -132,21 +132,21 @@ export default {
     toggleMosaicViewEnabled() {
       this.isMosaicViewEnabled = !this.isMosaicViewEnabled;
       if (!this.isMosaicViewEnabled) {
-        this.mosaicViewArray = [];
+        this.mosaicViewGamesIndices = [];
       }
     },
     addGameToMosaicView(index) {
-      const itemIndex = this.mosaicViewArray.indexOf(index);
+      const itemIndex = this.mosaicViewGamesIndices.indexOf(index);
 
-      if (this.mosaicViewArray.length < 4 && itemIndex === -1) {
-        this.mosaicViewArray.push(index);
+      if (this.mosaicViewGamesIndices.length < 4 && itemIndex === -1) {
+        this.mosaicViewGamesIndices.push(index);
       } else if (itemIndex > -1) {
-        this.mosaicViewArray.splice(itemIndex, 1);
+        this.mosaicViewGamesIndices.splice(itemIndex, 1);
       }
     },
     sendParsedGamesToMosaicView() {
       const parsedDataArray = [];
-      for (const index of this.mosaicViewArray) {
+      for (const index of this.mosaicViewGamesIndices) {
         parsedDataArray.push(this.filteredGames[index].parsedData);
       }
 
@@ -155,10 +155,7 @@ export default {
     selectGame(index, game) {
       this.currentGameIndex = index;
       this.currentActiveGame = game;
-      if (this.delay > 0) {
-        // game.parsedData.halfMoves.forEach((nextMove) => {
-        //   console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}\n`)
-        // })
+      if (this.delay > 0) { // todo: fix this
         this.clearAllTimeouts()
         this.presentGameWithDelay()
       } else if (this.currentActiveGame.result === '*') {
@@ -207,11 +204,33 @@ export default {
         clearInterval(this.intervalActiveGameFetch);
       }
     },
+    async fetchActiveMosaicViewGamesFetch() { //todo: potrebno je testiranje
+      if (this.delay > 0 && this.mosaicViewGamesIndices.length >= 2) {
+        const updatableMosaicViewGames = this.mosaicViewGamesIndices.filter(
+            index => this.filteredGames[index].parsedData.result === '*'
+        );
+
+        if (updatableMosaicViewGames.length > 1) {
+          const pgn = await generatePgnForRound(
+              this.tournamentId, this.selectedRound, updatableMosaicViewGames.map(i => i - 1)
+          );
+          const updateMosaicViewGamesPgn = this.parseMultiplePGNs(pgn);
+          updateMosaicViewGamesPgn.forEach(targetItem => {
+            const index = this.games.findIndex(originalItem => originalItem.name === targetItem.name);
+            if (index !== -1)
+              this.games[index] = targetItem;
+          });
+          this.sendParsedGamesToMosaicView()
+        }
+      } else {
+        clearInterval(this.intervalActiveMosaicViewGamesFetch);
+      }
+    },
     presentGameWithDelay() {
       const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date())
       if (moveScheduledByTime) {
         let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveScheduledByTime.id)
-        this.loadGame(partlyClonedGame); // ovo gore treba da ide u startMoveIntervals2
+        this.loadGame(partlyClonedGame); // mozda ovo nije potrebno
         this.startMoveIntervals(this.currentActiveGame.parsedData)
       }
     },
@@ -305,11 +324,13 @@ export default {
     await this.fetchRounds();
     await this.generatePgnForActiveRound();
     this.intervalActiveGameFetch = setInterval(this.fetchActiveGame, 5000);
+    this.intervalActiveMosaicViewGamesFetch = setInterval(this.fetchActiveMosaicViewGamesFetch, 5000);
     this.intervalActiveRoundFetch =
         setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay - 1) * 60000));
   },
   beforeUnmount() {
     clearInterval(this.intervalActiveGameFetch);
+    clearInterval(this.intervalActiveMosaicViewGamesFetch);
     clearInterval(this.intervalActiveRoundFetch);
   }
 };
