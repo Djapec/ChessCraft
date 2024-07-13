@@ -27,7 +27,7 @@ export default {
       this.startProcessingGames();
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.stopAllWorkers();
   },
   methods: {

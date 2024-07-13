@@ -87,8 +87,8 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 14,
-      startTournamentTime: new Date(new Date().setHours(13, 6, 0, 0)),
+      delay: 5,
+      startTournamentTime: new Date(new Date().setHours(19, 7, 0, 0)),
       timeoutIds: []
     };
   },
@@ -308,9 +308,11 @@ export default {
       if (this.selectedRound) {
         const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
         this.games = this.parseMultiplePGNs(pgn);
+        if (this.this.mosaicViewGamesIndices > 1) {
+          this.sendParsedGamesToMosaicView()
+        }
       }
     },
-    //todo: testirati ovo, ne bi smelo da ima uticaj na igru
     async fetchActiveRound() {
       const isRoundHaveUnfinishedGames = this.games.filter(game => game.result === '*').length === 0;
       if (!isRoundHaveUnfinishedGames) {
