@@ -27,12 +27,15 @@ export default {
       this.startProcessingGames();
     });
   },
+  beforeDestroy() {
+    this.stopAllWorkers();
+  },
   methods: {
     startProcessingGames() {
+      this.stopAllWorkers();
       this.parsedGames.forEach((game, index) => {
         if (game?.chess) {
           this.presentGameWithDelay(game, index)
-          // game, {index, game.halfMoves[index]}
           this.startWorkerForGame(game, index);
         }
       });
@@ -61,6 +64,10 @@ export default {
     },
     updateParsedGame(newGameData, gameIndex) {
       this.parsedGames[gameIndex] = newGameData;
+    },
+    stopAllWorkers() {
+      this.workers.forEach(worker => worker.terminate());
+      this.workers = [];
     }
   }
 }
