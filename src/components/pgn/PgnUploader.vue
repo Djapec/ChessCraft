@@ -308,7 +308,7 @@ export default {
       if (this.selectedRound) {
         const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
         this.games = this.parseMultiplePGNs(pgn);
-        if (this.this.mosaicViewGamesIndices > 1) {
+        if (this.mosaicViewGamesIndices > 1) {
           this.sendParsedGamesToMosaicView()
         }
       }

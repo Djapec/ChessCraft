@@ -8,32 +8,32 @@
       </label>
     </div>
     <div class="move-list">
-      <table ref="moveTable">
+      <table>
         <thead>
-        <tr>
-          <th></th>
-          <th></th>
-          <th></th>
-        </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="(move, index) in movePairs" :key="index">
-          <td>{{ index + 1 }}.</td>
-          <td
-              :class="{ active: isActiveMove(move.white) }"
-              @click="logMove(move.white)"
-              v-if="move.white"
-          >
-            {{ move.white.move }}
-          </td>
-          <td
-              :class="{ active: isActiveMove(move.black) }"
-              @click="logMove(move.black)"
-              v-if="move.black"
-          >
-            {{ move.black.move }}
-          </td>
-        </tr>
+          <tr v-for="(move, index) in movePairs" :key="index">
+            <td>{{ index + 1 }}.</td>
+            <td
+                v-if="move.white"
+                :class="{ active: isActiveMove(move.white) }"
+                @click="logMove(move.white)"
+            >
+              {{ move.white.move }}
+            </td>
+            <td
+                v-if="move.black"
+                :class="{ active: isActiveMove(move.black) }"
+                @click="logMove(move.black)"
+            >
+              {{ move.black.move }}
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -78,7 +78,6 @@ export default {
   },
   methods: {
     isActiveMove(move) {
-      if (!move) return false;
       this.scrollToActiveMove();
       return this.currentMoveIndex === move.id;
     },
@@ -133,7 +132,7 @@ export default {
   border: 1px solid #ddd;
   padding: 16px;
   width: 500px;
-  height: 50%;
+  height: 100%;
   background-color: #f9f9f9;
   margin-left: 0;
   border-radius: 8px 8px 0 0;
@@ -212,6 +211,7 @@ th, td {
   display: flex;
   justify-content: center;
   gap: 8px;
+  margin-top: 2rem;
 }
 
 .move-controls button {
