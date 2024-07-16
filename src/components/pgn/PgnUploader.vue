@@ -87,7 +87,7 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 5,
+      delay: 0, // !TODO: make dynamic depending on the audience
       startTournamentTime: new Date(new Date().setHours(19, 7, 0, 0)),
       timeoutIds: []
     };
