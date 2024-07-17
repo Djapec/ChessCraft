@@ -40,8 +40,7 @@
     <div class="move-controls">
       <button @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
       <button @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
-      <button>&#9654;</button>
-      <!--      <button class="button is-light" @click="undo()" :disabled="!isButtonsDisabled">UNDO</button>-->
+      <button class="button is-light undo-button" @click="undo()" :disabled="!isButtonsDisabled">&#8635;</button>
       <button @click="loadNextMove()" :disabled="isButtonsDisabled">&#8250;</button>
       <button @click="loadLastMove()" :disabled="isButtonsDisabled">&#187;</button>
     </div>
@@ -99,6 +98,9 @@ export default {
     },
     loadLastMove() {
       bus.$emit('lastMove');
+    },
+    undo() {
+      bus.$emit('undo');
     },
     loadGameMoveList(parsedPgnData) {
       this.parsedPgnGameData = parsedPgnData;
@@ -218,13 +220,23 @@ th, td {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 25px;
   margin: 0 20px;
 }
 
 .active {
   background-color: #90A4AE;
   transition: background-color 0.3s ease;
+}
+
+.undo-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
 }
 </style>
 

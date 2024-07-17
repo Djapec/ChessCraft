@@ -13,6 +13,7 @@
         {{whitePlayer}} | {{whitePlayerClock}}
       </p>
     </div>
+    <Modal :isVisible="isModalVisible" @close="closeModal" @select="selectPromotion" />
   </div>
 </template>
 
@@ -20,16 +21,23 @@
 import { Chess } from "../../../public/chess.min.js"
 import { Chessground } from 'chessground'
 import { uniques } from './Util.js'
+
 import "./style/theme.css"
+import Modal from "../promotion-modal/PromotionModal.vue";
 
 export default {
   name: 'chessboardCraft',
+  components: {
+    Modal
+  },
   data() {
     return {
       whitePlayer: "Player 1",
       blackPlayer: "Player 2",
       whitePlayerClock: "",
       blackPlayerClock: "",
+      isModalVisible: false,
+      selectedPromotion: 'q',
     }
   },
   props: {
@@ -47,12 +55,13 @@ export default {
     },
     onPromotion: {
       type: Function,
-      default: () => {
-        let piece = 'q';
-        while (!['q', 'r', 'b', 'n'].includes(piece)) {
-          piece = prompt("Promote pawn to (q - queen, r - rook, b - bishop, n - knight):").toLowerCase();
-        }
-        return piece;
+      default: function() {
+        return new Promise((resolve) => {
+          this.isModalVisible = true;
+          this.$once('selectPromotion', (piece) => {
+            resolve(piece);
+          });
+        });
       },
     },
     orientation: {
@@ -168,11 +177,11 @@ export default {
       return filteredPromotions.length > 0
     },
     changeTurn() {
-      return (orig, dest) => {
+      return async (orig, dest) => {
         if (this.isPromotion(orig, dest)) {
-          this.promoteTo = this.onPromotion()
+          this.selectedPromotion = await this.onPromotion();
         }
-        this.game.move({ from: orig, to: dest, promotion: this.promoteTo })
+        this.game.move({ from: orig, to: dest, promotion: this.selectedPromotion })
         this.board.set({
           fen: this.game.fen(),
           turnColor: this.toColor(),
@@ -192,6 +201,13 @@ export default {
       threats['history'] = this.game.history()
       threats['fen'] = this.game.fen()
       this.$emit('onMove', threats)
+    },
+    selectPromotion(piece) {
+      this.selectedPromotion = piece;
+      this.$emit('selectPromotion', piece);
+    },
+    closeModal() {
+      this.isModalVisible = false;
     },
     countThreats(color) {
       let threats = {}
