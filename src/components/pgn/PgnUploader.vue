@@ -155,6 +155,9 @@ export default {
     selectGame(index, game) {
       this.currentGameIndex = index;
       this.currentActiveGame = game;
+
+      bus.$emit('disableMovementAndControlsWhenChangingGame');
+
       if (this.delay > 0) { // todo: fix this
         this.clearAllTimeouts()
         this.presentGameWithDelay()

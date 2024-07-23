@@ -69,7 +69,7 @@ export default {
 
       this.game = chess
       this.loadPosition();
-      this.setOnlyViewMod(true)
+      this.setOnlyViewMod(true);
     },
     prevMove() {
       if (this.currentHistoryIndex !== 0) {
@@ -133,12 +133,14 @@ export default {
       if (this.viewOnly) {
         if (this.parsedPgnData !== null) {
           const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
-          this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
-              movesInfo.currentMoveInfo.clock;
-          bus.$emit('updateCurrentMove', movesInfo.currentMoveInfo.id)
-          if (movesInfo.previousMoveInfo !== null) {
-            this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
-                movesInfo.previousMoveInfo.clock;
+          if (movesInfo) {
+            this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
+                movesInfo.currentMoveInfo.clock;
+            bus.$emit('updateCurrentMove', movesInfo.currentMoveInfo.id)
+            if (movesInfo.previousMoveInfo !== null) {
+              this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
+                  movesInfo.previousMoveInfo.clock;
+            }
           }
         }
       }

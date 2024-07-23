@@ -120,6 +120,11 @@ export default {
     bus.$on('loadGameMoveList', (parsedPgnData) => {
       this.loadGameMoveList(parsedPgnData);
     });
+    bus.$on('disableMovementAndControlsWhenChangingGame', () => {
+      this.isViewOnlyMod = false;
+      this.isButtonsDisabled = false;
+      bus.$emit('toggleMovement', !this.isViewOnlyMod);
+    });
   }
 };
 </script>
@@ -239,5 +244,3 @@ th, td {
   padding: 10px;
 }
 </style>
-
-
