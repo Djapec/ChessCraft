@@ -9,19 +9,13 @@
     </div>
     <div class="move-list">
       <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
         <tbody>
           <tr v-for="(move, index) in movePairs" :key="index">
             <td>{{ index + 1 }}.</td>
             <td
                 v-if="move.white"
                 :class="{ active: isActiveMove(move.white) }"
+                class="move-notation"
                 @click="logMove(move.white)"
             >
               {{ move.white.move }}
@@ -29,6 +23,7 @@
             <td
                 v-if="move.black"
                 :class="{ active: isActiveMove(move.black) }"
+                class="move-notation"
                 @click="logMove(move.black)"
             >
               {{ move.black.move }}
@@ -207,6 +202,11 @@ th, td {
   text-align: left;
   padding: 8px;
   border-bottom: 1px solid #ddd;
+
+  &:hover.move-notation {
+    background-color: #f0f0f0;
+    cursor: pointer;
+  }
 }
 
 .move-controls {
