@@ -1,6 +1,7 @@
 <script>
   import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
   import {getInfoForLastTwoMoves} from "../chessboard/Util";
+  import { Chess } from "../../../public/chess.min.js"
 
   export default {
     name: 'MosaicViewBoard',
@@ -26,6 +27,8 @@
     methods: {
       loadGame(parsedData) {
         if (parsedData?.chess) {
+          this.game = new Chess();
+          this.loadPosition();
           this.game = parsedData.chess;
           this.parsedPgnData = parsedData;
           this.loadPlayers();

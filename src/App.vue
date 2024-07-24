@@ -4,20 +4,22 @@
       <div class="main-container">
         <PGNUploader />
       </div>
-      <div class="board-with-controls">
-        <analysis
-            :fen="currentFen"
-            :showThreats="false"
-            @onMove="showInfo"
-        />
-        <div class="side-container">
-          <movesControlBoard/>
-          <engine/>
-        </div>
+      <div v-if="isAnalysisBoardVisible" class="single-game-view">
+        <div class="board-with-controls">
+          <analysis
+              :fen="currentFen"
+              :showThreats="false"
+              @onMove="showInfo"
+          />
+          <div class="side-container">
+            <movesControlBoard/>
+            <engine/>
+          </div>
       </div>
-    </div>
-    <div class="right-side">
-      <mosaic-view/>
+      </div>
+      <div class="mosaic-game-view">
+        <mosaic-view/>
+      </div>
     </div>
   </div>
 </template>
@@ -45,11 +47,13 @@ export default {
       positionInfo: null,
       isViewOnly: true,
       buttonsDisabled: false,
-      fens: [
-        '5rr1/3nqpk1/p3p2p/Pp1pP1pP/2pP1PN1/2P1Q3/2P3P1/R4RK1 b - f3 0 28',
-        'r4rk1/pp1b3p/6p1/8/3NpP2/1P4P1/P2K3P/R6R w - - 0 22'
-      ],
+      isAnalysisBoardVisible: true
     };
+  },
+  created() {
+    bus.$on('toggleAnalysisBoardVisibility', (analysisBoardTrigger) => {
+      this.isAnalysisBoardVisible = analysisBoardTrigger;
+    });
   },
   methods: {
     showInfo(data) {
@@ -117,9 +121,11 @@ function getFirstLetter(str) {
       align-items: flex-start;
       margin-top: 20px;
     }
-  }
 
-  .right-side {
-
+    .mosaic-game-view {
+      display: flex;
+      flex-direction: column;
+      margin-left: 30px;
+    }
   }
 </style>

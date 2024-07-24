@@ -6,7 +6,7 @@
         <option v-for="round in rounds" :key="round" :value="round">{{ round }}</option>
       </select>
     </div>
-    <div class="">
+    <div class="mosaic-view-selector">
       <input
           type="checkbox"
           name="mosaic-view-select-games"
@@ -15,12 +15,6 @@
           @click="toggleMosaicViewEnabled()"
       >
       Select games for mosaic view
-      <button
-          v-if="this.mosaicViewGamesIndices.length > 0"
-          @click="sendParsedGamesToMosaicView()"
-      >
-        load mosaic view
-      </button>
     </div>
     <input type="text" v-model="search" placeholder="Search..." class="search-input" />
     <div v-if="games.length" class="games-list">
@@ -133,6 +127,11 @@ export default {
       this.isMosaicViewEnabled = !this.isMosaicViewEnabled;
       if (!this.isMosaicViewEnabled) {
         this.mosaicViewGamesIndices = [];
+        bus.$emit('hideMosaicView');
+      }
+
+      if (this.mosaicViewGamesIndices.length === 0) {
+        bus.$emit('toggleAnalysisBoardVisibility', true);
       }
     },
     addGameToMosaicView(index) {
@@ -142,6 +141,14 @@ export default {
         this.mosaicViewGamesIndices.push(index);
       } else if (itemIndex > -1) {
         this.mosaicViewGamesIndices.splice(itemIndex, 1);
+      }
+
+      if (this.mosaicViewGamesIndices.length > 0) {
+        bus.$emit('toggleAnalysisBoardVisibility', false);
+        this.sendParsedGamesToMosaicView()
+      } else {
+        bus.$emit('hideMosaicView');
+        bus.$emit('toggleAnalysisBoardVisibility', true);
       }
     },
     sendParsedGamesToMosaicView() {
@@ -406,5 +413,8 @@ export default {
 }
 .games-list li.focused {
   background-color: #e0e0e0;
+}
+.mosaic-view-selector {
+  margin-bottom: 10px;
 }
 </style>

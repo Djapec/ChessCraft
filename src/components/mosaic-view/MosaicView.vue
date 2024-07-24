@@ -1,5 +1,5 @@
 <template>
-  <div class='mosaic-view-container'>
+  <div v-show="isVisible" class='mosaic-view-container'>
     <mosaic-view-board v-show="parsedGames[0]?.chess" :parsed-game-data="parsedGames[0]"></mosaic-view-board>
     <mosaic-view-board v-show="parsedGames[1]?.chess" :parsed-game-data="parsedGames[1]"></mosaic-view-board>
     <mosaic-view-board v-show="parsedGames[2]?.chess" :parsed-game-data="parsedGames[2]"></mosaic-view-board>
@@ -18,13 +18,19 @@ export default {
   data() {
     return {
       parsedGames: [{}, {}, {}, {}],
-      workers: []
+      workers: [],
+      isVisible: true
     }
   },
   created() {
     bus.$on('generateMosaicView', (items) => {
-      this.parsedGames = items;
+      this.isVisible = true
+      this.parsedGames = items
       this.startProcessingGames();
+    });
+
+    bus.$on('hideMosaicView', () => {
+      this.hideMosaicView();
     });
   },
   beforeUnmount() {
@@ -68,6 +74,10 @@ export default {
     stopAllWorkers() {
       this.workers.forEach(worker => worker.terminate());
       this.workers = [];
+    },
+    hideMosaicView() {
+      this.isVisible = false;
+      this.stopAllWorkers();
     }
   }
 }
