@@ -7,30 +7,35 @@
       </select>
     </div>
     <div class="mosaic-view-selector">
-      <input
-          type="checkbox"
-          name="mosaic-view-select-games"
-          id="mosaic-view-select-games"
-          v-model="isMosaicViewEnabled"
-          @click="toggleMosaicViewEnabled()"
-      >
-      Select games for mosaic view
+      <label class="mosaic-view-label">
+        <input
+            id="mosaic-view-select-games"
+            name="mosaic-view-select-games"
+            type="checkbox"
+            v-model="isMosaicViewEnabled"
+            @click="toggleMosaicViewEnabled()"
+        >
+        Select games for mosaic view
+      </label>
     </div>
     <input type="text" v-model="search" placeholder="Search..." class="search-input" />
     <div v-if="games.length" class="games-list">
       <ul>
         <li v-for="(game, index) in filteredGames"
             :key="index"
-            :class="{ 'focused': index === currentGameIndex }"
+            :class="{ 'focused': index === currentGameIndex && !isMosaicViewEnabled }"
+            class="game-round"
+            @click="isMosaicViewEnabled ? addGameToMosaicView(index) : selectGame(index, game)"
         >
           <input
               type="checkbox"
               v-if="isMosaicViewEnabled"
-              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.indexOf(index) === -1"
               name="mosaic-view-option"
-              @click="addGameToMosaicView(index)"
+              class="mosaic-view-selection-checkbox"
+              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.indexOf(index) === -1"
+              :checked="mosaicViewGamesIndices.includes(index)"
           >
-          <div class="filtered-game-container" @click="selectGame(index, game)">
+          <div class="filtered-game-container">
             <span class="game-index">{{ index + 1 }}.</span>
             <span class="game-name">{{ game.name }}</span>
             <span class="game-result">{{ game.result }}</span>
@@ -135,21 +140,30 @@ export default {
       }
     },
     addGameToMosaicView(index) {
+      const count = this.getLength();
       const itemIndex = this.mosaicViewGamesIndices.indexOf(index);
 
-      if (this.mosaicViewGamesIndices.length < 4 && itemIndex === -1) {
+      if (count < 4 && itemIndex === -1) {
         this.mosaicViewGamesIndices.push(index);
       } else if (itemIndex > -1) {
         this.mosaicViewGamesIndices.splice(itemIndex, 1);
       }
 
-      if (this.mosaicViewGamesIndices.length > 0) {
-        bus.$emit('toggleAnalysisBoardVisibility', false);
-        this.sendParsedGamesToMosaicView()
-      } else {
+      if (count === 1 && itemIndex !== -1) { // last one being removed - return to analysis board
         bus.$emit('hideMosaicView');
         bus.$emit('toggleAnalysisBoardVisibility', true);
+      } else if (count < 4 && itemIndex === -1 || count <= 4 && itemIndex > -1) { // either new one being added or existing removed - load new mosaic setup
+        bus.$emit('toggleAnalysisBoardVisibility', false);
+        this.sendParsedGamesToMosaicView();
+      } else if (count === 4 && itemIndex === -1) { } // attempting to add over 4 - do nothing
+    },
+    getLength() { // !TODO - there has to be a better way than this!
+      let count = 0;
+      for (const item of this.mosaicViewGamesIndices) {
+        count++;
       }
+
+      return count;
     },
     sendParsedGamesToMosaicView() {
       const parsedDataArray = [];
@@ -395,11 +409,14 @@ export default {
   justify-content: space-between;
   padding: 1rem;
   width: 100%;
-  border-bottom: 1px solid #ddd;
   cursor: pointer;
 }
-.filtered-game-container:hover {
-  background-color: #f0f0f0;
+.game-round {
+  border-bottom: 1px solid #ddd;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
 }
 .game-index {
   width: 30px;
@@ -416,5 +433,11 @@ export default {
 }
 .mosaic-view-selector {
   margin-bottom: 10px;
+
+  .mosaic-view-label {
+    &:hover {
+      cursor: pointer;
+    }
+  }
 }
 </style>
