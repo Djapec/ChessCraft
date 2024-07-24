@@ -33,11 +33,11 @@
       </table>
     </div>
     <div class="move-controls">
-      <button @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
-      <button @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
-      <button class="button is-light undo-button" @click="undo()" :disabled="!isButtonsDisabled">&#8635;</button>
-      <button @click="loadNextMove()" :disabled="isButtonsDisabled">&#8250;</button>
-      <button @click="loadLastMove()" :disabled="isButtonsDisabled">&#187;</button>
+      <button class="button" @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
+      <button class="button" @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
+      <button class="button undo-button" @click="undo()" :disabled="!isButtonsDisabled">&#8635;</button>
+      <button class="button" @click="loadNextMove()" :disabled="isButtonsDisabled">&#8250;</button>
+      <button class="button" @click="loadLastMove()" :disabled="isButtonsDisabled">&#187;</button>
     </div>
   </div>
 </template>
@@ -101,7 +101,7 @@ export default {
       this.parsedPgnGameData = parsedPgnData;
       this.scrollToActiveMove();
     },
-    scrollToActiveMove() { // moze da pravi problem
+    scrollToActiveMove() {
       this.$nextTick(() => {
         const activeMove = this.$el.querySelector('.active');
         if (activeMove) {
