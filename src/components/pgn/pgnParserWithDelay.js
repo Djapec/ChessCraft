@@ -1,4 +1,5 @@
 import { Chess } from "../../../public/chess.min.js"; // version 0.13.4
+import { nanoid } from 'nanoid'
 
 export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null) {
     const [metadataPart, movesPart] = pgn.split('\n\n');
@@ -60,6 +61,7 @@ export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null)
     }
 
     return {
+        id: nanoid(),
         metadata,
         moves,
         chess,
