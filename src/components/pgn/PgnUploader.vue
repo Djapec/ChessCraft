@@ -25,15 +25,15 @@
             :key="index"
             :class="{ 'focused': index === currentGameIndex && !isMosaicViewEnabled }"
             class="game-round"
-            @click="isMosaicViewEnabled ? addGameToMosaicView(index) : selectGame(index, game)"
+            @click="isMosaicViewEnabled ? addGameToMosaicView(game) : selectGame(index, game)"
         >
           <input
               type="checkbox"
               v-if="isMosaicViewEnabled"
               name="mosaic-view-option"
               class="mosaic-view-selection-checkbox"
-              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.indexOf(index) === -1"
-              :checked="mosaicViewGamesIndices.includes(index)"
+              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.indexOf(game.parsedData.id) === -1"
+              :checked="mosaicViewGamesIndices.includes(game.parsedData.id)"
           >
           <div class="filtered-game-container">
             <span class="game-index">{{ index + 1 }}.</span>
@@ -139,19 +139,18 @@ export default {
         bus.$emit('toggleAnalysisBoardVisibility', true);
       }
     },
-    addGameToMosaicView(index) {
+    addGameToMosaicView(game) {
       const count = this.getLength();
-      const itemIndex = this.mosaicViewGamesIndices.indexOf(index);
+      const itemIndex = this.mosaicViewGamesIndices.indexOf(game.parsedData.id);
 
       if (count < 4 && itemIndex === -1) {
-        this.mosaicViewGamesIndices.push(index);
+        this.mosaicViewGamesIndices.push(game.parsedData.id);
       } else if (itemIndex > -1) {
         this.mosaicViewGamesIndices.splice(itemIndex, 1);
       }
 
       if (count === 1 && itemIndex !== -1) { // last one being removed - return to analysis board
-        bus.$emit('hideMosaicView');
-        bus.$emit('toggleAnalysisBoardVisibility', true);
+       this.toggleMosaicViewEnabled()
       } else if (count < 4 && itemIndex === -1 || count <= 4 && itemIndex > -1) { // either new one being added or existing removed - load new mosaic setup
         bus.$emit('toggleAnalysisBoardVisibility', false);
         this.sendParsedGamesToMosaicView();
@@ -167,8 +166,9 @@ export default {
     },
     sendParsedGamesToMosaicView() {
       const parsedDataArray = [];
-      for (const index of this.mosaicViewGamesIndices) {
-        parsedDataArray.push(this.filteredGames[index].parsedData);
+      for (const gameId of this.mosaicViewGamesIndices) {
+        const game = this.filteredGames.find(game => game.parsedData.id === gameId)
+        parsedDataArray.push(game.parsedData);
       }
 
       bus.$emit('generateMosaicView', parsedDataArray);
@@ -231,7 +231,7 @@ export default {
     async fetchActiveMosaicViewGamesFetch() { //todo: potrebno je testiranje
       if (this.delay > 0 && this.mosaicViewGamesIndices.length >= 2) {
         const updatableMosaicViewGames = this.mosaicViewGamesIndices.filter(
-            index => this.filteredGames[index].parsedData.result === '*'
+            gameId => this.filteredGames.find(game => game.parsedData.id === gameId).parsedData.result === '*'
         );
 
         if (updatableMosaicViewGames.length > 1) {
@@ -330,6 +330,7 @@ export default {
     },
     async generatePgnForActiveRound() {
       if (this.selectedRound) {
+        this.mosaicViewGamesIndices = [];
         const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
         this.games = this.parseMultiplePGNs(pgn);
         if (this.mosaicViewGamesIndices > 1) {
