@@ -27,8 +27,10 @@
     methods: {
       loadGame(parsedData) {
         if (parsedData?.chess) {
-          this.game = new Chess();
-          this.loadPosition();
+          if(areListsEqual(this.game.history(),parsedData.chess.history())) {
+            this.game = new Chess();
+            this.loadPosition();
+          }
           this.game = parsedData.chess;
           this.parsedPgnData = parsedData;
           this.loadPlayers();
@@ -60,5 +62,21 @@
         viewOnly: true,
       });
     },
+  }
+
+  function areListsEqual(list1, list2) {
+    // Provera dužine lista
+    if (list1.length !== list2.length) {
+      return false;
+    }
+
+    // Provera elemenata lista
+    for (let i = 0; i < list1.length; i++) {
+      if (list1[i] !== list2[i]) {
+        return false;
+      }
+    }
+
+    return true;
   }
 </script>
