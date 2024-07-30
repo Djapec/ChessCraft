@@ -23,7 +23,7 @@
       <ul>
         <li v-for="(game, index) in filteredGames"
             :key="index"
-            :class="{ 'focused': index === currentGameIndex && !isMosaicViewEnabled }"
+            :class="{ 'focused': game.parsedData.id === currentActiveGame?.parsedData.id && !isMosaicViewEnabled }"
             class="game-round"
             @click="isMosaicViewEnabled ? addGameToMosaicView(game) : selectGame(index, game)"
         >
@@ -141,7 +141,7 @@ export default {
       }
     },
     addGameToMosaicView(game) {
-      const count = this.getLength();
+      const count = this.getArrayLength(this.mosaicViewGamesIndices);
       const itemGame = this.mosaicViewGamesIndices.indexOf(game.parsedData.id);
 
       if (count < 4 && itemGame === -1) {
@@ -157,9 +157,9 @@ export default {
         this.sendParsedGamesToMosaicView();
       } else if (count === 4 && itemGame === -1) { } // attempting to add over 4 - do nothing
     },
-    getLength() { // !TODO - there has to be a better way than this!
+    getArrayLength(array) { // !TODO - there has to be a better way than this!
       let count = 0;
-      for (const item of this.mosaicViewGamesIndices) {
+      for (const item of array) {
         count++;
       }
 
