@@ -211,7 +211,6 @@ export default {
           const isMoveListChange = this.previousResponseMoveLength !== gamesData[0].value.moves.length
           const isActiveGameChange = this.previousGameIndex !== this.currentGameIndex
           this.isMoveListChangeForCurrentGame = isMoveListChange && !isActiveGameChange
-          console.log(`ovo sam ja ${isActiveGameChange} = ${this.previousGameIndex} !== ${this.currentGameIndex}`);
 
           if (isMoveListChange || isActiveGameChange) {
             this.previousResponseMoveLength = gamesData[0].value.moves.length;
@@ -224,7 +223,6 @@ export default {
                 extendedGamesUrls,
                 lookupMap
             );
-            console.log(pgn);
             this.loadActiveGame(pgn)
           }
         } catch (error) {
@@ -252,7 +250,6 @@ export default {
                 parsedDataArray.push(this.games[index])
               }
             });
-            console.log(parsedDataArray);
             bus.$emit('generateMosaicView', parsedDataArray);
           }
         }
@@ -358,7 +355,6 @@ export default {
     async fetchActiveRound() {
       const isRoundHaveUnfinishedGames = this.games.filter(game => game.result === '*').length === 0;
       if (!isRoundHaveUnfinishedGames) {
-        console.log("Usao sam ovde i generisem rundu")
         await this.generatePgnForActiveRound()
       } else {
         clearInterval(this.intervalActiveRoundFetch);
