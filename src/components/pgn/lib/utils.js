@@ -55,6 +55,10 @@ function getGameResult(code) {
             return '0-1';
         case 'DRAW':
             return '1/2-1/2';
+        case 'BLACKFORFAIT':
+            return '0-1';
+        case 'WHITEFORFAIT':
+            return '1-0';
         default:
             return '*';
     }
