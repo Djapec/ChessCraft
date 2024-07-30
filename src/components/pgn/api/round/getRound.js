@@ -14,17 +14,22 @@ export async function generatePgnForRound(tournamentId, roundStr, desiredPairs =
         const round = validateNumber(roundStr);
         const indexData = await fetchIndexData(tournamentId, [round]);
 
-        const extendedGamesUrls = getExtendedGamesUrls(tournamentId, [round], indexData, desiredPairs);
-        const lookupMap = createGameLookupMap(extendedGamesUrls);
-        const gamesData = await getGamesData(extendedGamesUrls);
-        return generatePgn(
-            tournament,
-            indexData,
-            gamesData,
-            extendedGamesUrls,
-            lookupMap
-        );
+       if (indexData[0].pairings.length === 0) {
+           console.log('Inactive Round')
+           return null
+       }
+           const extendedGamesUrls = getExtendedGamesUrls(tournamentId, [round], indexData, desiredPairs);
+           const lookupMap = createGameLookupMap(extendedGamesUrls);
+           const gamesData = await getGamesData(extendedGamesUrls);
+           return generatePgn(
+               tournament,
+               indexData,
+               gamesData,
+               extendedGamesUrls,
+               lookupMap
+           );
     } catch (e) {
-        throw new Error('Invalid request');
+        console.log(new Error(`Invalid request: ${e}`));
+        return null
     }
 }

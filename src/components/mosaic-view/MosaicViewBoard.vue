@@ -40,7 +40,7 @@
       },
       updateMosaicViewPlayersClock() {
         if (this.viewOnly) {
-          if (this.parsedPgnData !== null) {
+          if (this.parsedPgnData?.halfMoves.length > 0) {
             const moveDetails = {
               moveNumber: this.parsedPgnData.halfMoves.length - 1,
               playedMove: this.parsedPgnData.halfMoves[this.parsedPgnData.halfMoves.length - 1].move
