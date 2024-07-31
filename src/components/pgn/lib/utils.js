@@ -119,8 +119,9 @@ export function parseToPgn(tournament, pairing, game, round, date) {
     const white = getPlayerFullName(pairing.white);
     const black = getPlayerFullName(pairing.black);
     const plyCount = game.moves.length;
+    const startTime = game.firstMove || '?';
     const result = getGameResult(game.result);
-    const meta = [
+    let pgn = [
         `[Event "${event}"]`,
         `[Site "${site}"]`,
         `[Date "${formattedDate}"]`,
@@ -128,10 +129,10 @@ export function parseToPgn(tournament, pairing, game, round, date) {
         `[White "${white}"]`,
         `[Black "${black}"]`,
         `[Result "${result}"]`,
+        `[StartTime "${startTime}"]`,
         `[PlyCount "${plyCount}"]`,
         `[TimeControl "${timeControl}"]`,
     ].join('\n');
-    let pgn = meta;
     pgn += '\n\n';
     pgn += getFormattedMoves(game.moves);
     pgn += ` ${result}`;

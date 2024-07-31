@@ -16,7 +16,11 @@ export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null)
     const halfMoves = [];
     let halfMoveId = 1; // Initialize the half-move ID counter
 
-    const tournamentStartDate = startTournamentTime ? new Date(startTournamentTime) : null;
+    //const tournamentStartDate = startTournamentTime ? new Date(startTournamentTime) : null;
+    let gameStartDate = null;
+    if (metadata.StartTime !== '?') {
+        gameStartDate = new Date(Number(metadata.StartTime))
+    }
     const delayInSeconds = delay ? delay * 60 : 0; // 0 if delay is null
 
     if (movesPart) {
@@ -28,7 +32,7 @@ export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null)
                 const [_, whiteMove, whiteClockTime, whiteEMTTime, blackMove, blackClockTime, blackEMTTime] = moveMatch;
 
                 if (chess.move(whiteMove, { sloppy: true })) {
-                    const whiteTime = tournamentStartDate ? calculateMoveTime(tournamentStartDate, delayInSeconds, cumulativeEMT, whiteEMTTime) : null;
+                    const whiteTime = gameStartDate ? calculateMoveTime(gameStartDate, delayInSeconds, cumulativeEMT, whiteEMTTime) : null;
                     cumulativeEMT += parseTimeToSeconds(whiteEMTTime || '0:00:00');
                     const whiteHalfMove = {
                         id: halfMoveId++,
@@ -43,7 +47,7 @@ export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null)
                 }
 
                 if (blackMove && chess.move(blackMove, { sloppy: true })) {
-                    const blackTime = tournamentStartDate ? calculateMoveTime(tournamentStartDate, delayInSeconds, cumulativeEMT, blackEMTTime) : null;
+                    const blackTime = gameStartDate ? calculateMoveTime(gameStartDate, delayInSeconds, cumulativeEMT, blackEMTTime) : null;
                     cumulativeEMT += parseTimeToSeconds(blackEMTTime || '0:00:00');
                     const blackHalfMove = {
                         id: halfMoveId++,

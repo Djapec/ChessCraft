@@ -8,7 +8,8 @@
     extends: chessBoardCraft,
     data() {
       return {
-        viewOnly: true
+        viewOnly: true,
+        liveGame: false
       }
     },
     props: {
@@ -27,7 +28,7 @@
     methods: {
       loadGame(parsedData) {
         if (parsedData?.chess) {
-          if(areListsEqual(this.game.history(),parsedData.chess.history())) {
+          if(areListsEqual(this.game.history(),parsedData.chess.history()) && !this.liveGame) {
             this.game = new Chess();
             this.loadPosition();
           }

@@ -25,15 +25,15 @@
             :key="index"
             :class="{ 'focused': game.parsedData.id === currentActiveGame?.parsedData.id && !isMosaicViewEnabled }"
             class="game-round"
-            @click="isMosaicViewEnabled ? addGameToMosaicView(game) : selectGame(index, game)"
+            @click="isMosaicViewEnabled ? addGameToMosaicView(index, game) : selectGame(index, game)"
         >
           <input
               type="checkbox"
               v-if="isMosaicViewEnabled"
               name="mosaic-view-option"
               class="mosaic-view-selection-checkbox"
-              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.indexOf(game.parsedData.id) === -1"
-              :checked="mosaicViewGamesIndices.includes(game.parsedData.id)"
+              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.findIndex(x => x.id === game.parsedData.id) === -1"
+              :checked="mosaicViewGamesIndices.some(x => x.id === game.parsedData.id)"
           >
           <div class="filtered-game-container">
             <span class="game-index">{{ index + 1 }}.</span>
@@ -82,12 +82,13 @@ export default {
       intervalActiveGameFetch: null,
       intervalActiveRoundFetch: null,
       currentGameIndex: null,
-      previousGameIndex: null,
+      currentGameId: null,
+      previousGameId: null,
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 10, // !TODO: make dynamic depending on the audience
-      startTournamentTime: new Date(new Date().setHours(17, 0, 0, 0)),
+      delay: 15, // !TODO: make dynamic depending on the audience
+      startTournamentTime: new Date(new Date().setHours(16, 30, 0, 0)),
       timeoutIds: []
     };
   },
@@ -115,12 +116,11 @@ export default {
       let index = 0;
       return pgns.map(pgn => {
         const parsedData = parsePgnWithDelay(pgn, this.startTournamentTime, this.delay)
-        //const parsedData = parsePGN(pgn);
         const whitePlayer = parsedData.metadata.White || "Unknown";
         const blackPlayer = parsedData.metadata.Black || "Unknown";
         const result = parsedData.metadata.Result || "N/A";
         const gameName = `${whitePlayer} - ${blackPlayer}`;
-        parsedData.id = (`${this.selectedRound}-${gameName}-${index++}`);
+        parsedData.id = (`${this.selectedRound}-${gameName}`);
         return {
           pgn,
           name: gameName,
@@ -131,6 +131,7 @@ export default {
     },
     toggleMosaicViewEnabled() {
       this.isMosaicViewEnabled = !this.isMosaicViewEnabled;
+      clearInterval(this.intervalActiveGameFetch);
       if (!this.isMosaicViewEnabled) {
         this.mosaicViewGamesIndices = [];
         bus.$emit('hideMosaicView');
@@ -140,21 +141,24 @@ export default {
         bus.$emit('toggleAnalysisBoardVisibility', true);
       }
     },
-    addGameToMosaicView(game) {
+    addGameToMosaicView(index, game) {
       const count = this.getArrayLength(this.mosaicViewGamesIndices);
-      const itemGame = this.mosaicViewGamesIndices.indexOf(game.parsedData.id);
+      const itemGame = this.mosaicViewGamesIndices.findIndex(x => x.id === game.parsedData.id);
 
       if (count < 4 && itemGame === -1) {
-        this.mosaicViewGamesIndices.push(game.parsedData.id);
+        this.mosaicViewGamesIndices.push({id: game.parsedData.id, gameIndex: index});
       } else if (itemGame > -1) {
         this.mosaicViewGamesIndices.splice(itemGame, 1);
       }
 
       if (count === 1 && itemGame !== -1) { // last one being removed - return to analysis board
        this.toggleMosaicViewEnabled()
+        clearInterval(this.intervalActiveMosaicViewGamesFetch);
       } else if (count < 4 && itemGame === -1 || count <= 4 && itemGame > -1) { // either new one being added or existing removed - load new mosaic setup
         bus.$emit('toggleAnalysisBoardVisibility', false);
         this.sendParsedGamesToMosaicView();
+        clearInterval(this.intervalActiveMosaicViewGamesFetch);
+        this.intervalActiveMosaicViewGamesFetch = setInterval(this.fetchActiveMosaicViewGamesFetch, 5000);
       } else if (count === 4 && itemGame === -1) { } // attempting to add over 4 - do nothing
     },
     getArrayLength(array) { // !TODO - there has to be a better way than this!
@@ -167,15 +171,17 @@ export default {
     },
     sendParsedGamesToMosaicView() {
       const parsedDataArray = [];
-      for (const gameId of this.mosaicViewGamesIndices) {
-        const game = this.filteredGames.find(game => game.parsedData.id === gameId)
-        parsedDataArray.push(game.parsedData);
+      for (const gameData of this.mosaicViewGamesIndices) {
+        const game = this.filteredGames.find(game => game.parsedData.id === gameData.id)
+        if (game?.parsedData)
+          parsedDataArray.push(game.parsedData);
       }
 
       bus.$emit('generateMosaicView', parsedDataArray);
     },
     selectGame(index, game) {
       this.currentGameIndex = index;
+      this.currentGameId = game.parsedData.id
       this.currentActiveGame = game;
 
       bus.$emit('disableMovementAndControlsWhenChangingGame');
@@ -185,11 +191,13 @@ export default {
             this.clearAllTimeouts()
             this.presentGameWithDelay()
           } else {
-          this.fetchActiveGame()
+            clearInterval(this.intervalActiveGameFetch)
+            this.intervalActiveGameFetch = setInterval(this.fetchActiveGame, 5000);
+            this.fetchActiveGame()
         }
       } else {
         this.loadGame(game.parsedData);
-          this.previousGameIndex = this.currentGameIndex;
+          this.previousGameId = this.currentGameId;
       }
     },
     async fetchActiveGame() {
@@ -209,12 +217,13 @@ export default {
 
           const gamesData = await getGamesData(extendedGamesUrls);
           const isMoveListChange = this.previousResponseMoveLength !== gamesData[0].value.moves.length
-          const isActiveGameChange = this.previousGameIndex !== this.currentGameIndex
+          const isActiveGameChange = this.previousGameId !== this.currentGameId
+
           this.isMoveListChangeForCurrentGame = isMoveListChange && !isActiveGameChange
 
           if (isMoveListChange || isActiveGameChange) {
             this.previousResponseMoveLength = gamesData[0].value.moves.length;
-            this.previousGameIndex = this.currentGameIndex;
+            this.previousGameId = this.currentGameId;
             const lookupMap = createGameLookupMap(extendedGamesUrls);
             const pgn = generatePgn(
                 tournament,
@@ -234,12 +243,12 @@ export default {
     },
     async fetchActiveMosaicViewGamesFetch() { //todo: potrebno je testiranje
       if (this.delay === 0 && this.mosaicViewGamesIndices.length >= 1) {
-        const updatableMosaicViewGames = this.mosaicViewGamesIndices.map(
-            gameId => gameId.charAt(gameId.length - 1)
-        );
+        const updatableMosaicViewGames = this.mosaicViewGamesIndices.map(game => game.gameIndex + 1);
 
+        // todo: update only result active games
         if (updatableMosaicViewGames.length > 1) {
           const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound, updatableMosaicViewGames);
+
           if (pgn !== null) {
             const parsedDataArray = [];
             const updateMosaicViewGamesPgn = this.parseMultiplePGNs(pgn);
@@ -247,7 +256,7 @@ export default {
               const index = this.games.findIndex(originalItem => originalItem.name === targetItem.name);
               if (index !== -1) {
                 this.games[index] = targetItem;
-                parsedDataArray.push(this.games[index])
+                parsedDataArray.push(this.games[index].parsedData)
               }
             });
             bus.$emit('generateMosaicView', parsedDataArray);
@@ -340,12 +349,19 @@ export default {
     },
     async generatePgnForActiveRound() {
       if (this.selectedRound) {
-        this.mosaicViewGamesIndices = [];
+        clearInterval(this.intervalActiveRoundFetch);
+        this.intervalActiveRoundFetch =
+            setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay - 1) * 60000));
+        //this.mosaicViewGamesIndices = [];  //todo: proveri
         const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
         if (pgn !== null) {
           this.games = this.parseMultiplePGNs(pgn);
-          if (this.mosaicViewGamesIndices > 1) {
+          if (this.mosaicViewGamesIndices.length > 1) {
             this.sendParsedGamesToMosaicView()
+          } else if (this.delay > 0 && this.currentActiveGame) {
+            this.currentActiveGame = this.filteredGames.find(game => game.parsedData.id === this.currentActiveGame.parsedData.id);
+            this.clearAllTimeouts()
+            this.presentGameWithDelay()
           }
         }
         else
@@ -364,10 +380,6 @@ export default {
   async created() {
     await this.fetchRounds();
     await this.generatePgnForActiveRound();
-    this.intervalActiveGameFetch = setInterval(this.fetchActiveGame, 5000);
-    this.intervalActiveMosaicViewGamesFetch = setInterval(this.fetchActiveMosaicViewGamesFetch, 5000);
-    this.intervalActiveRoundFetch =
-        setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay - 1) * 60000));
   },
   beforeUnmount() {
     clearInterval(this.intervalActiveGameFetch);

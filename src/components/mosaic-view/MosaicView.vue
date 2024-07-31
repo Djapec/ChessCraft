@@ -19,14 +19,19 @@ export default {
     return {
       parsedGames: [{}, {}, {}, {}],
       workers: [],
-      isVisible: true
+      isVisible: true,
+      isLive: false,
     }
   },
   created() {
     bus.$on('generateMosaicView', (items) => {
       this.isVisible = true
       this.parsedGames = items
-      this.startProcessingGames();
+      if (this.isLive) {
+        this.startProcessingLiveGames()
+      } else {
+        this.startProcessingGamesWithDelay();
+      }
     });
 
     bus.$on('hideMosaicView', () => {
@@ -37,7 +42,14 @@ export default {
     this.stopAllWorkers();
   },
   methods: {
-    startProcessingGames() {
+    startProcessingLiveGames() {
+      this.parsedGames.forEach((game, index) => {
+        if (game?.chess) {
+          this.updateParsedGame(game, index)
+        }
+      });
+    },
+    startProcessingGamesWithDelay() {
       this.stopAllWorkers();
       this.parsedGames.forEach((game, index) => {
         if (game?.chess) {
