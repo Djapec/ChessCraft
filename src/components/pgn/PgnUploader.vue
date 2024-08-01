@@ -267,7 +267,6 @@ export default {
       }
     },
     presentGameWithDelay() {
-
       const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date())
       let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
       let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveId);
@@ -360,8 +359,10 @@ export default {
             this.sendParsedGamesToMosaicView()
           } else if (this.delay > 0 && this.currentActiveGame) {
             this.currentActiveGame = this.filteredGames.find(game => game.parsedData.id === this.currentActiveGame.parsedData.id);
-            this.clearAllTimeouts()
-            this.presentGameWithDelay()
+            if (this.currentActiveGame) {
+              this.clearAllTimeouts()
+              this.presentGameWithDelay()
+            }
           }
         }
         else

@@ -14,7 +14,8 @@ export default {
       currentChessGame: null,
       currentHistoryIndex: 0,
       currentMoveHistory: [],
-      viewOnly: true
+      viewOnly: true,
+      gameStateDuringMovementMode: null
     }
   },
   methods: {
@@ -25,9 +26,13 @@ export default {
     toggleMovement(isViewOnly) {
       if (isViewOnly) { //true
         this.setOnlyViewMod(isViewOnly);
-        if (this.currentGamePgn !== null) {
-          this.game.load_pgn(this.currentGamePgn)
-          this.loadPosition()
+        if (this.currentGamePgn) {
+          if (this.gameStateDuringMovementMode) {
+            this.loadGame(this.gameStateDuringMovementMode)
+          } else {
+            this.game.load_pgn(this.currentGamePgn)
+            this.loadPosition()
+          }
           this.setOnlyViewMod(isViewOnly);
           this.currentGamePgn = null;
         }
@@ -48,15 +53,19 @@ export default {
       this.initControlBoardMoveList()
     },
     updateGame(parsedData) {
-      this.game = parsedData.chess
-      this.parsedPgnData = parsedData
-      this.currentChessGame = parsedData.chess;
-      this.currentMoveHistory = this.game.history();
-      if (this.currentHistoryIndex === this.game.history().length - 1) {
-        this.currentHistoryIndex = this.game.history().length;
-        this.loadPosition()
+      if(this.viewOnly) {
+        this.game = parsedData.chess
+        this.parsedPgnData = parsedData
+        this.currentChessGame = parsedData.chess;
+        this.currentMoveHistory = this.game.history();
+        if (this.currentHistoryIndex === this.game.history().length - 1) {
+          this.currentHistoryIndex = this.game.history().length;
+          this.loadPosition()
+        }
+        this.initControlBoardMoveList()
+      } else {
+        this.gameStateDuringMovementMode = parsedData;
       }
-      this.initControlBoardMoveList()
     },
     loadRandomMove(move) {
       this.currentHistoryIndex = move.id
