@@ -1,9 +1,9 @@
 {
-  "name": "vue-chessboard-examples",
-  "description": "Simple examples for vue-chessboard component",
+  "name": "chess-craft",
+  "description": "ECUTV Platform development",
   "version": "1.1.0",
-  "author": "vitogit <vitogit@users.noreply.github.com>",
-  "license": "MIT",
+  "author": "Djapec <pedjadjape197@gmail.com>",
+  "license": "GPL-3.0",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
