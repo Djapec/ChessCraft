@@ -142,6 +142,7 @@ export default {
       }
     },
     addGameToMosaicView(index, game) {
+      this.previousGameId = null;
       const count = this.getArrayLength(this.mosaicViewGamesIndices);
       const itemGame = this.mosaicViewGamesIndices.findIndex(x => x.id === game.parsedData.id);
 
@@ -241,7 +242,7 @@ export default {
         clearInterval(this.intervalActiveGameFetch);
       }
     },
-    async fetchActiveMosaicViewGamesFetch() { //todo: potrebno je testiranje
+    async fetchActiveMosaicViewGamesFetch() {
       if (this.delay === 0 && this.mosaicViewGamesIndices.length >= 1) {
         const updatableMosaicViewGames = this.mosaicViewGamesIndices.map(game => game.gameIndex + 1);
 
@@ -350,8 +351,7 @@ export default {
       if (this.selectedRound) {
         clearInterval(this.intervalActiveRoundFetch);
         this.intervalActiveRoundFetch =
-            setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay - 1) * 60000));
-        //this.mosaicViewGamesIndices = [];  //todo: proveri
+            setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay * 0.6) * 60000));
         const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
         if (pgn !== null) {
           this.games = this.parseMultiplePGNs(pgn);
