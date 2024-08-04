@@ -65,7 +65,7 @@ export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null)
     }
 
     return {
-        id: nanoid(),
+        id: "",
         metadata,
         moves,
         chess,

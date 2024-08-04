@@ -80,7 +80,8 @@ export default {
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
     },
     logMove(move) {
-      bus.$emit('loadRandomMove', move);
+      if (!this.isViewOnlyMod)
+        bus.$emit('loadRandomMove', move);
     },
     loadFirstMove() {
       bus.$emit('firstMove');
@@ -209,7 +210,6 @@ th, td {
   border-bottom: 1px solid #ddd;
 
   &:hover.move-notation {
-    background-color: #f0f0f0;
     cursor: pointer;
   }
 }
