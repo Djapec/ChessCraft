@@ -1,33 +1,27 @@
 import {
     createGameLookupMap,
-    fetchIndexData,
+    fetchPairsData,
     fetchTournament,
     generatePgn,
-    getExtendedGamesUrls,
-    getGamesData,
-    validateNumber
-} from "../../lib/utils.js";
+    getGamesUrls,
+    getGamesInfo,
+    validateRoundNumber
+} from "../../utils/util.js";
 
 export async function generatePgnForRound(tournamentId, roundStr, desiredPairs = null) {
     try {
         const tournament = await fetchTournament(tournamentId);
-        const round = validateNumber(roundStr);
-        const indexData = await fetchIndexData(tournamentId, [round]);
+        const round = validateRoundNumber(roundStr);
+        const pairsData = await fetchPairsData(tournamentId, [round]);
 
-       if (indexData[0].pairings.length === 0) {
+       if (pairsData[0].pairings.length === 0) {
            console.log('Inactive Round')
            return null
        }
-           const extendedGamesUrls = getExtendedGamesUrls(tournamentId, [round], indexData, desiredPairs);
-           const lookupMap = createGameLookupMap(extendedGamesUrls);
-           const gamesData = await getGamesData(extendedGamesUrls);
-           return generatePgn(
-               tournament,
-               indexData,
-               gamesData,
-               extendedGamesUrls,
-               lookupMap
-           );
+           const gamesUrls = getGamesUrls(tournamentId, [round], pairsData, desiredPairs);
+           const lookupMap = createGameLookupMap(gamesUrls);
+           const gamesData = await getGamesInfo(gamesUrls);
+           return generatePgn(tournament, pairsData, gamesData, gamesUrls, lookupMap);
     } catch (e) {
         console.log(new Error(`Invalid request: ${e}`));
         return null

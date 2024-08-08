@@ -10,7 +10,7 @@
 <script>
 import MosaicViewBoard from "@/components/mosaic-view/MosaicViewBoard.vue";
 import bus from "@/bus";
-import {getCurrentMoveScheduledByTime, partlyClonePgn} from "../pgn/pgnParserWithDelay";
+import {getCurrentMoveScheduledByTime, partlyClonePgn} from "../pgn/utils/util";
 
 export default {
   name: 'MosaicView',

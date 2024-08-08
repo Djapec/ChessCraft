@@ -1,5 +1,5 @@
 import { Chess } from "../../../public/chess.min.js"; // version 0.13.4
-import { nanoid } from 'nanoid'
+import {calculateMoveTime, parseTimeToSeconds} from "./utils/util";
 
 export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null) {
     const [metadataPart, movesPart] = pgn.split('\n\n');
@@ -71,84 +71,4 @@ export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null)
         chess,
         halfMoves,
     };
-}
-
-function calculateMoveTime(startTournamentTime, delayInSeconds, cumulativeEMT, emt) {
-    const emtSeconds = parseTimeToSeconds(emt || '0:00:00'); // default 0 seconds if emt is null
-    const moveTime = new Date(startTournamentTime.getTime() + (delayInSeconds + cumulativeEMT + emtSeconds) * 1000);
-
-    return moveTime.toTimeString().split(' ')[0]; // Return the time part only
-}
-
-function parseTimeToSeconds(timeStr) {
-    const timeParts = timeStr.split(':');
-    const hours = parseInt(timeParts[0]) || 0;
-    const minutes = parseInt(timeParts[1]) || 0;
-    const seconds = parseInt(timeParts[2]) || 0;
-
-    return hours * 3600 + minutes * 60 + seconds;
-}
-
-export function partlyClonePgn(parsedPGN, moveLimit) {
-    const { metadata, moves, chess: originalChess, halfMoves: originalHalfMoves } = parsedPGN;
-
-    // Create a new Chess instance and apply moves up to the moveLimit
-    const chess = new Chess();
-    const newMoves = [];
-    const newHalfMoves = [];
-
-    for (let i = 0; i < originalHalfMoves.length && i < moveLimit; i++) {
-        const move = originalHalfMoves[i];
-        chess.move(move.move, { sloppy: true });
-        newHalfMoves.push(move);
-
-        // Add the move to the newMoves array in the correct format
-        if (move.color === 'white') {
-            newMoves.push({ white: move });
-        } else {
-            newMoves[newMoves.length - 1].black = move;
-        }
-    }
-
-    return {
-        metadata,
-        moves: newMoves,
-        chess,
-        halfMoves: newHalfMoves
-    };
-}
-
-
-export function parseTimeToDate(timeStr) {
-    const now = new Date();
-    const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
-}
-
-export function parseTimeStringToTimeObject(timeString) {
-    const now = new Date();
-    const [hours, minutes, seconds] = timeString.split(':').map(Number);
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
-}
-
-export function getCurrentMoveScheduledByTime(halfMoves, currentTime) {
-    let lastMove = null;
-
-    for (const move of halfMoves) {
-        const moveTime = parseTimeStringToTimeObject(move.time);
-
-        if (moveTime <= currentTime) {
-            lastMove = move;
-        } else {
-            break; // Prekidamo petlju kada nađemo prvi budući potez
-        }
-    }
-
-    return lastMove;
-}
-
-export function addDelayToTime(time, delayMinutes) {
-    const delayedTime = new Date(time);
-    delayedTime.setMinutes(delayedTime.getMinutes() + delayMinutes);
-    return delayedTime;
 }

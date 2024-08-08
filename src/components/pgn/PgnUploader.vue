@@ -51,19 +51,19 @@ import PGNParser from './PgnParser.vue';
 import bus from "../../bus";
 import {
   createGameLookupMap,
-  fetchIndexData,
+  fetchPairsData,
   fetchTournament, generatePgn,
-  getExtendedGamesUrls,
-  getGamesData,
-  validateNumber
-} from "./lib/utils";
+  getGamesUrls,
+  getGamesInfo,
+  validateRoundNumber
+} from "./utils/util";
 import { generatePgnForRound } from "./api/round/getRound";
 import {
   partlyClonePgn,
   getCurrentMoveScheduledByTime,
-  parsePgnWithDelay,
   parseTimeToDate
-} from "./pgnParserWithDelay";
+} from "./utils/util";
+import {parsePgnWithDelay} from "./pgnParserWithDelay";
 
 export default {
   name: 'PGNUploader',
@@ -211,17 +211,17 @@ export default {
         const gameStr = this.currentGameIndex + 1;
         try {
           const tournament = await fetchTournament(this.tournamentId);
-          const round = validateNumber(this.selectedRound);
-          const game = validateNumber(gameStr);
-          const indexData = await fetchIndexData(this.tournamentId, [round]);
+          const round = validateRoundNumber(this.selectedRound);
+          const game = validateRoundNumber(gameStr);
+          const pairsData = await fetchPairsData(this.tournamentId, [round]);
 
-          const extendedGamesUrls = getExtendedGamesUrls(
+          const extendedGamesUrls = getGamesUrls(
               this.tournamentId,
               [round],
-              indexData
+              pairsData
           ).filter((g) => g.game === game);
 
-          const gamesData = await getGamesData(extendedGamesUrls);
+          const gamesData = await getGamesInfo(extendedGamesUrls);
           const isMoveListChange = this.previousResponseMoveLength !== gamesData[0].value.moves.length
           const isActiveGameChange = this.previousGameId !== this.currentGameId
 
@@ -233,7 +233,7 @@ export default {
             const lookupMap = createGameLookupMap(extendedGamesUrls);
             const pgn = generatePgn(
                 tournament,
-                indexData,
+                pairsData,
                 gamesData,
                 extendedGamesUrls,
                 lookupMap
