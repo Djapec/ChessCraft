@@ -236,13 +236,6 @@ export function createGameLookupMap(games) {
     }, {});
 }
 
-export function getRoundsWithGames(rounds) {
-    return rounds.reduce((acc, { count }, idx) => {
-        if (count > 0) acc.push(idx + 1);
-        return acc;
-    }, []);
-}
-
 export function generatePgn(tournament, pairsInfo, gamesInfo, gamesUrls, lookupMap) {
     const pgnList = gamesInfo.reduce((acc, { status, value }, idx) => {
         if (status !== 'fulfilled') {

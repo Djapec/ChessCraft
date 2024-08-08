@@ -59,7 +59,7 @@ export default {
   methods: {
     showInfo(data) {
       this.positionInfo = data;
-      bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn));
+      bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
       if (this.positionInfo.history.length !== 0) {
         bus.$emit('updatePlayersClock', getLastMove(this.positionInfo.history, this.positionInfo.turn));
       }
