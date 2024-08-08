@@ -93,13 +93,13 @@ export default {
   },
   computed: {
     tournamentId() {
-      return this.$route.params.id || '1e9628a1-be2a-486a-8fd0-9969abde8a1b';
+      return this.$route.params.id || 'a655c774-29e4-4b00-90c3-3f4e3871433d';
     },
     filteredGames() {
       return this.games.filter(game => game.name.toLowerCase().includes(this.search.toLowerCase()));
     },
     routeRound() {
-      return this.$route.params.roundNumber
+      return Number(this.$route.params.roundNumber)
     }
   },
   watch: {
@@ -111,7 +111,7 @@ export default {
         const tournament = await fetchTournament(this.tournamentId);
         let roundsNumber = tournament.rounds.length;
         this.rounds = Array.from({ length: roundsNumber }, (_, i) => i + 1);
-        this.selectedRound = this.routeRound || this.rounds[0];
+        this.selectedRound = this.rounds.includes(this.routeRound) ? this.routeRound : this.rounds[0];
       } catch (error) {
         console.error("Error fetching rounds: ", error);
       }

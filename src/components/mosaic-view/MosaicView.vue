@@ -66,7 +66,7 @@ export default {
       }
     },
     startWorkerForGame(parsedData, gameIndex) {
-      const worker = new Worker("mosaicViewWorker.js");
+      const worker = new Worker("/mosaicViewWorker.js");
 
       worker.onmessage = (e) => {
         if (e.data.status === "complete" || e.data.status === "stopped") {

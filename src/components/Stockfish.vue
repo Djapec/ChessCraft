@@ -62,7 +62,7 @@ export default {
   methods: {
     initializeWorker() {
       if (this.worker) return; // Ako je radnik već pokrenut, ne pokreći ga ponovo
-      this.worker = new Worker('stockfish.js');
+      this.worker = new Worker('/stockfish.js');
       this.worker.onmessage = (event) => {
         const message = event.data;
         if (message.startsWith('info depth ' + this.searchDepth)) {
