@@ -1,3 +1,5 @@
+import { Chess } from "../../../../public/chess.min.js"
+
 export function calculateMoveTime(startTournamentTime, delayInSeconds, cumulativeEMT, emt) {
     const emtSeconds = parseTimeToSeconds(emt || '0:00:00');
     const moveTime = new Date(startTournamentTime.getTime() + (delayInSeconds + cumulativeEMT + emtSeconds) * 1000);
