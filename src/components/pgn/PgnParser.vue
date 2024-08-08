@@ -1,5 +1,5 @@
 <script>
-import { parsePGN } from './pgnParser';
+import {parsePgnWithDelay} from "./pgnParserWithDelay";
 
 export default {
   name: 'PGNParser',
@@ -19,13 +19,13 @@ export default {
     };
   },
   methods: {
-    parsePGN
+    parsePgnWithDelay
   },
   watch: {
     pgn: {
       immediate: true,
       handler(newPGN) {
-        this.parsedPGN = this.parsePGN(newPGN);
+        this.parsedPGN = this.parsePgnWithDelay(newPGN);
       }
     }
   }

@@ -176,7 +176,7 @@ function getFormattedMoves(moves) {
 }
 
 function getPlayerFullName(player) {
-    const full = `${player.lname || ''}, ${player.fname || ''} ${player.mname || ''}`;
+    const full = `${player.title || ''} ${player.lname || ''}, ${player.fname || ''}`;
     return full.trim() === ',' ? '?' : full;
 }
 
