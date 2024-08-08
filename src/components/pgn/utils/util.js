@@ -216,6 +216,19 @@ function getGameResult(code) {
     }
 }
 
+export function areListsEqual(list1, list2) {
+    if (list1.length !== list2.length) {
+        return false;
+    }
+
+    for (let i = 0; i < list1.length; i++) {
+        if (list1[i] !== list2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function createGameLookupMap(games) {
     return games.reduce((acc, { url, round, game }) => {
         acc[url] = { round, game };
@@ -251,4 +264,25 @@ export function generatePgn(tournament, pairsInfo, gamesInfo, gamesUrls, lookupM
         throw new Error('No valid PGN found.');
     }
     return pgn;
+}
+
+export function getLastMove(history, turn) {
+    let color = "";
+    if (turn === 'white') {
+        color = 'black';
+    } else {
+        color = 'white';
+    }
+    return {
+        moveNumber: history.length - 1,
+        color: color,
+        playedMove: history[history.length - 1]
+    };
+}
+
+export function getFirstLetter(str) {
+    if (typeof str !== 'string' || str.length === 0) {
+        return '';
+    }
+    return str.charAt(0);
 }

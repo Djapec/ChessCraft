@@ -31,6 +31,7 @@ import engine from './components/Stockfish.vue';
 import PGNUploader from './components/pgn/PgnUploader.vue';
 import bus from './bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
+import {getFirstLetter, getLastMove} from "./components/pgn/utils/util";
 
 export default {
   name: 'app',
@@ -65,27 +66,6 @@ export default {
     }
   }
 };
-
-function getLastMove(history, turn) {
-  let color = "";
-  if (turn === 'white') {
-    color = 'black';
-  } else {
-    color = 'white';
-  }
-  return {
-    moveNumber: history.length - 1,
-    color: color,
-    playedMove: history[history.length - 1]
-  };
-}
-
-function getFirstLetter(str) {
-  if (typeof str !== 'string' || str.length === 0) {
-    return '';
-  }
-  return str.charAt(0);
-}
 
 </script>
 
