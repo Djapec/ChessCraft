@@ -107,6 +107,11 @@ export default {
     selectedRound: 'generatePgnForActiveRound'
   },
   methods: {
+    handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        this.fetchActiveRound()
+      }
+    },
     async fetchRounds() {
       try {
         const tournament = await fetchTournament(this.tournamentId);
@@ -389,10 +394,14 @@ export default {
     await this.fetchRounds();
     await this.generatePgnForActiveRound();
   },
+  mounted() {
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  },
   beforeUnmount() {
     clearInterval(this.intervalActiveGameFetch);
     clearInterval(this.intervalActiveMosaicViewGamesFetch);
     clearInterval(this.intervalActiveRoundFetch);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 };
 </script>
