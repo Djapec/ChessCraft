@@ -67,6 +67,7 @@ import {parsePgnWithDelay} from "./pgnParserWithDelay";
 
 export default {
   name: 'PGNUploader',
+  inject: ['config'],
   components: {
     PGNParser
   },
@@ -86,7 +87,7 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 15, // !TODO: make dynamic depending on the audience
+      delay: 15,
       startTournamentTime: new Date(new Date().setHours(16, 30, 0, 0)),
       timeoutIds: []
     };
@@ -332,9 +333,9 @@ export default {
       this.timeoutIds = [];
     },
     updateGameList(newGameData) {
-      const index = this.currentGameIndex; // Indeks drugog elementa (indeksiranje počinje od 0)
+      const index = this.currentGameIndex;
       if (index >= 0 && index < this.games.length) {
-        this.$set(this.games, index, newGameData); // Ažuriramo element u reaktivnom nizu
+        this.$set(this.games, index, newGameData);
       }
     },
     loadActiveGame(pgn) {
@@ -384,6 +385,7 @@ export default {
     }
   },
   async created() {
+    this.delay = this.config.delay;
     await this.fetchRounds();
     await this.generatePgnForActiveRound();
   },

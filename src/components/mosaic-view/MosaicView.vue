@@ -15,6 +15,7 @@ import {getCurrentMoveScheduledByTime, partlyClonePgn} from "../pgn/utils/util";
 export default {
   name: 'MosaicView',
   components: { MosaicViewBoard },
+  inject: ['config'],
   data() {
     return {
       parsedGames: [{}, {}, {}, {}],
@@ -24,6 +25,7 @@ export default {
     }
   },
   created() {
+    this.isLive = this.config.isLive;
     bus.$on('generateMosaicView', (items) => {
       this.isVisible = true
       this.parsedGames = items

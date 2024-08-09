@@ -6,6 +6,7 @@
 
   export default {
     name: 'MosaicViewBoard',
+    inject: ['config'],
     extends: chessBoardCraft,
     data() {
       return {
@@ -29,7 +30,7 @@
     methods: {
       loadGame(parsedData) {
         if (parsedData?.chess) {
-          if(areListsEqual(this.game.history(),parsedData.chess.history()) && !this.liveGame) {
+          if (areListsEqual(this.game.history(), parsedData.chess.history()) && !this.liveGame) {
             this.game = new Chess();
             this.loadPosition();
           }
@@ -58,6 +59,9 @@
           }
         }
       },
+    },
+    created() {
+      this.isLive = this.config.isLive;
     },
     mounted() {
       this.board.set({
