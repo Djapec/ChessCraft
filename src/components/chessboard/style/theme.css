@@ -5,9 +5,14 @@
  * board and pieces displayed!
  */
 
+.analysis-board .cg-wrap {
+  width: 400px;
+  height: 400px;
+}
+
 .cg-wrap {
-  width: 450px;
-  height: 450px;
+  width: 240px;
+  height: 240px;
   position: relative;
   display: block;
 }

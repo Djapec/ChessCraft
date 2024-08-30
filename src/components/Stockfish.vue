@@ -3,17 +3,21 @@
     <div class="header">
       <h2>Analysis</h2>
       <div class="controls">
-        <button class="hide-button" @click="toggleHide">
-          {{ isHidden ? 'Show' : 'Hide' }}
-        </button>
         <div class="dropdown-container">
-          <label for="depth">Depth: </label>
-          <select id="depth" v-model="searchDepth">
+          <label for="depth">Depth:</label>
+          <select id="depth" class="depth-selector" v-model="searchDepth">
             <option value="15">15</option>
             <option value="20">20</option>
             <option value="25">25</option>
             <option value="30">30</option>
           </select>
+        </div>
+        <div class="toggle-container">
+          <label class="switch">
+            <input type="checkbox" @click="toggleHide" :checked="!isHidden">
+            <span class="slider round"></span>
+          </label>
+          <span class="toggle-label">Hide</span>
         </div>
       </div>
     </div>
@@ -22,11 +26,17 @@
         <thead>
         <tr>
           <th>Engine</th>
-          <th>Eval</th>
+          <th>Evaluation</th>
           <th>Moves</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody v-if="(this.currentGameHistory)">
+        <tr v-if="isActive && (evaluation === null || bestMoves.length === 0)">
+          <td colspan="3" class="calculating">
+            Calculating...
+            <span class="dot-flashing"></span>
+          </td>
+        </tr>
         <tr v-if="evaluation !== null && bestMoves.length">
           <td>Stockfish</td>
           <td>{{ evaluation }}</td>
@@ -168,31 +178,143 @@ export default {
 <style scoped>
 .analysis-container {
   border: 1px solid #ddd;
-  border-radius: 0 0 8px 8px;
-  padding: 16px;
+  border-radius: 8px;
+  background-color: #f8f8f8;
   width: 500px;
-  background-color: #f9f9f9;
-  margin-left: 0;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
+
 .header {
+  background-color: #f8f8f8;
+  padding: 1px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  height: 50px;
+  border-bottom: 1px solid #ddd;
 }
+
 .controls {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 20px;
 }
+
+.dropdown-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
 }
+
+thead {
+  background-color: #fff;
+}
+
 th, td {
-  padding: 10px;
+  padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid #ddd;
+}
+
+.calculating {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.dot-flashing {
+  position: relative;
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: #666;
+  color: #666;
+  animation: dotFlashing 1s infinite linear alternate;
+  animation-delay: .5s;
+  margin-left: 5px;
+}
+
+@keyframes dotFlashing {
+  0% {
+    background-color: #666;
+  }
+  50%,
+  100% {
+    background-color: #f7f7f7;
+  }
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fff;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #2196F3;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #fff;
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+.toggle-label {
+  font-size: 16px;
+  color: #333;
+  margin-left: 5px;
+}
+
+.depth-selector{
+  padding: 5px;
+  width: 60px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
 }
 </style>

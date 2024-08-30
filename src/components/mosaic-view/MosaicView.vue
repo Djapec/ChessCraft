@@ -102,6 +102,6 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  grid-gap: 4rem;
+  grid-gap: 2rem 4rem;
 }
 </style>

@@ -133,17 +133,17 @@ export default {
 <style scoped>
 .move-list-container {
   border: 1px solid #ddd;
-  padding: 16px;
-  width: 500px;
   height: 100%;
-  background-color: #f9f9f9;
+  background-color: #f8f8f8;
   margin-left: 0;
   border-radius: 8px 8px 0 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
+  padding: 12px;
   align-items: center;
   margin-bottom: 8px;
 }
@@ -168,7 +168,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #fff;
   transition: 0.4s;
   border-radius: 34px;
 }
@@ -180,13 +180,13 @@ export default {
   width: 14px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
+  background-color: #2196F3;
   transition: 0.4s;
   border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #90A4AE;
+  background-color: #fff;
 }
 
 input:checked + .slider:before {
@@ -194,12 +194,13 @@ input:checked + .slider:before {
 }
 
 .move-list {
-  max-height: 240px;
+  max-height: 160px;
   overflow-y: auto;
   margin-bottom: 8px;
 }
 
 table {
+  background-color: #fff;
   width: 100%;
   border-collapse: collapse;
 }
@@ -218,7 +219,6 @@ th, td {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 2rem;
 }
 
 .move-controls button {
@@ -230,7 +230,7 @@ th, td {
 }
 
 .active {
-  background-color: #90A4AE;
+  background-color: #f1f3f4;
   transition: background-color 0.3s ease;
 }
 
@@ -242,5 +242,9 @@ th, td {
   border: none;
   cursor: pointer;
   padding: 10px;
+}
+
+.undo-button:enabled {
+  color: #2196F3;
 }
 </style>

@@ -163,7 +163,7 @@ export default {
         this.mosaicViewGamesIndices.splice(itemGame, 1);
       }
 
-      if (count === 1 && itemGame !== -1) { // last one being removed - return to analysis board
+      if (count === 1 && itemGame !== -1) {
        this.toggleMosaicViewEnabled()
         clearInterval(this.intervalActiveMosaicViewGamesFetch);
       } else if (count < 4 && itemGame === -1 || count <= 4 && itemGame > -1) { // either new one being added or existing removed - load new mosaic setup
@@ -171,9 +171,9 @@ export default {
         this.sendParsedGamesToMosaicView();
         clearInterval(this.intervalActiveMosaicViewGamesFetch);
         this.intervalActiveMosaicViewGamesFetch = setInterval(this.fetchActiveMosaicViewGamesFetch, 5000);
-      } else if (count === 4 && itemGame === -1) { } // attempting to add over 4 - do nothing
+      } else if (count === 4 && itemGame === -1) { }
     },
-    getArrayLength(array) { // !TODO - there has to be a better way than this!
+    getArrayLength(array) { //todo - there has to be a better way than this!
       let count = 0;
       for (const item of array) {
         count++;
@@ -292,13 +292,11 @@ export default {
       this.clearAllTimeouts();
       const now = new Date();
 
-      // Filtriraj poteze koji su već prošli
       const futureMoves = parsedData.halfMoves.filter(move => {
         const targetTime = parseTimeToDate(move.time);
         return targetTime > now;
       });
 
-      // Ako nema budućih poteza, izađi iz funkcije
       if (futureMoves.length === 0) {
         console.log("Svi potezi su već prošli.");
         this.loadGame(parsedData);
@@ -310,7 +308,7 @@ export default {
 
         const move = moves[index];
         const targetTime = parseTimeToDate(move.time);
-        const delay = targetTime - new Date(); // Kašnjenje u milisekundama
+        const delay = targetTime - new Date();
 
         const timeoutId = setTimeout(() => {
           const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date());
@@ -319,17 +317,13 @@ export default {
           console.log(`Move ${moveScheduledByTime.id}: ${move.color} plays ${move.move} at ${move.time}`);
           this.updateGame(partlyClonedGame);
 
-          // Planiraj sledeći potez
           scheduleNextMove(moves, index + 1);
         }, delay);
 
         this.timeoutIds.push(timeoutId);
       };
 
-      // Planiraj prvi budući potez
       scheduleNextMove(futureMoves, 0);
-
-      // Prikaz prvog poteza odmah ako je propušten
       const nextMove = futureMoves[0];
       console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}`);
     },
@@ -411,77 +405,119 @@ export default {
   padding: 16px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: #fff;
   width: 500px;
-  margin-left: 0;
+  margin: 0 auto;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
+
 .header h2 {
   margin: 0;
-  flex-shrink: 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #333;
 }
+
 .header select.round-select {
-  padding: 5px;
-  min-width: 60px;
-  font-size: 16px;
+  padding: 8px;
+  width: 60px;
+  font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  outline: none;
+  background-color: #f8f8f8;
+  color: #333;
+  cursor: pointer;
 }
+
+.mosaic-view-selector {
+  margin-bottom: 10px;
+}
+
+.mosaic-view-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+
+.mosaic-view-label input {
+  margin-right: 8px;
+}
+
 .search-input {
-  width: calc(100% - 20px);
+  width: 96%;
   padding: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 14px;
+  background-color: #f8f8f8;
 }
+
+.games-list {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-top: 1px solid #ddd;
+}
+
 .games-list ul {
   list-style-type: none;
   padding: 0;
+  margin: 0;
 }
+
 .games-list ul li {
   display: flex;
   justify-content: space-between;
-}
-.filtered-game-container  {
-  display: flex;
-  justify-content: space-between;
-  padding: 1rem;
-  width: 100%;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
 }
-.game-round {
-  border-bottom: 1px solid #ddd;
 
-  &:hover {
-    background-color: #f0f0f0;
-  }
+.filtered-game-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
+
 .game-index {
   width: 30px;
+  text-align: center;
+  font-weight: 500;
+  color: #333;
 }
+
 .game-name {
   flex-grow: 1;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
 }
-.game-result {
-  width: 50px;
-  text-align: right;
-}
-.games-list li.focused {
-  background-color: #e0e0e0;
-}
-.mosaic-view-selector {
-  margin-bottom: 10px;
 
-  .mosaic-view-label {
-    &:hover {
-      cursor: pointer;
-    }
-  }
+.game-result {
+  width: 60px;
+  text-align: right;
+  font-weight: 400;
+  font-size: 14px;
+  color: #555;
+}
+
+.games-list li.focused {
+  background-color: #f0f0f0;
+}
+
+.games-list li:hover {
+  background-color: #f0f0f0;
 }
 </style>
+

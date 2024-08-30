@@ -6,13 +6,15 @@
       </div>
       <div v-if="isAnalysisBoardVisible" class="single-game-view">
         <div class="board-with-controls">
+          <div class="analysis-board">
           <analysis
               :fen="currentFen"
               :showThreats="false"
-              @onMove="showInfo"
-          />
+              @onMove="showInfo"/>
+          </div>
           <div class="side-container">
             <movesControlBoard/>
+            <br>
             <engine/>
           </div>
       </div>
@@ -83,6 +85,7 @@ export default {
 
   .left-side {
     display: flex;
+    flex-direction: column;
 
     .board-with-controls {
       display: flex;
