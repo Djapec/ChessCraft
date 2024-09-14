@@ -3,6 +3,7 @@
   import {getInfoForLastTwoMoves} from "../chessboard/Util";
   import { Chess } from "../../../public/chess.min.js"
   import {areListsEqual} from "../pgn/utils/util";
+  import {clockUsageTest} from "../clock";
 
   export default {
     name: 'MosaicViewBoard',
@@ -52,6 +53,7 @@
 
             this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
                 movesInfo.currentMoveInfo.clock;
+            clockUsageTest(movesInfo.currentMoveInfo.clock, movesInfo.currentMoveInfo.time)
             if (movesInfo.previousMoveInfo !== null) {
               this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
                   movesInfo.previousMoveInfo.clock;

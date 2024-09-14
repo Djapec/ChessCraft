@@ -88,7 +88,7 @@ export default {
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
       delay: 15,
-      startTournamentTime: new Date(new Date().setHours(16, 30, 0, 0)),
+      startTournamentTime: new Date(new Date().setHours(8, 30, 0, 0)),
       timeoutIds: []
     };
   },
@@ -463,7 +463,7 @@ export default {
 }
 
 .games-list {
-  max-height: 300px;
+  max-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
   border-top: 1px solid #ddd;

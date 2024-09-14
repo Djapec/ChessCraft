@@ -136,7 +136,7 @@ export default {
   height: 100%;
   background-color: #f8f8f8;
   margin-left: 0;
-  border-radius: 8px 8px 0 0;
+  border-radius: 8px 8px 8px 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
