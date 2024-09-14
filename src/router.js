@@ -1,18 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import App from './App.vue';
+import Admin from './views/CommentatorView.vue';
+import UserView from "./views/UserView.vue";
 
 const routes = [
+    // {
+    //     path: '/tournament/:id',
+    //     component: App
+    // },
+    // {
+    //     path: '/tournament/:id/round/:roundNumber',
+    //     component: App
+    // },
     {
-        path: '/tournament/:id',
-        component: App
-    },
-    {
-        path: '/tournament/:id/round/:roundNumber',
-        component: App
+        path: '/admin',
+        component: Admin
     },
     {
         path: '/',
-        component: App
+        component: UserView
     }
 ];
 
