@@ -9,3 +9,8 @@ export default {
   name: 'app'
 }
 </script>
+<style>
+body {
+  font-family: 'Figtree', sans-serif;
+}
+</style>

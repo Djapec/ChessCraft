@@ -40,7 +40,7 @@
         <tr v-if="evaluation !== null && bestMoves.length">
           <td>Stockfish</td>
           <td>{{ evaluation }}</td>
-          <td>{{ formattedMoves }}</td>
+          <td>{{ groupMoves(formattedMoves, this.currentMovesNumber, this.playerToMove) }}</td>
         </tr>
         </tbody>
       </table>
@@ -50,7 +50,8 @@
 
 <script>
 import bus from "../bus";
-import { Chess } from "../../public/chess.min.js"; // version 0.13.4
+import { Chess } from "../../public/chess.min.js";
+import {groupMoves, replaceChessNotationWithIcons} from "./pgn/utils/util"; // version 0.13.4
 
 export default {
   name: 'engine',
@@ -63,15 +64,19 @@ export default {
       isActive: true,
       searchDepth: 15,
       isHidden: false,
-      currentGameHistory: null
+      currentGameHistory: null,
+      currentMovesNumber: 0,
+      playerToMove: '',
     };
   },
   computed: {
     formattedMoves() {
-      return this.bestMoves.map(line => this.formatMovesToSanNotation(line).join(' ')).join(' ');
+      return this.bestMoves.map(line =>
+          replaceChessNotationWithIcons(this.formatMovesToSanNotation(line).join(' '))).join(' ');
     }
   },
   methods: {
+    groupMoves,
     initializeWorker() {
       if (this.worker) return;
       this.worker = new Worker('/stockfish.js');
@@ -98,6 +103,8 @@ export default {
     analyzePosition(fen, playerToMove, gameHistory) {
       if (!this.isActive || fen === this.startPositionFen) return;
       this.currentGameHistory = gameHistory;
+      this.currentMovesNumber = Math.round(gameHistory.length/2)
+      this.playerToMove = playerToMove;
       this.bestMoves = [];
       this.evaluation = null;
       this.worker.postMessage('uci');

@@ -18,7 +18,7 @@
                 class="move-notation"
                 @click="logMove(move.white)"
             >
-              {{ move.white.move }}
+              {{ replaceChessNotationWithIcons(move.white.move) }}
             </td>
             <td
                 v-if="move.black"
@@ -26,7 +26,7 @@
                 class="move-notation"
                 @click="logMove(move.black)"
             >
-              {{ move.black.move }}
+              {{ replaceChessNotationWithIcons(move.black.move) }}
             </td>
           </tr>
         </tbody>
@@ -44,6 +44,7 @@
 
 <script>
 import bus from "../bus";
+import {replaceChessNotationWithIcons} from "./pgn/utils/util";
 
 export default {
   name: "movesControlBoard",
@@ -71,6 +72,7 @@ export default {
     }
   },
   methods: {
+    replaceChessNotationWithIcons,
     isActiveMove(move) {
       this.scrollToActiveMove();
       return this.currentMoveIndex === move.id;
@@ -207,6 +209,7 @@ table {
 
 th, td {
   text-align: left;
+  font-size: 20px;
   padding: 8px;
   border-bottom: 1px solid #ddd;
 

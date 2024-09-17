@@ -5,6 +5,11 @@
  * board and pieces displayed!
  */
 
+.analysis-board-commentator-view .cg-wrap {
+  width: 550px;
+  height: 550px;
+}
+
 .analysis-board .cg-wrap {
   width: 400px;
   height: 400px;

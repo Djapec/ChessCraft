@@ -1,24 +1,22 @@
 <template>
-  <H1>admin view</H1>
   <div id="app">
     <div class="left-side">
-      <div class="main-container">
+      <div class="main-container-commentator-view">
         <PGNUploader />
       </div>
       <div v-if="isAnalysisBoardVisible" class="single-game-view">
         <div class="board-with-controls">
-          <div class="analysis-board">
+          <div class="analysis-board-commentator-view">
             <analysis
                 :fen="currentFen"
                 :showThreats="false"
                 @onMove="showInfo"/>
           </div>
-          <div class="side-container">
-            <movesControlBoard/>
-            <br>
-            <engine/>
-          </div>
         </div>
+        <engine/>
+      </div>
+      <div v-if="isAnalysisBoardVisible" class="side-container">
+        <movesControlBoard/>
       </div>
       <div class="mosaic-game-view">
         <mosaic-view/>
@@ -73,6 +71,32 @@ export default {
 </script>
 
 <style scoped>
+:deep(.pgn-uploader) {
+  width: 350px;
+}
+
+:deep(.games-list) {
+  max-height: 100%;
+}
+
+:deep(.analysis-container) {
+  margin-top: 20px;
+  width: 550px;
+}
+
+:deep(.move-list-container) {
+  margin-top: 20px;
+  width: 350px;
+  max-height: 610px;
+}
+
+:deep(.move-list) {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-top: 1px solid #ddd;
+}
+
 #app {
   display: flex;
   flex-direction: row;
@@ -86,7 +110,7 @@ export default {
 
 .left-side {
   display: flex;
-  //flex-direction: column;
+  gap: 20px;
 
   .board-with-controls {
     display: flex;
@@ -100,7 +124,7 @@ export default {
     }
   }
 
-  .main-container {
+  .main-container-commentator-view {
     display: flex;
     align-items: flex-start;
     margin-top: 20px;

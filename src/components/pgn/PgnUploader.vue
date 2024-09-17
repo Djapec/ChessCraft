@@ -64,6 +64,7 @@ import {
   parseTimeToDate
 } from "./utils/util";
 import {parsePgnWithDelay} from "./pgnParserWithDelay";
+import {clearClockTimeoutInterval} from "../clock";
 
 export default {
   name: 'PGNUploader',
@@ -87,8 +88,8 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 15,
-      startTournamentTime: new Date(new Date().setHours(8, 30, 0, 0)),
+      delay: 10,
+      startTournamentTime: new Date(new Date().setHours(15, 45, 0, 0)),
       timeoutIds: []
     };
   },
@@ -153,6 +154,7 @@ export default {
       }
     },
     addGameToMosaicView(index, game) {
+      clearClockTimeoutInterval()
       this.previousGameId = null;
       const count = this.getArrayLength(this.mosaicViewGamesIndices);
       const itemGame = this.mosaicViewGamesIndices.findIndex(x => x.id === game.parsedData.id);

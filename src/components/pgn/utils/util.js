@@ -281,3 +281,38 @@ export function getFirstLetter(str) {
     }
     return str.charAt(0);
 }
+
+export function replaceChessNotationWithIcons(notation) {
+    return notation
+        .replace(/N/g, '♞')  // Konj
+        .replace(/B/g, '♝')  // Lovac
+        .replace(/K/g, '♚')  // Kralj
+        .replace(/Q/g, '♛')  // Kraljica
+        .replace(/R/g, '♜'); // Top
+}
+
+export function groupMoves(movesString, startingNumber, playerToMove) {
+    const movesArray = movesString.split(' ');
+    let result = [];
+    let isWhiteToMove = playerToMove === "w";
+
+    let i = 0;
+
+    if (!isWhiteToMove && i < movesArray.length) {
+        result.push(`${startingNumber}. ${movesArray[i]}`);
+        i++;
+        startingNumber++;
+    }
+
+    for (; i < movesArray.length; i += 2) {
+        if (i + 1 < movesArray.length) {
+            result.push(`${startingNumber}. ${movesArray[i]} ${movesArray[i + 1]}`);
+        } else {
+            result.push(`${startingNumber}. ${movesArray[i]}`);
+        }
+        startingNumber++;
+    }
+
+    return result.join(' ');
+}
+

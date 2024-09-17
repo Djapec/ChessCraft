@@ -146,6 +146,8 @@ export default {
           if (movesInfo) {
             this[movesInfo.currentMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
                 movesInfo.currentMoveInfo.clock;
+            // ne treba da radi ako je partija gotova,
+            //clockUsageTest(movesInfo.currentMoveInfo.color, movesInfo.currentMoveInfo.clock, movesInfo.currentMoveInfo.time)
             bus.$emit('updateCurrentMove', movesInfo.currentMoveInfo.id)
             if (movesInfo.previousMoveInfo !== null) {
               this[movesInfo.previousMoveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock"] =
