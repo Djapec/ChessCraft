@@ -305,7 +305,9 @@ export function groupMoves(movesString, startingNumber, playerToMove) {
     }
 
     for (; i < movesArray.length; i += 2) {
-        if (i + 1 < movesArray.length) {
+        if (i + 1 < movesArray.length && isWhiteToMove) {
+            result.push(`${startingNumber +1}. ${movesArray[i]} ${movesArray[i + 1]}`);
+        } else if (i + 1 < movesArray.length) {
             result.push(`${startingNumber}. ${movesArray[i]} ${movesArray[i + 1]}`);
         } else {
             result.push(`${startingNumber}. ${movesArray[i]}`);

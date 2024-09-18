@@ -33,7 +33,7 @@
         <tbody v-if="(this.currentGameHistory)">
         <tr v-if="isActive && (evaluation === null || bestMoves.length === 0)">
           <td colspan="3" class="calculating">
-            Calculating...
+            {{this.engineMessage}}
             <span class="dot-flashing"></span>
           </td>
         </tr>
@@ -67,6 +67,7 @@ export default {
       currentGameHistory: null,
       currentMovesNumber: 0,
       playerToMove: '',
+      engineMessage: 'Calculating...',
     };
   },
   computed: {
@@ -81,18 +82,28 @@ export default {
       if (this.worker) return;
       this.worker = new Worker('/stockfish.js');
       this.worker.onmessage = (event) => {
-        const message = event.data;
-        if (message.startsWith('info depth ' + this.searchDepth)) {
-          const evalMatch = this.parseEvaluation(message);
-          if (evalMatch) {
-            this.evaluation = evalMatch;
+          const message = event.data;
+          if (message.includes('mate')) {
+            const evalMatch = this.parseEvaluation(message);
+            if (evalMatch && evalMatch === 'Checkmate') {
+              this.engineMessage = 'Checkmate!'
+            }
+
+            if (evalMatch) {
+              this.evaluation = evalMatch;
+            }
+          } else if (message.includes('depth')) {
+            const evalMatch = this.parseEvaluation(message);
+            if (evalMatch) {
+              this.evaluation = evalMatch;
+            }
           }
+
           const lines = this.parseBestMoves(message);
           if (lines.length) {
             this.bestMoves = lines;
           }
         }
-      };
     },
     terminateWorker() {
       if (this.worker) {
@@ -132,10 +143,16 @@ export default {
       if (match) {
         const scoreType = match[1];
         const scoreValue = parseInt(match[2], 10);
+
         if (scoreType === 'cp') {
           return (scoreValue / 100).toFixed(2);
         } else if (scoreType === 'mate') {
-          return `Mate in ${scoreValue}`;
+
+          if (scoreValue === 0) {
+            return 'Checkmate';
+          }
+
+          return `Mate in ${Math.abs(scoreValue)}`;
         }
       }
       return null;
