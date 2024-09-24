@@ -76,6 +76,7 @@ export default {
     return {
       isMosaicViewEnabled: false,
       mosaicViewGamesIndices: [],
+      parsedDataArray: [],
       games: [],
       search: '',
       selectedRound: '',
@@ -184,14 +185,13 @@ export default {
       return count;
     },
     sendParsedGamesToMosaicView() {
-      const parsedDataArray = [];
       for (const gameData of this.mosaicViewGamesIndices) {
         const game = this.filteredGames.find(game => game.parsedData.id === gameData.id)
         if (game?.parsedData)
-          parsedDataArray.push(game.parsedData);
+          this.parsedDataArray.push(game.parsedData);
       }
 
-      bus.$emit('generateMosaicView', parsedDataArray);
+      bus.$emit('generateMosaicView', this.parsedDataArray);
     },
     selectGame(index, game) {
       this.currentGameIndex = index;

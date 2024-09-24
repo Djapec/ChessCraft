@@ -1,7 +1,7 @@
 <template>
   <div class="analysis-container">
     <div class="header">
-      <h2>Analysis</h2>
+      <b>Analysis</b>
       <div class="controls">
         <div class="dropdown-container">
           <label for="depth">Depth:</label>
@@ -217,6 +217,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #ddd;
+  height: 50px;
 }
 
 .controls {
@@ -244,6 +245,7 @@ th, td {
   padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid #ddd;
+  font-size: 14px;
 }
 
 .calculating {

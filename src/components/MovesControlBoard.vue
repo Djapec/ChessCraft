@@ -209,7 +209,7 @@ table {
 
 th, td {
   text-align: left;
-  font-size: 20px;
+  font-size: 18px;
   padding: 8px;
   border-bottom: 1px solid #ddd;
 

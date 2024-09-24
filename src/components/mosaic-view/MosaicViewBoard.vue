@@ -17,14 +17,15 @@
     props: {
       parsedGameData: {
         type: Object,
-      }
+      },
+      deep: true
     },
     watch: {
       parsedGameData: {
         immediate: true,
         handler(newData) {
           this.loadGame(newData);
-        }
+        },
       }
     },
     methods: {

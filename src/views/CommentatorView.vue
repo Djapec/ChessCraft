@@ -73,25 +73,27 @@ export default {
 <style scoped>
 :deep(.pgn-uploader) {
   width: 350px;
+  height: 535px;
 }
 
 :deep(.games-list) {
-  max-height: 100%;
+  max-height: 80%;
 }
 
 :deep(.analysis-container) {
-  margin-top: 20px;
+  margin-top: 5px;
   width: 550px;
 }
 
 :deep(.move-list-container) {
   margin-top: 20px;
   width: 350px;
-  max-height: 610px;
+  height: 550px;
+  padding: 9px;
 }
 
 :deep(.move-list) {
-  max-height: 500px;
+  max-height: 430px;
   overflow-y: auto;
   overflow-x: hidden;
   border-top: 1px solid #ddd;
