@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Admin from './views/CommentatorView.vue';
+import CommentatorView from './views/CommentatorView.vue';
 import UserView from "./views/UserView.vue";
 
 const routes = [
@@ -12,16 +12,16 @@ const routes = [
         component: UserView
     },
     {
-        path: '/admin',
-        component: Admin
+        path: '/commentator',
+        component: CommentatorView
     },
     {
-        path: '/admin/tournament/:id',
-        component: Admin
+        path: '/commentator/tournament/:id',
+        component: CommentatorView
     },
     {
-        path: '/admin/tournament/:id/round/:roundNumber',
-        component: Admin
+        path: '/commentator/tournament/:id/round/:roundNumber',
+        component: CommentatorView
     },
     {
         path: '/',
