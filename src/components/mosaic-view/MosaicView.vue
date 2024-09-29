@@ -104,4 +104,23 @@ export default {
   grid-template-rows: repeat(2, 1fr);
   grid-gap: 2rem 4rem;
 }
+
+@media (max-width: 600px) {
+  .mosaic-view-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-gap: 1rem;
+  }
+
+  mosaic-view-board {
+    width: 100%;
+  }
+
+  :deep(.chessboard-craft-container) {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+  }
+}
 </style>

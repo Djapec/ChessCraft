@@ -23,5 +23,9 @@ body {
   align-items: center;
   height: auto;
   text-align: center;
+
+  @media (max-width: 600px) {
+    display: block;
+  }
 }
 </style>

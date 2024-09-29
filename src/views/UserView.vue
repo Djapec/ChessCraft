@@ -81,11 +81,24 @@ export default {
   @media screen and (max-width: 2100px) {
     flex-direction: column;
   }
+
+  @media screen and (max-width: 600px) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+:deep(.pgn-uploader) {
+  @media screen and (max-width: 600px) {
+    width: 350px;
+  }
 }
 
 .left-side {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
   .board-with-controls {
     display: flex;
@@ -96,6 +109,11 @@ export default {
       display: flex;
       flex-direction: column;
       margin-left: 20px;
+
+      @media screen and (max-width: 600px) {
+        flex-direction: column;
+        margin-left: 0;
+      }
     }
   }
 
@@ -103,12 +121,22 @@ export default {
     display: flex;
     align-items: flex-start;
     margin-top: 20px;
+
+    @media screen and (max-width: 600px) {
+      flex-direction: column;
+      margin-top: 0;
+    }
   }
 
   .mosaic-game-view {
     display: flex;
     flex-direction: column;
     margin-left: 30px;
+
+    @media screen and (max-width: 600px) {
+      flex-direction: column;
+      margin-left: 0;
+    }
   }
 }
 </style>
