@@ -210,7 +210,7 @@ export default {
   overflow: hidden;
 
   @media screen and (max-width: 600px) {
-    width: 360px;
+    width: 340px;
   }
 }
 

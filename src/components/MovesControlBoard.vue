@@ -142,6 +142,12 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+@media screen and (max-width: 600px) {
+  .move-list-container {
+    width: 340px;
+  }
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -222,6 +228,13 @@ th, td {
   display: flex;
   justify-content: center;
   gap: 8px;
+}
+
+@media screen and (max-width: 600px) {
+  .move-controls {
+    width: 340px;
+    gap: 5px;
+  }
 }
 
 .move-controls button {

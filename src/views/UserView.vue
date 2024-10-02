@@ -73,17 +73,28 @@ export default {
 
 <style scoped>
 #app {
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: row;
   flex-direction: row;
+  -webkit-align-items: flex-start;
   align-items: flex-start;
+  -webkit-justify-content: space-between;
   justify-content: space-between;
+}
 
-  @media screen and (max-width: 2100px) {
+@media screen and (max-width: 2100px) {
+  #app {
+    -webkit-flex-direction: column;
     flex-direction: column;
   }
+}
 
-  @media screen and (max-width: 600px) {
+@media screen and (max-width: 600px) {
+  #app {
+    -webkit-flex-direction: column;
     flex-direction: column;
+    -webkit-align-items: center;
     align-items: center;
   }
 }
@@ -95,48 +106,71 @@ export default {
 }
 
 .left-side {
+  display: -webkit-flex;
   display: flex;
+  -webkit-flex-direction: column;
   flex-direction: column;
+  -webkit-align-items: center;
   align-items: center;
+  -webkit-justify-content: center;
   justify-content: center;
+}
 
-  .board-with-controls {
-    display: flex;
+.board-with-controls {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+}
+
+.side-container {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  margin-left: 20px;
+}
+
+@media screen and (max-width: 600px) {
+  .side-container {
+    -webkit-flex-direction: column;
     flex-direction: column;
-    align-items: center;
-
-    .side-container {
-      display: flex;
-      flex-direction: column;
-      margin-left: 20px;
-
-      @media screen and (max-width: 600px) {
-        flex-direction: column;
-        margin-left: 0;
-      }
-    }
+    margin-left: 0;
   }
+}
 
+.main-container {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+@media screen and (max-width: 600px) {
   .main-container {
-    display: flex;
-    align-items: flex-start;
-    margin-top: 20px;
-
-    @media screen and (max-width: 600px) {
-      flex-direction: column;
-      margin-top: 0;
-    }
-  }
-
-  .mosaic-game-view {
-    display: flex;
+    -webkit-flex-direction: column;
     flex-direction: column;
-    margin-left: 30px;
+    margin-top: 0;
+  }
+}
 
-    @media screen and (max-width: 600px) {
-      flex-direction: column;
-      margin-left: 0;
-    }
+.mosaic-game-view {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  margin-left: 30px;
+}
+
+@media screen and (max-width: 600px) {
+  .mosaic-game-view {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    margin-left: 0;
   }
 }
 </style>
+
