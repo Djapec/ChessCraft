@@ -17,13 +17,7 @@ body {
   height: 100vh;
 }
 
-.center-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: auto;
-  text-align: center;
-
+.center-content{
   @media (max-width: 600px) {
     display: block;
   }

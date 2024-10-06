@@ -247,6 +247,9 @@ export default {
             dests: this.possibleMoves(),
           },
           orientation: orientation,
+          selectable: {
+            enabled: false,
+          },
         })
       } else {
         this.board = Chessground(this.$refs.board, {
@@ -259,6 +262,9 @@ export default {
             dests: this.possibleMoves(),
           },
           orientation: orientation,
+          selectable: {
+            enabled: false,
+          },
           events: {
             move: this.changeTurn(),
           },

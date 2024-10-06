@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app-user-view" class="app-container">
     <div class="left-side">
       <div class="main-container">
         <PGNUploader />
@@ -72,26 +72,26 @@ export default {
 </script>
 
 <style scoped>
-#app {
+#app-user-view {
   display: -webkit-flex;
   display: flex;
   -webkit-flex-direction: row;
   flex-direction: row;
-  -webkit-align-items: flex-start;
-  align-items: flex-start;
-  -webkit-justify-content: space-between;
-  justify-content: space-between;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
 }
 
 @media screen and (max-width: 2100px) {
-  #app {
+  #app-user-view {
     -webkit-flex-direction: column;
     flex-direction: column;
   }
 }
 
 @media screen and (max-width: 600px) {
-  #app {
+  #app-user-view {
     -webkit-flex-direction: column;
     flex-direction: column;
     -webkit-align-items: center;
@@ -162,7 +162,6 @@ export default {
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
-  margin-left: 30px;
 }
 
 @media screen and (max-width: 600px) {

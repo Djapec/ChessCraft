@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app-commentator-view">
     <div class="left-side">
       <div class="main-container-commentator-view">
         <PGNUploader />
@@ -99,7 +99,7 @@ export default {
   border-top: 1px solid #ddd;
 }
 
-#app {
+#app-commentator-view {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
