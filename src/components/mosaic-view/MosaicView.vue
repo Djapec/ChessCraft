@@ -111,6 +111,7 @@ export default {
     grid-template-columns: 1fr;
     grid-template-rows: none;
     grid-gap: 1rem;
+    font-size: 16px;
   }
 
   mosaic-view-board {

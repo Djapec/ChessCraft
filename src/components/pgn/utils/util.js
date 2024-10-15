@@ -299,22 +299,292 @@ export function groupMoves(movesString, startingNumber, playerToMove) {
     let i = 0;
 
     if (!isWhiteToMove && i < movesArray.length) {
-        result.push(`${startingNumber}. ${movesArray[i]}`);
+        result.push(`${startingNumber}. ... ${movesArray[i]}`);
         i++;
-        startingNumber++;
     }
 
-    for (; i < movesArray.length; i += 2) {
-        if (i + 1 < movesArray.length && isWhiteToMove) {
-            result.push(`${startingNumber +1}. ${movesArray[i]} ${movesArray[i + 1]}`);
-        } else if (i + 1 < movesArray.length) {
-            result.push(`${startingNumber}. ${movesArray[i]} ${movesArray[i + 1]}`);
-        } else {
-            result.push(`${startingNumber}. ${movesArray[i]}`);
+    while (i < movesArray.length) {
+        const whiteMove = movesArray[i++];
+        const blackMove = i < movesArray.length ? movesArray[i++] : null;
+
+        if (whiteMove) {
+            let moveString = `${startingNumber}. ${whiteMove}`;
+            if (blackMove) {
+                moveString += ` ${blackMove}`;
+            }
+            result.push(moveString);
         }
+
         startingNumber++;
     }
 
     return result.join(' ');
 }
 
+export function getPreviousMoveFenPosition(moveHistory) {
+    let chess = new Chess();
+
+    if (moveHistory.length > 1) {
+        for (let i = 0; i < moveHistory.length; i++) {
+            let move = moveHistory[i];
+            chess.move(move);
+        }
+    }
+    else {
+        return {
+            fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+            moveHistory: [],
+        }
+    }
+
+    return {
+        fen: chess.fen(),
+        moveHistory: chess.history(),
+    };
+}
+
+const axios = require('axios');
+const CancelToken = axios.CancelToken;
+let cancel;
+
+export const getStockfishEvaluation = async (fen, depth) => {
+    const endpoint = 'https://stockfish.online/api/s/v2.php';
+    if (cancel) {
+        cancel();
+    }
+    try {
+        const response = await axios.get(endpoint, {
+            params: {
+                fen,
+                depth,
+            },
+            cancelToken: new CancelToken(function executor(c) {
+                cancel = c;
+            }),
+        });
+        if (response.data && response.data.success) {
+            return response.data.evaluation;
+        } else {
+            throw new Error('Failed to get evaluation data');
+        }
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            console.error('Request canceled:', error.message);
+        } else {
+            console.error('Error fetching evaluation:', error);
+        }
+        return null;
+    }
+};
+
+export function handleEvaluationString(evaluation, apiScore) {
+    if (evaluation.includes('mate')) {
+        return evaluation;
+    }
+
+    const isPositive = isPositiveOrNegative(apiScore)
+    if (isPositive === null) {
+        return evaluation;
+    }
+
+    const numericValue = parseFloat(evaluation);
+    if (!isNaN(numericValue)) {
+        if (numericValue === 0.0) {
+            return evaluation;
+        }
+        return isPositive > 0 ? Math.abs(numericValue).toString() : (-Math.abs(numericValue)).toString();
+    }
+
+    return evaluation;
+}
+
+function isPositiveOrNegative(numberString) {
+    const numericValue = parseFloat(numberString);
+    if (!isNaN(numericValue)) {
+        return numericValue >= 0;
+    }
+    else return null
+}
+
+// Function to parse FEN notation and create a position object
+function parseFEN(fen) {
+    var pos = {
+        board: [],
+        sideToMove: 'w',
+        castling: '',
+        enPassant: '-',
+        halfmoveClock: 0,
+        fullmoveNumber: 1
+    };
+
+    var parts = fen.trim().split(/\s+/);
+    var rows = parts[0].split('/');
+    for (var i = 0; i < rows.length; i++) {
+        var row = [];
+        var chars = rows[i].split('');
+        for (var j = 0; j < chars.length; j++) {
+            var c = chars[j];
+            if (isNaN(c)) {
+                row.push(c);
+            } else {
+                for (var k = 0; k < parseInt(c); k++) {
+                    row.push(null);
+                }
+            }
+        }
+        pos.board.push(row);
+    }
+    pos.sideToMove = parts[1];
+    pos.castling = parts[2];
+    pos.enPassant = parts[3];
+    pos.halfmoveClock = parseInt(parts[4]);
+    pos.fullmoveNumber = parseInt(parts[5]);
+
+    return pos;
+}
+
+// Control of the center squares
+function control_center(pos) {
+    const centerSquares = [[3, 3], [3, 4], [4, 3], [4, 4]]; // Center squares: d4, e4, d5, e5
+    let score = 0;
+    for (let [x, y] of centerSquares) {
+        let piece = pos.board[x][y];
+        if (piece) {
+            if (piece === piece.toUpperCase()) score += 20; // White piece
+            else score -= 20; // Black piece
+        }
+    }
+    return score;
+}
+
+// Pawn structure evaluation
+// Pawn structure evaluation
+function pawn_structure(pos) {
+    let score = 0;
+    let files = { 'a': [], 'b': [], 'c': [], 'd': [], 'e': [], 'f': [], 'g': [], 'h': [] };
+
+    // Populate the files with pawns
+    for (let i = 0; i < pos.board.length; i++) {
+        for (let j = 0; j < pos.board[i].length; j++) {
+            let piece = pos.board[i][j];
+            if (piece && (piece === 'P' || piece === 'p')) {
+                let file = 'abcdefgh'[j];
+                files[file].push(piece);
+            }
+        }
+    }
+
+    // Penalize doubled and isolated pawns
+    for (let file in files) {
+        if (files[file].length > 1) { // Doubled pawns
+            if (files[file][0] === 'P') score -= 30; // Doubled white pawns
+            else score += 30; // Doubled black pawns
+        }
+
+        // Isolated pawns
+        let prevFile = String.fromCharCode(file.charCodeAt(0) - 1);
+        let nextFile = String.fromCharCode(file.charCodeAt(0) + 1);
+
+        // Ensure prevFile and nextFile are within the valid range of 'a' to 'h'
+        if (files[file].length > 0 &&
+            ((!files[prevFile] || files[prevFile].length === 0) &&
+                (!files[nextFile] || files[nextFile].length === 0))) {
+
+            if (files[file][0] === 'P') score -= 30; // Isolated white pawn
+            else score += 30; // Isolated black pawn
+        }
+    }
+
+    return score;
+}
+
+// King safety (simple penalty for exposed kings)
+function king_safety(pos) {
+    let score = 0;
+
+    // King positions
+    let whiteKingPos = null;
+    let blackKingPos = null;
+
+    for (let i = 0; i < pos.board.length; i++) {
+        for (let j = 0; j < pos.board[i].length; j++) {
+            if (pos.board[i][j] === 'K') whiteKingPos = [i, j];
+            if (pos.board[i][j] === 'k') blackKingPos = [i, j];
+        }
+    }
+
+    // Penalize for exposed kings
+    if (whiteKingPos[0] < 2) score -= 50; // White king is exposed
+    if (blackKingPos[0] > 5) score += 50; // Black king is exposed
+
+    return score;
+}
+
+// Mobility (number of pieces)
+function mobility(pos) {
+    let whitePieces = 0, blackPieces = 0;
+    for (let i = 0; i < pos.board.length; i++) {
+        for (let j = 0; j < pos.board[i].length; j++) {
+            let piece = pos.board[i][j];
+            if (piece) {
+                if (piece === piece.toUpperCase()) whitePieces++;
+                else blackPieces++;
+            }
+        }
+    }
+
+    // Return a small advantage to the side with more active pieces
+    return whitePieces - blackPieces;
+}
+
+// Material and positional evaluation for middle game
+function middle_game_evaluation(pos) {
+    var pieceValues = {
+        'P': 100,
+        'N': 320,
+        'B': 330,
+        'R': 500,
+        'Q': 900,
+        'K': 20000,
+        'p': -100,
+        'n': -320,
+        'b': -330,
+        'r': -500,
+        'q': -900,
+        'k': -20000
+    };
+
+    var score = 0;
+    for (var i = 0; i < pos.board.length; i++) {
+        for (var j = 0; j < pos.board[i].length; j++) {
+            var piece = pos.board[i][j];
+            if (piece) {
+                score += pieceValues[piece] || 0;
+            }
+        }
+    }
+
+    // Add positional factors
+    score += control_center(pos);
+    score += pawn_structure(pos);
+    score += king_safety(pos);
+    score += mobility(pos);
+
+    return score;
+}
+
+// Main evaluation function
+function main_evaluation(fen) {
+    var pos = parseFEN(fen);
+    var mg = middle_game_evaluation(pos);
+    var eg = middle_game_evaluation(pos); // Using the same eval for endgame for simplicity
+    var p = 64; // Assume midgame phase
+    var rule50Val = pos.halfmoveClock;
+
+    eg = (eg * 64 / 64) << 0;
+    var v = (((mg * p + eg * (128 - p)) / 128) << 0);
+    if (arguments.length === 1) v = ((v / 16) << 0) * 16;
+    v += (pos.sideToMove === 'w' ? 16 : -16);
+    v = ((v * (100 - rule50Val) / 100) << 0);
+    return v;
+}

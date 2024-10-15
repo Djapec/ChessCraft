@@ -9,7 +9,7 @@
             <option value="15">15</option>
             <option value="20">20</option>
             <option value="25">25</option>
-            <option value="30">30</option>
+<!--            <option value="30">30</option>-->
           </select>
         </div>
         <div class="toggle-container">
@@ -39,7 +39,7 @@
         </tr>
         <tr v-if="evaluation !== null && bestMoves.length">
           <td>Stockfish</td>
-          <td>{{ evaluation }}</td>
+          <td>{{ handleEvaluationString(evaluation, apiScore) }}</td>
           <td>{{ groupMoves(formattedMoves, this.currentMovesNumber, this.playerToMove) }}</td>
         </tr>
         </tbody>
@@ -51,7 +51,12 @@
 <script>
 import bus from "../bus";
 import { Chess } from "../../public/chess.min.js";
-import {groupMoves, replaceChessNotationWithIcons} from "./pgn/utils/util"; // version 0.13.4
+import {
+  getPreviousMoveFenPosition,
+  getStockfishEvaluation,
+  groupMoves, handleEvaluationString,
+  replaceChessNotationWithIcons
+} from "./pgn/utils/util"; // version 0.13.4
 
 export default {
   name: 'engine',
@@ -68,6 +73,7 @@ export default {
       currentMovesNumber: 0,
       playerToMove: '',
       engineMessage: 'Calculating...',
+      apiScore: 0,
     };
   },
   computed: {
@@ -77,6 +83,7 @@ export default {
     }
   },
   methods: {
+    handleEvaluationString,
     groupMoves,
     initializeWorker() {
       if (this.worker) return;
@@ -111,16 +118,19 @@ export default {
         this.worker = null;
       }
     },
-    analyzePosition(fen, playerToMove, gameHistory) {
+    async analyzePosition(fen, playerToMove, gameHistory) {
       if (!this.isActive || fen === this.startPositionFen) return;
       this.currentGameHistory = gameHistory;
-      this.currentMovesNumber = Math.round(gameHistory.length/2)
+      this.currentMovesNumber = Math.round(gameHistory.length / 2)
       this.playerToMove = playerToMove;
       this.bestMoves = [];
       this.evaluation = null;
       this.worker.postMessage('uci');
       this.worker.postMessage('isready');
       const fullFen = `${fen} ${playerToMove} KQkq - 0 1`;
+
+      this.apiScore = await getStockfishEvaluation(fen, 12);
+
       this.worker.postMessage(`position fen ${fullFen}`);
       this.worker.postMessage('setoption name MultiPV value 1');
       this.worker.postMessage(`go depth ${this.searchDepth}`);
