@@ -130,14 +130,12 @@ export default {
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
-  margin-left: 20px;
 }
 
 @media screen and (max-width: 600px) {
   .side-container {
     -webkit-flex-direction: column;
     flex-direction: column;
-    margin-left: 0;
   }
 }
 

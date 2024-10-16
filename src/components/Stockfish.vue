@@ -3,15 +3,15 @@
     <div class="header">
       <b>Analysis</b>
       <div class="controls">
-        <div class="dropdown-container">
-          <label for="depth">Depth:</label>
-          <select id="depth" class="depth-selector" v-model="searchDepth">
-            <option value="15">15</option>
-            <option value="20">20</option>
-            <option value="25">25</option>
+<!--        <div class="dropdown-container">-->
+<!--          <label for="depth">Depth:</label>-->
+<!--          <select id="depth" class="depth-selector" v-model="searchDepth">-->
+<!--            <option value="15">15</option>-->
+<!--            <option value="20">20</option>-->
+<!--            <option value="25">25</option>-->
 <!--            <option value="30">30</option>-->
-          </select>
-        </div>
+<!--          </select>-->
+<!--        </div>-->
         <div class="toggle-container">
           <label class="switch">
             <input type="checkbox" @click="toggleHide" :checked="!isHidden">
@@ -67,7 +67,7 @@ export default {
       evaluation: null,
       startPositionFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       isActive: true,
-      searchDepth: 15,
+      searchDepth: 20,
       isHidden: false,
       currentGameHistory: null,
       currentMovesNumber: 0,

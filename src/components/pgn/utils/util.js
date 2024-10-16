@@ -19,7 +19,6 @@ export function parseTimeToSeconds(timeStr) {
 export function partlyClonePgn(parsedPGN, moveLimit) {
     const { metadata, moves, chess: originalChess, halfMoves: originalHalfMoves } = parsedPGN;
 
-    // Create a new Chess instance and apply moves up to the moveLimit
     const chess = new Chess();
     const newMoves = [];
     const newHalfMoves = [];
@@ -29,7 +28,6 @@ export function partlyClonePgn(parsedPGN, moveLimit) {
         chess.move(move.move, { sloppy: true });
         newHalfMoves.push(move);
 
-        // Add the move to the newMoves array in the correct format
         if (move.color === 'white') {
             newMoves.push({ white: move });
         } else {
@@ -162,7 +160,6 @@ function getFormattedMoves(moves) {
         }
 
         if (!time || isNaN(parseInt(time.split('+')[0])) || isNaN(parseInt(time.split('+')[1]))) {
-            // If time is missing or invalid, just add the move without the clock time
             str += `${move} `;
         } else {
             const mainTimeSeconds = parseInt(time.split('+')[0]);
@@ -284,11 +281,11 @@ export function getFirstLetter(str) {
 
 export function replaceChessNotationWithIcons(notation) {
     return notation
-        .replace(/N/g, '♞')  // Konj
-        .replace(/B/g, '♝')  // Lovac
-        .replace(/K/g, '♚')  // Kralj
-        .replace(/Q/g, '♛')  // Kraljica
-        .replace(/R/g, '♜'); // Top
+        .replace(/N/g, '♞')
+        .replace(/B/g, '♝')
+        .replace(/K/g, '♚')
+        .replace(/Q/g, '♛')
+        .replace(/R/g, '♜');
 }
 
 export function groupMoves(movesString, startingNumber, playerToMove) {
@@ -366,7 +363,7 @@ export const getStockfishEvaluation = async (fen, depth) => {
         }
     } catch (error) {
         if (axios.isCancel(error)) {
-            console.error('Request canceled:', error.message);
+            //console.error('Request canceled:', error.message);
         } else {
             console.error('Error fetching evaluation:', error);
         }
@@ -442,13 +439,13 @@ function parseFEN(fen) {
 
 // Control of the center squares
 function control_center(pos) {
-    const centerSquares = [[3, 3], [3, 4], [4, 3], [4, 4]]; // Center squares: d4, e4, d5, e5
+    const centerSquares = [[3, 3], [3, 4], [4, 3], [4, 4]];
     let score = 0;
     for (let [x, y] of centerSquares) {
         let piece = pos.board[x][y];
         if (piece) {
-            if (piece === piece.toUpperCase()) score += 20; // White piece
-            else score -= 20; // Black piece
+            if (piece === piece.toUpperCase()) score += 20;
+            else score -= 20;
         }
     }
     return score;
@@ -473,9 +470,9 @@ function pawn_structure(pos) {
 
     // Penalize doubled and isolated pawns
     for (let file in files) {
-        if (files[file].length > 1) { // Doubled pawns
-            if (files[file][0] === 'P') score -= 30; // Doubled white pawns
-            else score += 30; // Doubled black pawns
+        if (files[file].length > 1) {
+            if (files[file][0] === 'P') score -= 30;
+            else score += 30;
         }
 
         // Isolated pawns
@@ -488,7 +485,7 @@ function pawn_structure(pos) {
                 (!files[nextFile] || files[nextFile].length === 0))) {
 
             if (files[file][0] === 'P') score -= 30; // Isolated white pawn
-            else score += 30; // Isolated black pawn
+            else score += 30;
         }
     }
 
@@ -511,8 +508,8 @@ function king_safety(pos) {
     }
 
     // Penalize for exposed kings
-    if (whiteKingPos[0] < 2) score -= 50; // White king is exposed
-    if (blackKingPos[0] > 5) score += 50; // Black king is exposed
+    if (whiteKingPos[0] < 2) score -= 50;
+    if (blackKingPos[0] > 5) score += 50;
 
     return score;
 }
@@ -574,7 +571,7 @@ function middle_game_evaluation(pos) {
 function main_evaluation(fen) {
     var pos = parseFEN(fen);
     var mg = middle_game_evaluation(pos);
-    var eg = middle_game_evaluation(pos); // Using the same eval for endgame for simplicity
+    var eg = middle_game_evaluation(pos);
     var p = 64; // Assume midgame phase
     var rule50Val = pos.halfmoveClock;
 

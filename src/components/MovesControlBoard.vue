@@ -1,11 +1,11 @@
 <template>
   <div class="move-list-container">
-    <div class="header">
-      <span>Enable movement</span>
-      <label class="switch">
-        <input type="checkbox" v-model="isViewOnlyMod" @change="toggleMovement">
-        <span class="slider round"></span>
-      </label>
+    <div class="move-controls">
+      <button class="button" @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
+      <button class="button" id="prevMove" @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
+      <button class="button undo-button" @click="undo()" :disabled="!isButtonsDisabled">&#8635;</button>
+      <button class="button" id="nextMove" @click="loadNextMove()" :disabled="isButtonsDisabled">&#8250;</button>
+      <button class="button" @click="loadLastMove()" :disabled="isButtonsDisabled">&#187;</button>
     </div>
     <div class="move-list">
       <table>
@@ -32,12 +32,12 @@
         </tbody>
       </table>
     </div>
-    <div class="move-controls">
-      <button class="button" @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
-      <button class="button" @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
-      <button class="button undo-button" @click="undo()" :disabled="!isButtonsDisabled">&#8635;</button>
-      <button class="button" @click="loadNextMove()" :disabled="isButtonsDisabled">&#8250;</button>
-      <button class="button" @click="loadLastMove()" :disabled="isButtonsDisabled">&#187;</button>
+    <div class="header">
+      <span>Enable movement</span>
+      <label class="switch">
+        <input type="checkbox" v-model="isViewOnlyMod" @change="toggleMovement">
+        <span class="slider round"></span>
+      </label>
     </div>
   </div>
 </template>
@@ -127,6 +127,15 @@ export default {
       this.isViewOnlyMod = false;
       this.isButtonsDisabled = false;
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' && !this.isButtonsDisabled) {
+        this.loadNextMove();
+      }
+      if (event.key === 'ArrowLeft' && !this.isButtonsDisabled) {
+        this.loadPrevMove();
+      }
     });
   }
 };
