@@ -104,6 +104,7 @@ export default {
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
+  margin-left: 50px;
 
   @media screen and (max-width: 2100px) {
     flex-direction: column;

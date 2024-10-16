@@ -301,20 +301,17 @@ export function groupMoves(movesString, startingNumber, playerToMove) {
     if (!isWhiteToMove && i < movesArray.length) {
         result.push(`${startingNumber}. ... ${movesArray[i]}`);
         i++;
+        startingNumber++;
     }
 
-    while (i < movesArray.length) {
-        const whiteMove = movesArray[i++];
-        const blackMove = i < movesArray.length ? movesArray[i++] : null;
-
-        if (whiteMove) {
-            let moveString = `${startingNumber}. ${whiteMove}`;
-            if (blackMove) {
-                moveString += ` ${blackMove}`;
-            }
-            result.push(moveString);
+    for (; i < movesArray.length; i += 2) {
+        if (i + 1 < movesArray.length && isWhiteToMove) {
+            result.push(`${startingNumber +1}. ${movesArray[i]} ${movesArray[i + 1]}`);
+        } else if (i + 1 < movesArray.length) {
+            result.push(`${startingNumber}. ${movesArray[i]} ${movesArray[i + 1]}`);
+        } else {
+            result.push(`${startingNumber}. ${movesArray[i]}`);
         }
-
         startingNumber++;
     }
 
