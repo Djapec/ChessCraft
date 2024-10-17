@@ -21,7 +21,7 @@ export default {
       parsedGames: [{}, {}, {}, {}],
       workers: [],
       isVisible: true,
-      isLive: false,
+      isLive: true,
     }
   },
   created() {

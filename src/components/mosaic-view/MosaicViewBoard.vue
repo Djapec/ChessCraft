@@ -11,7 +11,7 @@
     data() {
       return {
         viewOnly: true,
-        liveGame: false
+        liveGame: true
       }
     },
     props: {
