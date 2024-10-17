@@ -55,7 +55,7 @@ import {
   fetchTournament, generatePgn,
   getGamesUrls,
   getGamesInfo,
-  validateRoundNumber, isToday
+  validateRoundNumber, isToday, isTwentyMinutesLater
 } from "./utils/util";
 import { generatePgnForRound } from "./api/round/getRound";
 import {
@@ -284,7 +284,7 @@ export default {
     checkGameResult(game) {
       const isGameInProgress = game.result === '*';
       const hasDelay = this.delay > 0;
-      const hasPlyCount = game.parsedData.metadata?.PlyCount !== 0;
+      const hasPlyCount = game.parsedData.halfMoves.length > 0;
 
       if (!isGameInProgress && hasDelay && hasPlyCount && isToday(game.parsedData.metadata?.StartTime)) {
         const partlyClonedGame = this.getPartlyClonedGame(game);
@@ -294,7 +294,9 @@ export default {
         }
 
         const isHalfMovesEqual = partlyClonedGame.halfMoves.length === game.parsedData.halfMoves.length
-        return isHalfMovesEqual ? game.result : '*';
+        const lastPartlyClonedGameTimeMove = partlyClonedGame.halfMoves[partlyClonedGame.halfMoves.length - 1]
+        const isTwentyMinutesLaterPass = isTwentyMinutesLater(lastPartlyClonedGameTimeMove)
+        return (isHalfMovesEqual && isTwentyMinutesLaterPass) ? game.result : '*';
       }
 
       return game.result;

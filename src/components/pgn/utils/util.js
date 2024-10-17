@@ -590,3 +590,13 @@ function main_evaluation(fen) {
     v = ((v * (100 - rule50Val) / 100) << 0);
     return v;
 }
+
+export function isTwentyMinutesLater(givenTime) {
+    const currentTime = new Date();
+    const [hours, minutes, seconds] = givenTime.split(':').map(Number);
+    const givenDate = new Date();
+    givenDate.setHours(hours, minutes, seconds, 0);
+
+    const differenceInMinutes = (currentTime - givenDate) / (1000 * 60);
+    return differenceInMinutes >= 20;
+}
