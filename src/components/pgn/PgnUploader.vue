@@ -55,7 +55,7 @@ import {
   fetchTournament, generatePgn,
   getGamesUrls,
   getGamesInfo,
-  validateRoundNumber
+  validateRoundNumber, isToday
 } from "./utils/util";
 import { generatePgnForRound } from "./api/round/getRound";
 import {
@@ -200,7 +200,8 @@ export default {
 
       bus.$emit('disableMovementAndControlsWhenChangingGame');
 
-        if (this.currentActiveGame.result === '*') { //todo ovde mozda postoji problem upotrebi ono dole
+      const gameResult = this.checkGameResult(this.currentActiveGame)
+      if (gameResult === '*') { //todo ovde mozda postoji problem upotrebi ono dole
           if (this.delay > 0) {
             this.clearAllTimeouts()
             this.presentGameWithDelay()
@@ -283,16 +284,16 @@ export default {
     checkGameResult(game) {
       const isGameInProgress = game.result === '*';
       const hasDelay = this.delay > 0;
-      const hasPlyCount = game.metadata?.PlyCount !== 0;
+      const hasPlyCount = game.parsedData.metadata?.PlyCount !== 0;
 
-      if (!isGameInProgress && hasDelay && hasPlyCount) {
+      if (!isGameInProgress && hasDelay && hasPlyCount && isToday(game.parsedData.metadata?.StartTime)) {
         const partlyClonedGame = this.getPartlyClonedGame(game);
 
         if (!partlyClonedGame) {
-          return game.result; // The game is finished
+          return game.result;
         }
 
-        const isHalfMovesEqual = partlyClonedGame.halfMoves.length === game.halfMoves?.length;
+        const isHalfMovesEqual = partlyClonedGame.halfMoves.length === game.parsedData.halfMoves.length
         return isHalfMovesEqual ? game.result : '*';
       }
 
@@ -304,7 +305,6 @@ export default {
         if (!moveScheduledByTime) {
           return null
         }
-        console.log('moveScheduledByTime: ', moveScheduledByTime)
         let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
         return partlyClonePgn(game.parsedData, moveId);
       }
@@ -345,7 +345,7 @@ export default {
           const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date());
           let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveScheduledByTime.id);
 
-          console.log(`Move ${moveScheduledByTime.id}: ${move.color} plays ${move.move} at ${move.time}`);
+          //console.log(`Move ${moveScheduledByTime.id}: ${move.color} plays ${move.move} at ${move.time}`);
           this.updateGame(partlyClonedGame);
 
           scheduleNextMove(moves, index + 1);
@@ -356,7 +356,7 @@ export default {
 
       scheduleNextMove(futureMoves, 0);
       const nextMove = futureMoves[0];
-      console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}`);
+      //console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}`);
     },
     clearAllTimeouts() {
       this.timeoutIds.forEach(timeoutId => clearTimeout(timeoutId));

@@ -1,5 +1,5 @@
 // Global variables
 export const config = {
-    isLive: true,
-    delay: 0,
+    isLive: false,
+    delay: 15,
 };

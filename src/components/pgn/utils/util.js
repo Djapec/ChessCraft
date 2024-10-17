@@ -63,6 +63,14 @@ export function parseTimeStringToTimeObject(timeString) {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
 }
 
+export function isToday(timestamp) {
+    const date = new Date(timestamp);
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear();
+}
+
 export function getCurrentMoveScheduledByTime(halfMoves, currentTime) {
     let lastMove = null;
     for (const move of halfMoves) {
