@@ -118,7 +118,6 @@ export default {
         let startIndex = this.currentHistoryIndex - 1;
         let lastGameMove = this.game.history()[this.game.history().length - 1];
 
-        // proveravam da li su poslednji potezi identicni
         if (lastGameMove === this.currentMoveHistory[startIndex - 1]) {
           this.game.move(this.currentMoveHistory[startIndex])
           this.loadPosition()

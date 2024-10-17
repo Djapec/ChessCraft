@@ -38,7 +38,7 @@
           <div class="filtered-game-container">
             <span class="game-index">{{ index + 1 }}.</span>
             <span class="game-name">{{ game.name }}</span>
-            <span class="game-result">{{ game.result }}</span>
+            <span class="game-result">{{ this.checkGameResult(game) }}</span>
           </div>
         </li>
       </ul>
@@ -88,7 +88,7 @@ export default {
       currentActiveGame: null,
       previousResponseMoveLength: 0,
       isMoveListChangeForCurrentGame: false,
-      delay: 10,
+      delay: 15,
       startTournamentTime: new Date(new Date().setHours(15, 45, 0, 0)),
       timeoutIds: []
     };
@@ -168,7 +168,7 @@ export default {
       if (count === 1 && itemGame !== -1) {
        this.toggleMosaicViewEnabled()
         clearInterval(this.intervalActiveMosaicViewGamesFetch);
-      } else if (count < 4 && itemGame === -1 || count <= 4 && itemGame > -1) { // either new one being added or existing removed - load new mosaic setup
+      } else if (count < 4 && itemGame === -1 || count <= 4 && itemGame > -1) {
         bus.$emit('toggleAnalysisBoardVisibility', false);
         this.sendParsedGamesToMosaicView();
         clearInterval(this.intervalActiveMosaicViewGamesFetch);
@@ -200,7 +200,7 @@ export default {
 
       bus.$emit('disableMovementAndControlsWhenChangingGame');
 
-        if (this.currentActiveGame.result === '*') {
+        if (this.currentActiveGame.result === '*') { //todo ovde mozda postoji problem upotrebi ono dole
           if (this.delay > 0) {
             this.clearAllTimeouts()
             this.presentGameWithDelay()
@@ -280,6 +280,35 @@ export default {
         clearInterval(this.intervalActiveMosaicViewGamesFetch);
       }
     },
+    checkGameResult(game) {
+      const isGameInProgress = game.result === '*';
+      const hasDelay = this.delay > 0;
+      const hasPlyCount = game.metadata?.PlyCount !== 0;
+
+      if (!isGameInProgress && hasDelay && hasPlyCount) {
+        const partlyClonedGame = this.getPartlyClonedGame(game);
+
+        if (!partlyClonedGame) {
+          return game.result; // The game is finished
+        }
+
+        const isHalfMovesEqual = partlyClonedGame.halfMoves.length === game.halfMoves?.length;
+        return isHalfMovesEqual ? game.result : '*';
+      }
+
+      return game.result;
+    },
+    getPartlyClonedGame(game) {
+      if (game.parsedData != null) {
+        const moveScheduledByTime = getCurrentMoveScheduledByTime(game.parsedData.halfMoves, new Date())
+        if (!moveScheduledByTime) {
+          return null
+        }
+        console.log('moveScheduledByTime: ', moveScheduledByTime)
+        let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
+        return partlyClonePgn(game.parsedData, moveId);
+      }
+    },
     presentGameWithDelay() {
       const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date())
       let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
@@ -300,7 +329,7 @@ export default {
       });
 
       if (futureMoves.length === 0) {
-        console.log("Svi potezi su već prošli.");
+        //console.log("Svi potezi su već prošli.");
         this.loadGame(parsedData);
         return;
       }
