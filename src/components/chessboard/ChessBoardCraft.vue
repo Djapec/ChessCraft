@@ -291,3 +291,9 @@ export default {
   },
 }
 </script>
+
+<style>
+.chessboard-craft-container {
+  text-align: center;
+}
+</style>
