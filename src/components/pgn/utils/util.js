@@ -64,11 +64,20 @@ export function parseTimeStringToTimeObject(timeString) {
 }
 
 export function isToday(timestamp) {
+    // Convert timestamp from seconds to milliseconds if it's a shorter value (e.g., less than 13 digits)
+    if (typeof timestamp === 'string') {
+        timestamp = parseInt(timestamp, 10);
+    }
+    if (timestamp < 1e12) {
+        timestamp *= 1000;
+    }
+
     const date = new Date(timestamp);
     const today = new Date();
-    return date.getDate() === today.getDate() &&
+
+    return date.getFullYear() === today.getFullYear() &&
         date.getMonth() === today.getMonth() &&
-        date.getFullYear() === today.getFullYear();
+        date.getDate() === today.getDate();
 }
 
 export function getCurrentMoveScheduledByTime(halfMoves, currentTime) {
@@ -592,10 +601,18 @@ function main_evaluation(fen) {
 }
 
 export function isTwentyMinutesLater(givenTime) {
+    if (typeof givenTime !== 'string') {
+        throw new Error('givenTime must be a string in the format "HH:MM:SS"');
+    }
+
     const currentTime = new Date();
     const [hours, minutes, seconds] = givenTime.split(':').map(Number);
     const givenDate = new Date();
-    givenDate.setHours(hours, minutes, seconds, 0);
+    givenDate.setHours(hours, minutes, seconds || 0, 0);
+
+    if (givenDate > currentTime) {
+        givenDate.setDate(givenDate.getDate() - 1);
+    }
 
     const differenceInMinutes = (currentTime - givenDate) / (1000 * 60);
     return differenceInMinutes >= 20;

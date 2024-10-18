@@ -294,7 +294,7 @@ export default {
         }
 
         const isHalfMovesEqual = partlyClonedGame.halfMoves.length === game.parsedData.halfMoves.length
-        const lastPartlyClonedGameTimeMove = partlyClonedGame.halfMoves[partlyClonedGame.halfMoves.length - 1]
+        const lastPartlyClonedGameTimeMove = partlyClonedGame.halfMoves[partlyClonedGame.halfMoves.length - 1].time
         const isTwentyMinutesLaterPass = isTwentyMinutesLater(lastPartlyClonedGameTimeMove)
         return (isHalfMovesEqual && isTwentyMinutesLaterPass) ? game.result : '*';
       }
@@ -303,16 +303,16 @@ export default {
     },
     getPartlyClonedGame(game) {
       if (game.parsedData != null) {
-        const moveScheduledByTime = getCurrentMoveScheduledByTime(game.parsedData.halfMoves, new Date())
+        const moveScheduledByTime = getCurrentMoveScheduledByTime(game.parsedData.halfMoves, new Date());
         if (!moveScheduledByTime) {
-          return null
+          return null;
         }
         let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
         return partlyClonePgn(game.parsedData, moveId);
       }
     },
     presentGameWithDelay() {
-      const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date())
+      const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date());
       let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
       let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveId);
       this.loadGame(partlyClonedGame);
@@ -372,7 +372,7 @@ export default {
     },
     loadActiveGame(pgn) {
       this.currentActiveGame = this.parseMultiplePGNs(pgn)[0];
-      this.updateGameList(this.currentActiveGame)
+      this.updateGameList(this.currentActiveGame);
       if (this.isMoveListChangeForCurrentGame) {
         this.updateGame(this.currentActiveGame.parsedData);
       } else {

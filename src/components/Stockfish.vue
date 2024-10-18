@@ -72,7 +72,7 @@ export default {
       currentGameHistory: null,
       currentMovesNumber: 0,
       playerToMove: '',
-      engineMessage: 'Calculating...',
+      engineMessage: '...',
       apiScore: 0,
     };
   },
@@ -93,7 +93,7 @@ export default {
           if (message.includes('mate')) {
             const evalMatch = this.parseEvaluation(message);
             if (evalMatch && evalMatch === 'Checkmate') {
-              this.engineMessage = 'Checkmate!'
+              //this.engineMessage = 'Checkmate!'
             }
 
             if (evalMatch) {
@@ -125,6 +125,7 @@ export default {
       this.playerToMove = playerToMove;
       this.bestMoves = [];
       this.evaluation = null;
+      //this.engineMessage = 'Calculating...';
       this.worker.postMessage('uci');
       this.worker.postMessage('isready');
       const fullFen = `${fen} ${playerToMove} KQkq - 0 1`;
