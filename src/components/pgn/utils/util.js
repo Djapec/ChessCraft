@@ -192,7 +192,7 @@ function getFormattedMoves(moves) {
 }
 
 function getPlayerFullName(player) {
-    const full = `${player?.title || ''} ${player?.lname || ''}, ${player?.fname || ''}`;
+    const full = `${player?.title || ''} ${player?.lname || ''} ${player?.fname || ''} ${player?.federation || ''}`;
     return full.trim() === ',' ? '?' : full;
 }
 
