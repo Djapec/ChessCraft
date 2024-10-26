@@ -5,7 +5,7 @@ import {
     generatePgn,
     getGamesUrls,
     getGamesInfo,
-    validateRoundNumber
+    validateRoundNumber,
 } from "../../utils/util.js";
 
 export async function generatePgnForRound(tournamentId, roundStr, desiredPairs = null) {

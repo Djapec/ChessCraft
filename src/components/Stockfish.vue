@@ -67,7 +67,7 @@ export default {
       evaluation: null,
       startPositionFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       isActive: true,
-      searchDepth: 20,
+      searchDepth: 15,
       isHidden: false,
       currentGameHistory: null,
       currentMovesNumber: 0,

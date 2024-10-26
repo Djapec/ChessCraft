@@ -55,7 +55,7 @@ import {
   fetchTournament, generatePgn,
   getGamesUrls,
   getGamesInfo,
-  validateRoundNumber, isToday, isTwentyMinutesLater
+  validateRoundNumber, isToday, isTwentyMinutesLater, encryptTournamentId
 } from "./utils/util";
 import { generatePgnForRound } from "./api/round/getRound";
 import {
@@ -95,7 +95,10 @@ export default {
   },
   computed: {
     tournamentId() {
-      return this.$route.params.id || 'a655c774-29e4-4b00-90c3-3f4e3871433d';
+      if(this.$route.params.id) {
+        return encryptTournamentId(this.$route.params.id);
+      }
+      return 'a655c774-29e4-4b00-90c3-3f4e3871433d';
     },
     filteredGames() {
       return this.games.filter(game => game.name.toLowerCase().includes(this.search.toLowerCase()));

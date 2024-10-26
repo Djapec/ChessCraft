@@ -1,4 +1,5 @@
-import { Chess } from "../../../../public/chess.min.js"
+import {Chess} from "../../../../public/chess.min.js"
+import CryptoJS from 'crypto-js';
 
 export function calculateMoveTime(startTournamentTime, delayInSeconds, cumulativeEMT, emt) {
     const emtSeconds = parseTimeToSeconds(emt || '0:00:00');
@@ -100,23 +101,56 @@ export function addDelayToTime(time, delayMinutes) {
     return delayedTime;
 }
 
+const secretKey = 'your-secret-key';
+
+export function encryptTournamentId(tournamentId) {
+    return btoa(tournamentId);
+}
+
 export async function fetchTournament(id) {
-    const tournamentRes = await fetch(getTourneyUrl(id));
-    return await tournamentRes.json();
+    try {
+        const tournamentRes = await fetch(getTourneyUrl(id));
+        const encryptedData = await tournamentRes.json();
+
+        // Decrypt the data using AES
+        const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
+        return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
+    } catch (error) {
+        console.error('Error fetching or decrypting tournament data:', error);
+    }
 }
 
 export async function fetchPairsData(id, rounds) {
-    const fetchedRounds = rounds.map(round => fetch(getRoundUrl(id, round)));
-    const fetchedRoundsResponses = await Promise.all(fetchedRounds);
-    const jsonResponses = fetchedRoundsResponses.map(response => response.json());
-    return await Promise.all(jsonResponses);
-}
+    try {
+        // Fetch all round data in parallel
+        const fetchedRounds = rounds.map(round => fetch(getRoundUrl(id, round)));
+        const fetchedRoundsResponses = await Promise.all(fetchedRounds);
 
+        // Extract and decrypt each response
+        return await Promise.all(
+            fetchedRoundsResponses.map(async (response) => {
+                const encryptedData = await response.json();
+
+                // Decrypt the data using AES
+                const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
+                return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
+            })
+        );
+    } catch (error) {
+        console.error('Error fetching or decrypting rounds data:', error);
+        throw error;
+    }
+}
 export async function getGamesInfo(games) {
+    // Function to fetch and decrypt a single game's data
     const fetchGame = async (game) => {
         try {
             const response = await fetch(game.url, { cache: 'no-store' });
-            return await response.json();
+            const encryptedData = await response.json();
+
+            // Decrypt the data using AES
+            const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
+            return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
         } catch (error) {
             return { error: `Failed to fetch game data: ${error.message}` };
         }
@@ -125,17 +159,18 @@ export async function getGamesInfo(games) {
     const gamesPromises = games.map(fetchGame);
     return await Promise.allSettled(gamesPromises);
 }
+const PROXY_URL = 'https://secure.mensch-sandbox.com/api/proxy';
 
 export function getTourneyUrl(id) {
-    return `https://1.pool.livechesscloud.com/get/${id}/tournament.json`;
+    return `${PROXY_URL}?id=${id}`;
 }
 
 export function getRoundUrl(id, round) {
-    return `https://1.pool.livechesscloud.com/get/${id}/round-${round}/index.json`;
+    return `${PROXY_URL}?id=${id}&round=${round}`;
 }
 
 export function getGameUrl(id, round, game) {
-    return `https://1.pool.livechesscloud.com/get/${id}/round-${round}/game-${game}.json?poll`;
+    return `${PROXY_URL}?id=${id}&round=${round}&game=${game}`;
 }
 
 export function getGamesUrls(id, roundsWithGames, pairsData, desiredPairs = null) {
