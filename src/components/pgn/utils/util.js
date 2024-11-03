@@ -65,7 +65,6 @@ export function parseTimeStringToTimeObject(timeString) {
 }
 
 export function isToday(timestamp) {
-    // Convert timestamp from seconds to milliseconds if it's a shorter value (e.g., less than 13 digits)
     if (typeof timestamp === 'string') {
         timestamp = parseInt(timestamp, 10);
     }
@@ -111,8 +110,6 @@ export async function fetchTournament(id) {
     try {
         const tournamentRes = await fetch(getTourneyUrl(id));
         const encryptedData = await tournamentRes.json();
-
-        // Decrypt the data using AES
         const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
         return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
     } catch (error) {
@@ -122,16 +119,12 @@ export async function fetchTournament(id) {
 
 export async function fetchPairsData(id, rounds) {
     try {
-        // Fetch all round data in parallel
         const fetchedRounds = rounds.map(round => fetch(getRoundUrl(id, round)));
         const fetchedRoundsResponses = await Promise.all(fetchedRounds);
 
-        // Extract and decrypt each response
         return await Promise.all(
             fetchedRoundsResponses.map(async (response) => {
                 const encryptedData = await response.json();
-
-                // Decrypt the data using AES
                 const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
                 return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
             })
@@ -142,13 +135,11 @@ export async function fetchPairsData(id, rounds) {
     }
 }
 export async function getGamesInfo(games) {
-    // Function to fetch and decrypt a single game's data
     const fetchGame = async (game) => {
         try {
             const response = await fetch(game.url, { cache: 'no-store' });
             const encryptedData = await response.json();
 
-            // Decrypt the data using AES
             const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
             return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
         } catch (error) {
@@ -160,17 +151,19 @@ export async function getGamesInfo(games) {
     return await Promise.allSettled(gamesPromises);
 }
 const PROXY_URL = 'https://secure.mensch-sandbox.com/api/proxy';
+const PROXY_LOCALHOST_URL = 'http://localhost:3333/api/proxy';
+const PROXY_ECUTV_URL = 'https://secure.ecutv.eu/api/proxy';
 
 export function getTourneyUrl(id) {
-    return `${PROXY_URL}?id=${id}`;
+    return `${PROXY_LOCALHOST_URL}?id=${id}`;
 }
 
 export function getRoundUrl(id, round) {
-    return `${PROXY_URL}?id=${id}&round=${round}`;
+    return `${PROXY_LOCALHOST_URL}?id=${id}&round=${round}`;
 }
 
 export function getGameUrl(id, round, game) {
-    return `${PROXY_URL}?id=${id}&round=${round}&game=${game}`;
+    return `${PROXY_LOCALHOST_URL}?id=${id}&round=${round}&game=${game}`;
 }
 
 export function getGamesUrls(id, roundsWithGames, pairsData, desiredPairs = null) {
@@ -450,189 +443,6 @@ function isPositiveOrNegative(numberString) {
         return numericValue >= 0;
     }
     else return null
-}
-
-// Function to parse FEN notation and create a position object
-function parseFEN(fen) {
-    var pos = {
-        board: [],
-        sideToMove: 'w',
-        castling: '',
-        enPassant: '-',
-        halfmoveClock: 0,
-        fullmoveNumber: 1
-    };
-
-    var parts = fen.trim().split(/\s+/);
-    var rows = parts[0].split('/');
-    for (var i = 0; i < rows.length; i++) {
-        var row = [];
-        var chars = rows[i].split('');
-        for (var j = 0; j < chars.length; j++) {
-            var c = chars[j];
-            if (isNaN(c)) {
-                row.push(c);
-            } else {
-                for (var k = 0; k < parseInt(c); k++) {
-                    row.push(null);
-                }
-            }
-        }
-        pos.board.push(row);
-    }
-    pos.sideToMove = parts[1];
-    pos.castling = parts[2];
-    pos.enPassant = parts[3];
-    pos.halfmoveClock = parseInt(parts[4]);
-    pos.fullmoveNumber = parseInt(parts[5]);
-
-    return pos;
-}
-
-// Control of the center squares
-function control_center(pos) {
-    const centerSquares = [[3, 3], [3, 4], [4, 3], [4, 4]];
-    let score = 0;
-    for (let [x, y] of centerSquares) {
-        let piece = pos.board[x][y];
-        if (piece) {
-            if (piece === piece.toUpperCase()) score += 20;
-            else score -= 20;
-        }
-    }
-    return score;
-}
-
-// Pawn structure evaluation
-// Pawn structure evaluation
-function pawn_structure(pos) {
-    let score = 0;
-    let files = { 'a': [], 'b': [], 'c': [], 'd': [], 'e': [], 'f': [], 'g': [], 'h': [] };
-
-    // Populate the files with pawns
-    for (let i = 0; i < pos.board.length; i++) {
-        for (let j = 0; j < pos.board[i].length; j++) {
-            let piece = pos.board[i][j];
-            if (piece && (piece === 'P' || piece === 'p')) {
-                let file = 'abcdefgh'[j];
-                files[file].push(piece);
-            }
-        }
-    }
-
-    // Penalize doubled and isolated pawns
-    for (let file in files) {
-        if (files[file].length > 1) {
-            if (files[file][0] === 'P') score -= 30;
-            else score += 30;
-        }
-
-        // Isolated pawns
-        let prevFile = String.fromCharCode(file.charCodeAt(0) - 1);
-        let nextFile = String.fromCharCode(file.charCodeAt(0) + 1);
-
-        // Ensure prevFile and nextFile are within the valid range of 'a' to 'h'
-        if (files[file].length > 0 &&
-            ((!files[prevFile] || files[prevFile].length === 0) &&
-                (!files[nextFile] || files[nextFile].length === 0))) {
-
-            if (files[file][0] === 'P') score -= 30; // Isolated white pawn
-            else score += 30;
-        }
-    }
-
-    return score;
-}
-
-// King safety (simple penalty for exposed kings)
-function king_safety(pos) {
-    let score = 0;
-
-    // King positions
-    let whiteKingPos = null;
-    let blackKingPos = null;
-
-    for (let i = 0; i < pos.board.length; i++) {
-        for (let j = 0; j < pos.board[i].length; j++) {
-            if (pos.board[i][j] === 'K') whiteKingPos = [i, j];
-            if (pos.board[i][j] === 'k') blackKingPos = [i, j];
-        }
-    }
-
-    // Penalize for exposed kings
-    if (whiteKingPos[0] < 2) score -= 50;
-    if (blackKingPos[0] > 5) score += 50;
-
-    return score;
-}
-
-// Mobility (number of pieces)
-function mobility(pos) {
-    let whitePieces = 0, blackPieces = 0;
-    for (let i = 0; i < pos.board.length; i++) {
-        for (let j = 0; j < pos.board[i].length; j++) {
-            let piece = pos.board[i][j];
-            if (piece) {
-                if (piece === piece.toUpperCase()) whitePieces++;
-                else blackPieces++;
-            }
-        }
-    }
-
-    // Return a small advantage to the side with more active pieces
-    return whitePieces - blackPieces;
-}
-
-// Material and positional evaluation for middle game
-function middle_game_evaluation(pos) {
-    var pieceValues = {
-        'P': 100,
-        'N': 320,
-        'B': 330,
-        'R': 500,
-        'Q': 900,
-        'K': 20000,
-        'p': -100,
-        'n': -320,
-        'b': -330,
-        'r': -500,
-        'q': -900,
-        'k': -20000
-    };
-
-    var score = 0;
-    for (var i = 0; i < pos.board.length; i++) {
-        for (var j = 0; j < pos.board[i].length; j++) {
-            var piece = pos.board[i][j];
-            if (piece) {
-                score += pieceValues[piece] || 0;
-            }
-        }
-    }
-
-    // Add positional factors
-    score += control_center(pos);
-    score += pawn_structure(pos);
-    score += king_safety(pos);
-    score += mobility(pos);
-
-    return score;
-}
-
-// Main evaluation function
-function main_evaluation(fen) {
-    var pos = parseFEN(fen);
-    var mg = middle_game_evaluation(pos);
-    var eg = middle_game_evaluation(pos);
-    var p = 64; // Assume midgame phase
-    var rule50Val = pos.halfmoveClock;
-
-    eg = (eg * 64 / 64) << 0;
-    var v = (((mg * p + eg * (128 - p)) / 128) << 0);
-    if (arguments.length === 1) v = ((v / 16) << 0) * 16;
-    v += (pos.sideToMove === 'w' ? 16 : -16);
-    v = ((v * (100 - rule50Val) / 100) << 0);
-    return v;
 }
 
 export function isTwentyMinutesLater(givenTime) {

@@ -96,9 +96,9 @@ export default {
   computed: {
     tournamentId() {
       if(this.$route.params.id) {
-        return encryptTournamentId(this.$route.params.id);
+        return this.$route.params.id
       }
-      return 'a655c774-29e4-4b00-90c3-3f4e3871433d';
+      return 'd35090fa8fad1-5a19p-1194p-2dca1-ea8d3d38p';
     },
     filteredGames() {
       return this.games.filter(game => game.name.toLowerCase().includes(this.search.toLowerCase()));
