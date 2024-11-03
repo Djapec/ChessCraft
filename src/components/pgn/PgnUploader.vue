@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import PGNParser from './PgnParser.vue';
 import bus from "../../bus";
 import {
   createGameLookupMap,
@@ -55,7 +54,7 @@ import {
   fetchTournament, generatePgn,
   getGamesUrls,
   getGamesInfo,
-  validateRoundNumber, isToday, isTwentyMinutesLater, encryptTournamentId
+  validateRoundNumber, isToday, isTwentyMinutesLater
 } from "./utils/util";
 import { generatePgnForRound } from "./api/round/getRound";
 import {
@@ -69,9 +68,6 @@ import {clearClockTimeoutInterval} from "../clock";
 export default {
   name: 'PGNUploader',
   inject: ['config'],
-  components: {
-    PGNParser
-  },
   data() {
     return {
       isMosaicViewEnabled: false,
