@@ -97,20 +97,12 @@ export default {
       this.currentChessGame = parsedData.chess;
       this.currentMoveHistory = this.game.history();
 
-      if (this.isAtLatestHistory()) {
+      if (this.currentHistoryIndex === this.game.history().length - 1) {
         this.currentHistoryIndex = this.game.history().length;
         this.loadPosition();
       }
 
       this.initControlBoardMoveList();
-    },
-
-    /**
-     * Checks if the current history index is at the latest move.
-     * @returns {boolean} - True if the current history index is at the latest move, false otherwise.
-     */
-    isAtLatestHistory() {
-      return this.currentHistoryIndex === this.game.history().length - 1;
     },
 
     /**
@@ -135,7 +127,7 @@ export default {
         let move = this.currentMoveHistory[i];
         chess.move(move);
       }
-      
+
       return chess;
     },
 

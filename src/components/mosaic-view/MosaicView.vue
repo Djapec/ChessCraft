@@ -1,9 +1,9 @@
 <template>
   <div v-show="isVisible" class='mosaic-view-container'>
-    <mosaic-view-board v-show="parsedGames[0]?.chess" :parsed-game-data="parsedGames[0]"></mosaic-view-board>
-    <mosaic-view-board v-show="parsedGames[1]?.chess" :parsed-game-data="parsedGames[1]"></mosaic-view-board>
-    <mosaic-view-board v-show="parsedGames[2]?.chess" :parsed-game-data="parsedGames[2]"></mosaic-view-board>
-    <mosaic-view-board v-show="parsedGames[3]?.chess" :parsed-game-data="parsedGames[3]"></mosaic-view-board>
+    <mosaic-view-board v-show="mosaicViewChessGames[0]?.chess" :parsed-game-data="mosaicViewChessGames[0]"></mosaic-view-board>
+    <mosaic-view-board v-show="mosaicViewChessGames[1]?.chess" :parsed-game-data="mosaicViewChessGames[1]"></mosaic-view-board>
+    <mosaic-view-board v-show="mosaicViewChessGames[2]?.chess" :parsed-game-data="mosaicViewChessGames[2]"></mosaic-view-board>
+    <mosaic-view-board v-show="mosaicViewChessGames[3]?.chess" :parsed-game-data="mosaicViewChessGames[3]"></mosaic-view-board>
   </div>
 </template>
 
@@ -18,7 +18,7 @@ export default {
   inject: ['config'],
   data() {
     return {
-      parsedGames: [{}, {}, {}, {}],
+      mosaicViewChessGames: [{}, {}, {}, {}],
       workers: [],
       isVisible: true,
       isLive: false,
@@ -26,9 +26,10 @@ export default {
   },
   created() {
     this.isLive = this.config.isLive;
-    bus.$on('generateMosaicView', (items) => {
+
+    bus.$on('generateMosaicView', (chessGames) => {
       this.isVisible = true
-      this.parsedGames = items
+      this.mosaicViewChessGames = chessGames
       if (this.isLive) {
         this.startProcessingLiveGames()
       } else {
@@ -44,29 +45,48 @@ export default {
     this.stopAllWorkers();
   },
   methods: {
+    /**
+     * Processing games live
+     */
     startProcessingLiveGames() {
-      this.parsedGames.forEach((game, index) => {
+      this.mosaicViewChessGames.forEach((game, index) => {
         if (game?.chess) {
-          this.updateParsedGame(game, index)
+          this.setNewGameToMosaicViewChessGameList(game, index)
         }
       });
     },
+
+    /**
+     * Processing games with a certain delay
+     */
     startProcessingGamesWithDelay() {
       this.stopAllWorkers();
-      this.parsedGames.forEach((game, index) => {
+      this.mosaicViewChessGames.forEach((game, index) => {
         if (game?.chess) {
-          this.presentGameWithDelay(game, index)
+          this.scrapeGameWithDelayedMoveForMosaicView(game, index)
           this.startWorkerForGame(game, index);
         }
       });
     },
-    presentGameWithDelay(parsedData, index) {
+
+    /**
+     * Scraping chess game by a certain move calculated with a delay and add game to mosaic view
+     * @param {Object} parsedData - The parsed game data.
+     * @param {number} gameIndex - The index of the game for tracking within the mosaic view.
+     */
+    scrapeGameWithDelayedMoveForMosaicView(parsedData, index) {
       const moveScheduledByTime = getCurrentMoveScheduledByTime(parsedData.halfMoves, new Date())
       if (moveScheduledByTime) {
         let partlyClonedGame = partlyClonePgn(parsedData, moveScheduledByTime.id)
-        this.updateParsedGame(partlyClonedGame, index)
+        this.setNewGameToMosaicViewChessGameList(partlyClonedGame, index)
       }
     },
+
+    /**
+     * Starts a web worker for processing a game and handles its messages. Update game based on delay
+     * @param {Object} parsedData - The parsed game data.
+     * @param {number} gameIndex - The index of the game for tracking within the mosaic view.
+     */
     startWorkerForGame(parsedData, gameIndex) {
       const worker = new Worker("/mosaicViewWorker.js");
 
@@ -75,20 +95,34 @@ export default {
           worker.terminate();
         } else if (e.data.status === "update") {
           let partlyClonedGame = partlyClonePgn(parsedData ,e.data.moveScheduledByTime.id)
-          this.updateParsedGame(partlyClonedGame, e.data.gameIndex)
+          this.setNewGameToMosaicViewChessGameList(partlyClonedGame, e.data.gameIndex)
         }
       };
 
       worker.postMessage({ gameIndex, parsedData: JSON.parse(JSON.stringify(parsedData)) });
       this.workers.push(worker);
     },
-    updateParsedGame(newGameData, gameIndex) {
-      this.parsedGames[gameIndex] = newGameData;
+
+    /**
+     * Set new game to mosaic view by updating parsedGames list
+     * @param {object} newGameData - A new chess game will be added to the parsedGames list.
+     * @param {int} gameIndex - Indicating the position of chess game inside parsedGames list.
+     */
+    setNewGameToMosaicViewChessGameList(newGameData, gameIndex) {
+      this.mosaicViewChessGames[gameIndex] = newGameData;
     },
+
+    /**
+     * Stop all execution in the workers threads as soon as possible
+     */
     stopAllWorkers() {
       this.workers.forEach(worker => worker.terminate());
       this.workers = [];
     },
+
+    /**
+     * Toggle visibility of the mosaic view component
+     */
     hideMosaicView() {
       this.isVisible = false;
       this.stopAllWorkers();
