@@ -10,7 +10,7 @@
             <analysis
                 :fen="currentFen"
                 :showThreats="false"
-                @onMove="showInfo"/>
+                @onMove="sendPositionInfoToEngineAndUpdateClock"/>
           </div>
         </div>
         <engine/>
@@ -26,9 +26,9 @@
 </template>
 
 <script>
-import analysis from '../components/AnalysisBoard.vue';
-import movesControlBoard from '../components/MovesControlBoard.vue';
-import engine from '../components/Stockfish.vue';
+import analysis from '../components/analysis-board/AnalysisBoard.vue';
+import movesControlBoard from '../components/control-board/MovesControlBoard.vue';
+import engine from '../components/engine/Stockfish.vue';
 import PGNUploader from '../components/pgn/PgnUploader.vue';
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
@@ -58,7 +58,7 @@ export default {
     });
   },
   methods: {
-    showInfo(data) {
+    sendPositionInfoToEngineAndUpdateClock(data) {
       this.positionInfo = data;
       bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
       if (this.positionInfo.history.length !== 0) {

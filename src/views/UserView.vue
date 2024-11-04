@@ -27,9 +27,9 @@
 </template>
 
 <script>
-import analysis from '../components/AnalysisBoard.vue';
-import movesControlBoard from '../components/MovesControlBoard.vue';
-import engine from '../components/Stockfish.vue';
+import analysis from '../components/analysis-board/AnalysisBoard.vue';
+import movesControlBoard from '../components/control-board/MovesControlBoard.vue';
+import engine from '../components/engine/Stockfish.vue';
 import PGNUploader from '../components/pgn/PgnUploader.vue';
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";

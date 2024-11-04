@@ -1,10 +1,10 @@
 <script>
 
-import { Chess } from "../../public/chess.min.js"
-import bus from '../bus.js'
-import chessBoardCraft from "./chessboard/ChessBoardCraft.vue";
-import { getInfoForLastTwoMoves } from "./chessboard/Util";
-import {clockUsageTest} from "./clock";
+import { Chess } from "../../../public/chess.min.js"
+import bus from '../../bus.js'
+import chessBoardCraft from "../chessboard/ChessBoardCraft.vue";
+import { getInfoForLastTwoMoves } from "../chessboard/Util";
+import {clockUsageTest} from "../clock";
 
 export default {
   name: 'analysis',

@@ -43,8 +43,8 @@
 </template>
 
 <script>
-import bus from "../bus";
-import {replaceChessNotationWithIcons} from "./pgn/utils/util";
+import bus from "../../bus";
+import {replaceChessNotationWithIcons} from "../pgn/utils/util";
 
 export default {
   name: "movesControlBoard",

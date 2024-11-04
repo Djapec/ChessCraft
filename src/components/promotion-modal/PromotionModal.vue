@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import SvgButton from './SvgButton.vue';
+import SvgButton from "./SvgButton.vue";
 
 export default {
   name: 'Modal',
@@ -31,9 +31,7 @@ export default {
   emits: ['close', 'select'],
   methods: {
     handleButtonClick(piece) {
-      // Emit select event with the selected piece
       this.$emit('select', piece);
-      // Close the modal
       this.$emit('close');
     },
   },
@@ -55,26 +53,26 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7); /* Darker background for better focus */
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Ensure modal is on top */
+  z-index: 1000;
 }
 
 .modal {
   background: white;
-  padding: 40px; /* Increased padding for larger modal */
-  border-radius: 10px; /* Slightly more rounded corners */
+  padding: 40px;
+  border-radius: 10px;
   text-align: center;
-  width: 50%; /* Make modal wider */
-  max-width: 600px; /* Ensure modal doesn't get too wide */
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+  width: 50%;
+  max-width: 600px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .header {
-  margin-bottom: 30px; /* More space below header */
-  font-size: 24px; /* Larger font size for header */
+  margin-bottom: 30px;
+  font-size: 24px;
   font-weight: bold;
 }
 
@@ -86,11 +84,11 @@ export default {
 .text-button {
   background-color: #f0f0f0;
   border: 1px solid #ccc;
-  padding: 15px 30px; /* Larger padding for buttons */
+  padding: 15px 30px;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 18px; /* Larger font size for buttons */
-  transition: background-color 0.3s; /* Smooth transition for hover effect */
+  font-size: 18px;
+  transition: background-color 0.3s;
 }
 
 .text-button:hover {
