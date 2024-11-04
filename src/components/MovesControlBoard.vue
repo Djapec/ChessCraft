@@ -73,56 +73,110 @@ export default {
   },
   methods: {
     replaceChessNotationWithIcons,
+
+    /**
+     * Checks if the given move is the active move and scrolls to it.
+     * @param {Object} move - The move object to check.
+     * @returns {boolean} - True if the move is the active move, false otherwise.
+     */
     isActiveMove(move) {
       this.scrollToActiveMove();
       return this.currentMoveIndex === move.id;
     },
+
+    /**
+     * Toggles the movement state and emits an event to update the movement mode.
+     */
     toggleMovement() {
       this.isButtonsDisabled = !this.isButtonsDisabled;
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
     },
+
+    /**
+     * Logs a move by emitting an event if not in view-only mode.
+     * @param {Object} move - The move to log.
+     */
     logMove(move) {
       if (!this.isViewOnlyMod)
         bus.$emit('loadRandomMove', move);
     },
+
+    /**
+     * Emits an event to load the first move in the game.
+     */
     loadFirstMove() {
       bus.$emit('firstMove');
     },
+
+    /**
+     * Emits an event to load the previous move in the game.
+     */
     loadPrevMove() {
       bus.$emit('prevMove');
     },
+
+    /**
+     * Emits an event to load the next move in the game.
+     */
     loadNextMove() {
       bus.$emit('nextMove');
     },
+
+    /**
+     * Emits an event to load the last move in the game.
+     */
     loadLastMove() {
       bus.$emit('lastMove');
     },
+
+    /**
+     * Emits an event to undo the last move.
+     */
     undo() {
       bus.$emit('undo');
     },
+
+    /**
+     * Loads the game move list from the parsed PGN data and scrolls to the active move.
+     * @param {Object} parsedPgnData - The parsed PGN data containing the move list.
+     */
     loadGameMoveList(parsedPgnData) {
       this.parsedPgnGameData = parsedPgnData;
       this.scrollToActiveMove();
     },
+
+    /**
+     * Scrolls the move list to center the active move within the view.
+     */
     scrollToActiveMove() {
       this.$nextTick(() => {
         const activeMove = this.$el.querySelector('.active');
         if (activeMove) {
-          const moveList = this.$el.querySelector('.move-list');
-          const moveListRect = moveList.getBoundingClientRect();
-          const activeMoveRect = activeMove.getBoundingClientRect();
-          moveList.scrollTop += activeMoveRect.top - moveListRect.top - moveListRect.height / 2 + activeMoveRect.height / 2;
+          this.centerActiveMoveInView(activeMove);
         }
       });
-    }
+    },
+
+    /**
+     * Centers the given move element in the move list view.
+     * @param {Element} activeMove - The DOM element representing the active move.
+     */
+    centerActiveMoveInView(activeMove) {
+      const moveList = this.$el.querySelector('.move-list');
+      const moveListRect = moveList.getBoundingClientRect();
+      const activeMoveRect = activeMove.getBoundingClientRect();
+      moveList.scrollTop += activeMoveRect.top - moveListRect.top - moveListRect.height / 2 + activeMoveRect.height / 2;
+    },
   },
   created() {
     bus.$on('updateCurrentMove', (moveIndex) => {
       this.currentMoveIndex = moveIndex;
     });
+
     bus.$on('loadGameMoveList', (parsedPgnData) => {
       this.loadGameMoveList(parsedPgnData);
     });
+
     bus.$on('disableMovementAndControlsWhenChangingGame', () => {
       this.isViewOnlyMod = false;
       this.isButtonsDisabled = false;
