@@ -1,5 +1,5 @@
-import { Chess } from "../../../public/chess.min.js"; // version 0.13.4
-import {calculateMoveTime, parseTimeToSeconds} from "./utils/util";
+import { Chess } from "../../public/chess.min.js"; // version 0.13.4
+import {calculateMoveTime, parseTimeToSeconds} from "../utils/util";
 
 export function parsePgnWithDelay(pgn, startTournamentTime = null, delay = null) {
     const [metadataPart, movesPart] = pgn.split('\n\n');

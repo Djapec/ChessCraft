@@ -29,10 +29,10 @@
 import analysis from '../components/analysis-board/AnalysisBoard.vue';
 import movesControlBoard from '../components/control-board/MovesControlBoard.vue';
 import engine from '../components/engine/Stockfish.vue';
-import PGNUploader from '../components/pgn/PgnUploader.vue';
+import PGNUploader from '../components/game-selection-manager/GameSelectionManager.vue';
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
-import {getFirstLetter, getLastMove} from "../components/pgn/utils/util";
+import {getFirstLetter, getLastMove} from "../utils/util";
 
 export default {
   name: 'commentatorView',

@@ -44,7 +44,7 @@
 
 <script>
 import bus from "../../bus";
-import {replaceChessNotationWithIcons} from "../pgn/utils/util";
+import {replaceChessNotationWithIcons} from "../../utils/util";
 
 export default {
   name: "movesControlBoard",

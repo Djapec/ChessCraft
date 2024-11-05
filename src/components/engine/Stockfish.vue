@@ -56,7 +56,7 @@ import {
   getStockfishEvaluation,
   groupMoves, handleEvaluationString,
   replaceChessNotationWithIcons
-} from "../pgn/utils/util"; // version 0.13.4
+} from "../../utils/util"; // version 0.13.4
 
 export default {
   name: 'engine',

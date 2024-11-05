@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import CommentatorView from './views/CommentatorView.vue';
-import UserView from "./views/UserView.vue";
+import CommentatorView from '../views/CommentatorView.vue';
+import UserView from "../views/UserView.vue";
 
 const routes = [
     {

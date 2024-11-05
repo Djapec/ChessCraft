@@ -1,8 +1,8 @@
 <script>
-  import chessBoardCraft from "@/components/chessboard/ChessBoardCraft.vue";
-  import {getInfoForLastTwoMoves} from "../chessboard/Util";
+  import chessBoardCraft from "@/components/chess-board/ChessBoardCraft.vue";
+  import {getInfoForLastTwoMoves} from "../chess-board/Util";
   import { Chess } from "../../../public/chess.min.js"
-  import {areListsEqual} from "../pgn/utils/util";
+  import {areListsEqual} from "../../utils/util";
 
   export default {
     name: 'MosaicViewBoard',

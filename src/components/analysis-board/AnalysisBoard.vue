@@ -2,8 +2,8 @@
 
 import { Chess } from "../../../public/chess.min.js"
 import bus from '../../bus.js'
-import chessBoardCraft from "../chessboard/ChessBoardCraft.vue";
-import { getInfoForLastTwoMoves } from "../chessboard/Util";
+import chessBoardCraft from "../chess-board/ChessBoardCraft.vue";
+import { getInfoForLastTwoMoves } from "../chess-board/Util";
 import {clockUsageTest} from "../clock";
 
 export default {

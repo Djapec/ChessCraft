@@ -1,4 +1,4 @@
-import {Chess} from "../../../../public/chess.min.js"
+import {Chess} from "../../public/chess.min.js"
 import CryptoJS from 'crypto-js';
 
 export function calculateMoveTime(startTournamentTime, delayInSeconds, cumulativeEMT, emt) {

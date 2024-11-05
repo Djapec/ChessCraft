@@ -22,7 +22,7 @@ import { Chess } from "../../../public/chess.min.js"
 import { Chessground } from 'chessground'
 import { uniques } from './Util.js'
 
-import "./style/theme.css"
+import "../../assets/style/theme.css"
 import Modal from "../promotion-modal/PromotionModal.vue";
 
 export default {

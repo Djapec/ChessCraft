@@ -10,7 +10,7 @@
             <analysis
                 :fen="currentFen"
                 :showThreats="false"
-                @onMove="showInfo"/>
+                @onMove="sendPositionInfoToEngineAndUpdateClock"/>
           </div>
           <div class="side-container">
             <movesControlBoard/>
@@ -30,10 +30,10 @@
 import analysis from '../components/analysis-board/AnalysisBoard.vue';
 import movesControlBoard from '../components/control-board/MovesControlBoard.vue';
 import engine from '../components/engine/Stockfish.vue';
-import PGNUploader from '../components/pgn/PgnUploader.vue';
+import PGNUploader from '../components/game-selection-manager/GameSelectionManager.vue';
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
-import {getFirstLetter, getLastMove} from "../components/pgn/utils/util";
+import {getFirstLetter, getLastMove} from "../utils/util";
 
 export default {
   name: 'userView',
@@ -59,7 +59,7 @@ export default {
     });
   },
   methods: {
-    showInfo(data) {
+    sendPositionInfoToEngineAndUpdateClock(data) {
       this.positionInfo = data;
       bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
       if (this.positionInfo.history.length !== 0) {
