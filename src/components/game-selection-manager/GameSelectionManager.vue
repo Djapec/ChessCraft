@@ -724,7 +724,8 @@ export default {
   async created() {
     this.delay = this.config.delay;
     await this.initializeRoundsForTournament();
-    await this.generatePgnForActiveRound();
+    // selectedRound: 'generatePgnForActiveRound' zbog oboga cu zaomentarisati ovo
+    //await this.generatePgnForActiveRound();
   },
   mounted() {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
