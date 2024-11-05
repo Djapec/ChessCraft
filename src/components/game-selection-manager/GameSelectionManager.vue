@@ -107,6 +107,9 @@ export default {
     selectedRound: 'generatePgnForActiveRound'
   },
   methods: {
+    /**
+     * Trigger fetchActiveRound method when user comeback to the page again
+     */
     handleVisibilityChange() {
       if (document.visibilityState === 'visible') {
         this.fetchActiveRound()
@@ -179,7 +182,8 @@ export default {
     },
 
     /**
-     * Selects a game, updates the current game state, disables movement controls, and manages game fetching or loading based on game result.
+     * Selects a game, updates the current game state, disables movement controls,
+     * and manages game fetching or loading based on game result.
      * @param {number} index - The index of the selected game.
      * @param {Object} game - The game object to select.
      */
@@ -201,7 +205,7 @@ export default {
     presentGameBasedOnDelay() {
       if (this.delay > 0) {
         this.clearAllTimeouts();
-        this.presentGameWithDelay();
+        this.presentAndScrapeGameWithDelayedMove();
       } else {
         this.startActiveGameFetch();
       }
@@ -353,6 +357,9 @@ export default {
       this.intervalActiveMosaicViewGamesFetch = setInterval(this.fetchActiveMosaicViewGames, 5000);
     },
 
+    /**
+     * Calculate and return length for mosaicViewGamesIndices array
+     */
     getArrayLength(array) { //todo - there has to be a better way than this!
       let count = 0;
       for (const item of array) {
@@ -474,8 +481,11 @@ export default {
 
     // single game mod
 
-    //todo: refactor this someday :D
-    async fetchActiveGame() {
+    /**
+     * Pulls data from the server for the game that is currently displayed on the board and, depending on the conditions,
+     * will display the game or will constantly update it if the result is still active.
+     */
+    async fetchActiveGame() { //todo: refactor this someday :D
       if (this.currentGameIndex !== null && this.currentActiveGame.result === '*' && this.delay === 0) {
         const gameStr = this.currentGameIndex + 1;
         try {
@@ -507,7 +517,7 @@ export default {
                 extendedGamesUrls,
                 lookupMap
             );
-            this.loadActiveGame(pgn)
+            this.updateOrLoadCurrentActiveGame(pgn)
           }
         } catch (error) {
           throw new Error(error);
@@ -560,7 +570,10 @@ export default {
       return isHalfMovesEqual && isTwentyMinutesPassed;
     },
 
-
+    /**
+     * Scraping chess game by a certain move calculated with a delay and add game to mosaic view
+     * @param {Object} game - The game that should be scraped.
+     */
     getPartlyClonedGame(game) {
       if (game.parsedData != null) {
         const moveScheduledByTime = getCurrentMoveScheduledByTime(game.parsedData.halfMoves, new Date());
@@ -572,7 +585,10 @@ export default {
       }
     },
 
-    presentGameWithDelay() {
+    /**
+     * Present and scrap chess game by a certain move calculated with a delay
+     */
+    presentAndScrapeGameWithDelayedMove() {
       const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date());
       let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
       let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveId);
@@ -583,6 +599,10 @@ export default {
       }
     },
 
+    /**
+     * It uses a web worker to determine which move should be displayed next depending on the delay,
+     * then it will create a partial object and display it.
+     */
     startMoveIntervals(parsedData) {
       this.clearAllTimeouts();
       const now = new Date();
@@ -623,19 +643,29 @@ export default {
       //console.log(`Next Move ${nextMove.id}: ${nextMove.color} plays ${nextMove.move} at ${nextMove.time}`);
     },
 
+    /**
+     * Stop all execution in the workers threads as soon as possible
+     */
     clearAllTimeouts() {
       this.timeoutIds.forEach(timeoutId => clearTimeout(timeoutId));
       this.timeoutIds = [];
     },
 
+    /**
+     * Update game list, replace certain game with current one
+     */
     updateGameList(newGameData) {
       const index = this.currentGameIndex;
       if (index >= 0 && index < this.games.length) {
-        this.$set(this.games, index, newGameData);
+        this.games[index] = newGameData;
       }
     },
 
-    loadActiveGame(pgn) {
+    /**
+     * Loads the active game from the provided PGN data, updates the game list, and updates or loads the game.
+     * @param {string} pgn - The PGN (Portable Game Notation) data for the game to load.
+     */
+    updateOrLoadCurrentActiveGame(pgn) {
       this.currentActiveGame = this.parsePgnFile(pgn)[0];
       this.updateGameList(this.currentActiveGame);
       if (this.isMoveListChangeForCurrentGame) {
@@ -653,8 +683,10 @@ export default {
       bus.$emit('updateGame', parsedData);
     },
 
-    //todo: refactor this someday :D
-    async generatePgnForActiveRound() {
+    /**
+     * Pulls data from the server for all games within the selected round, then generates and parses the PGN file.
+     */
+    async generatePgnForActiveRound() { //todo: refactor this someday :D
       if (this.selectedRound) {
         clearInterval(this.intervalActiveRoundFetch);
         this.intervalActiveRoundFetch =
@@ -668,7 +700,7 @@ export default {
             this.currentActiveGame = this.filteredGames.find(game => game.parsedData.id === this.currentActiveGame.parsedData.id);
             if (this.currentActiveGame) {
               this.clearAllTimeouts()
-              this.presentGameWithDelay()
+              this.presentAndScrapeGameWithDelayedMove()
             }
           }
         }
@@ -677,6 +709,9 @@ export default {
       }
     },
 
+    /**
+     * Fetch selected round if there is unfinished games
+     */
     async fetchActiveRound() {
       const isRoundHaveUnfinishedGames = this.games.filter(game => game.result === '*').length === 0;
       if (!isRoundHaveUnfinishedGames) {

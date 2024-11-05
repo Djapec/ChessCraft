@@ -72,7 +72,7 @@ export default {
     /**
      * Scraping chess game by a certain move calculated with a delay and add game to mosaic view
      * @param {Object} parsedData - The parsed game data.
-     * @param {number} gameIndex - The index of the game for tracking within the mosaic view.
+     * @param {number} index - The index of the game for tracking within the mosaic view.
      */
     scrapeGameWithDelayedMoveForMosaicView(parsedData, index) {
       const moveScheduledByTime = getCurrentMoveScheduledByTime(parsedData.halfMoves, new Date())
