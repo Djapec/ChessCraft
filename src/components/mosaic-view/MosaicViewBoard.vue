@@ -5,7 +5,7 @@
   import {areListsEqual} from "../../utils/util";
 
   export default {
-    name: 'MosaicViewBoard',
+    name: 'mosaicViewBoard',
     inject: ['config'],
     extends: chessBoardCraft,
     data() {

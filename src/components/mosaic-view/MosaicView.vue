@@ -13,7 +13,7 @@ import bus from "@/bus";
 import {getCurrentMoveScheduledByTime, partlyClonePgn} from "../../utils/util";
 
 export default {
-  name: 'MosaicView',
+  name: 'mosaicView',
   components: { MosaicViewBoard },
   inject: ['config'],
   data() {

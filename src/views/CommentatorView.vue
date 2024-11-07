@@ -2,7 +2,7 @@
   <div id="app-commentator-view">
     <div class="left-side">
       <div class="main-container-commentator-view">
-        <PGNUploader />
+        <gameSelectionManager />
       </div>
       <div v-if="isAnalysisBoardVisible" class="single-game-view">
         <div class="board-with-controls">
@@ -29,7 +29,7 @@
 import analysis from '../components/analysis-board/AnalysisBoard.vue';
 import movesControlBoard from '../components/control-board/MovesControlBoard.vue';
 import engine from '../components/engine/Stockfish.vue';
-import PGNUploader from '../components/game-selection-manager/GameSelectionManager.vue';
+import gameSelectionManager from '../components/game-selection-manager/GameSelectionManager.vue';
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
 import {getFirstLetter, getLastMove} from "../utils/util";
@@ -40,7 +40,7 @@ export default {
     MosaicView,
     analysis,
     engine,
-    PGNUploader,
+    gameSelectionManager,
     movesControlBoard,
   },
   data() {

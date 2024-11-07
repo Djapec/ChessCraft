@@ -66,7 +66,7 @@ import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
 import {clearClockTimeoutInterval} from "../clock";
 
 export default {
-  name: 'PGNUploader',
+  name: 'gameSelectionManager',
   inject: ['config'],
   data() {
     return {
