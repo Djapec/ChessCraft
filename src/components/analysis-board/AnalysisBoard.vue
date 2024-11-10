@@ -36,6 +36,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * Determine whether the game should be loaded or updated based on actionType
+     */
     loadOrUpdateGameOnTheBoard() {
       if (this.gameOnTheBoardStore.actionType === 'load') {
         this.loadGame(this.getCurrentGameFromStore)

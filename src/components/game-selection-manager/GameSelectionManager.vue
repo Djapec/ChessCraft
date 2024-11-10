@@ -227,7 +227,7 @@ export default {
      * @param {Object} game - The game object to load.
      */
     loadSelectedGame(game) {
-      this.loadGame(game.parsedData);
+      this.updateGameState(game.parsedData, 'load');
       this.previousGameId = this.currentGameId;
     },
 
@@ -594,7 +594,7 @@ export default {
       const moveScheduledByTime = getCurrentMoveScheduledByTime(this.currentActiveGame.parsedData.halfMoves, new Date());
       let moveId = moveScheduledByTime ? moveScheduledByTime.id : 0;
       let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveId);
-      this.loadGame(partlyClonedGame);
+      this.updateGameState(partlyClonedGame, 'load');
 
       if (moveScheduledByTime) {
         this.startMoveIntervals(this.currentActiveGame.parsedData);
@@ -616,7 +616,7 @@ export default {
 
       if (futureMoves.length === 0) {
         //console.log("Svi potezi su već prošli.");
-        this.loadGame(parsedData);
+        this.updateGameState(parsedData, 'load');
         return;
       }
 
@@ -632,7 +632,7 @@ export default {
           let partlyClonedGame = partlyClonePgn(this.currentActiveGame.parsedData, moveScheduledByTime.id);
 
           //console.log(`Move ${moveScheduledByTime.id}: ${move.color} plays ${move.move} at ${move.time}`);
-          this.updateGame(partlyClonedGame);
+          this.updateGameState(partlyClonedGame, 'update');
 
           scheduleNextMove(moves, index + 1);
         }, delay);
@@ -670,22 +670,19 @@ export default {
     updateOrLoadCurrentActiveGame(pgn) {
       this.currentActiveGame = this.parsePgnFile(pgn)[0];
       this.updateGameList(this.currentActiveGame);
-      if (this.isMoveListChangeForCurrentGame) {
-        this.updateGame(this.currentActiveGame.parsedData);
-      } else {
-        this.loadGame(this.currentActiveGame.parsedData);
-      }
+      const actionType = this.isMoveListChangeForCurrentGame ? 'update' : 'load';
+      this.updateGameState(this.currentActiveGame.parsedData, actionType);
     },
 
-    // reactive + computed => jer onda reaguje na promene stanja u samom storu, i onda bi uvek citao najnovije stanje
-    loadGame(parsedData) {
-      this.gameOnTheBoardStore.currentGameOnTheBoard = parsedData
-      this.gameOnTheBoardStore.actionType = "load"
-    },
-
-    updateGame(parsedData) {
-      this.gameOnTheBoardStore.currentGameOnTheBoard = parsedData
-      this.gameOnTheBoardStore.actionType = "upload"
+    /**
+     * Updates the game on the store with new data and sets the appropriate action type.
+     *
+     * @param {Object} parsedData - The game data to be set on the board.
+     * @param {string} actionType - The type of action indicating what was updated, e.g., 'update' or 'load'.
+     */
+    updateGameState(parsedData, actionType) {
+      this.gameOnTheBoardStore.currentGameOnTheBoard = parsedData;
+      this.gameOnTheBoardStore.actionType = actionType;
     },
 
     /**
