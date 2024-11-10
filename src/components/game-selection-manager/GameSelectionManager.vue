@@ -62,8 +62,9 @@ import {
   getCurrentMoveScheduledByTime,
   parseTimeToDate
 } from "../../utils/util";
-import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
-import {clearClockTimeoutInterval} from "../clock";
+import { parsePgnWithDelay } from "../../pgn-parser/pgnParserWithDelay";
+import { mapStores } from "pinia";
+import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
 
 export default {
   name: 'gameSelectionManager',
@@ -101,7 +102,8 @@ export default {
     },
     routeRound() {
       return Number(this.$route.params.roundNumber)
-    }
+    },
+    ...mapStores(useGameOnTheBoardStore),
   },
   watch: {
     selectedRound: 'generatePgnForActiveRound'
@@ -675,12 +677,15 @@ export default {
       }
     },
 
+    // reactive + computed => jer onda reaguje na promene stanja u samom storu, i onda bi uvek citao najnovije stanje
     loadGame(parsedData) {
-      bus.$emit('loadGame', parsedData);
+      this.gameOnTheBoardStore.currentGameOnTheBoard = parsedData
+      this.gameOnTheBoardStore.actionType = "load"
     },
 
     updateGame(parsedData) {
-      bus.$emit('updateGame', parsedData);
+      this.gameOnTheBoardStore.currentGameOnTheBoard = parsedData
+      this.gameOnTheBoardStore.actionType = "upload"
     },
 
     /**

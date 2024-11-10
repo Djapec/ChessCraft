@@ -5,21 +5,48 @@ import bus from '../../bus.js'
 import chessBoardCraft from "../chess-board/ChessBoardCraft.vue";
 import { getInfoForLastTwoMoves } from "../chess-board/Util";
 import {clockUsageTest} from "../clock";
+import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
+import { mapStores} from "pinia";
 
 export default {
   name: 'analysis',
   extends: chessBoardCraft,
+  computed: {
+    ...mapStores(useGameOnTheBoardStore),
+
+    testGameStore() {
+      return this.gameOnTheBoardStore.getCurrentGameOnTheBoard
+    },
+
+    testViewOnlyValue() {
+      return this.gameOnTheBoardStore.disableMovementAndControls
+    }
+  },
+  watch: {
+    testGameStore: 'loadOrUpdateGameOnTheBoard',
+    testViewOnlyValue: function () {
+      console.log('Pravi',this.viewOnly)
+      console.log('State',this.gameOnTheBoardStore.disableMovementAndControls)
+    }
+  },
   data() {
     return {
-      currentGamePgn: null,
-      currentChessGame: null,
       currentHistoryIndex: 0,
       currentMoveHistory: [],
       viewOnly: true,
+      currentGamePgn: null,
       gameStateDuringMovementMode: null
     }
   },
   methods: {
+    loadOrUpdateGameOnTheBoard() {
+      if (this.gameOnTheBoardStore.actionType === 'load') {
+        this.loadGame(this.testGameStore)
+      } else {
+        this.updateGame(this.testGameStore)
+      }
+    },
+
     /**
      * Undo last game move, available only for 'viewOnly: false' mod
      */
@@ -33,6 +60,7 @@ export default {
      * @param {boolean} isViewOnly - A flag indicating whether the mode should be view-only.
      */
     toggleMovement(isViewOnly) {
+      console.log("Pedja", isViewOnly)
       this.setOnlyViewMod(isViewOnly);
 
       if (isViewOnly) {
@@ -69,10 +97,8 @@ export default {
       this.loadPlayers()
       this.loadPosition();
       this.setOnlyViewMod(true)
-      this.currentChessGame = parsedData.chess;
       this.currentHistoryIndex = this.game.history().length;
       this.currentMoveHistory = this.game.history();
-      this.initControlBoardMoveList()
     },
 
     /**
@@ -94,15 +120,12 @@ export default {
     updateGameIfViewOnlyModeIsActive(parsedData) {
       this.game = parsedData.chess;
       this.parsedPgnData = parsedData;
-      this.currentChessGame = parsedData.chess;
       this.currentMoveHistory = this.game.history();
 
       if (this.currentHistoryIndex === this.game.history().length - 1) {
         this.currentHistoryIndex = this.game.history().length;
         this.loadPosition();
       }
-
-      this.initControlBoardMoveList();
     },
 
     /**
@@ -177,8 +200,9 @@ export default {
      * Moves to the last game's move in the move history if available.
      */
     lastMove() {
-      if (this.currentChessGame !== null) {
-        this.game = this.currentChessGame
+      const currentChessGame = this.gameOnTheBoardStore.getCurrentGameOnTheBoard.chess
+      if (currentChessGame !== null) {
+        this.game = currentChessGame
         this.loadPosition()
         this.setOnlyViewMod(true)
         this.currentHistoryIndex = this.game.history().length;
@@ -207,7 +231,7 @@ export default {
       if (!movesInfo) return;
 
       this.updateClockForMove(movesInfo.currentMoveInfo);
-      bus.$emit('updateCurrentMove', movesInfo.currentMoveInfo.id);
+      this.gameOnTheBoardStore.lastPlayedMoveIndex = movesInfo.currentMoveInfo.id
 
       if (movesInfo.previousMoveInfo !== null) {
         this.updateClockForMove(movesInfo.previousMoveInfo);
@@ -222,10 +246,6 @@ export default {
       if (!moveInfo || !moveInfo.color) return;
       const clockProperty = moveInfo.color === "white" ? "whitePlayerClock" : "blackPlayerClock";
       this[clockProperty] = moveInfo.clock;
-    },
-
-    initControlBoardMoveList() {
-      bus.$emit('loadGameMoveList', this.parsedPgnData);
     },
   },
   mounted() {
@@ -257,12 +277,6 @@ export default {
       })
       bus.$on('toggleMovement', (isViewOnly) => {
         this.toggleMovement(isViewOnly)
-      })
-      bus.$on('loadGame', (chess) => {
-        this.loadGame(chess)
-      })
-      bus.$on('updateGame', (chess) => {
-        this.updateGame(chess)
       })
   },
 }

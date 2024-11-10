@@ -287,7 +287,7 @@ export default {
     this.board = null
     this.promotions = []
     this.promoteTo = 'q'
-    this.parsedPgnData = null;
+    this.parsedPgnData = null; // ovo moze u state
   },
 }
 </script>

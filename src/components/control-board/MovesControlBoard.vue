@@ -44,7 +44,9 @@
 
 <script>
 import bus from "../../bus";
-import {replaceChessNotationWithIcons} from "../../utils/util";
+import { replaceChessNotationWithIcons } from "../../utils/util";
+import { mapStores } from "pinia";
+import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
 
 export default {
   name: "movesControlBoard",
@@ -53,19 +55,33 @@ export default {
       isViewOnlyMod: false,
       isButtonsDisabled: false,
       currentMoveIndex: 1,
-      parsedPgnGameData: {
-        halfMoves: []
-      }
+      parsedPgnGameData: []
+    }
+  },
+  watch: {
+    loadCurrentGameFromStore: 'loadGameMoveList',
+    isViewOnlyMod: function () {
+      this.gameOnTheBoardStore.disableMovementAndControls = !this.isViewOnlyMod
     }
   },
   computed: {
+    ...mapStores(useGameOnTheBoardStore),
+
+    loadCurrentGameFromStore() {
+      return this.gameOnTheBoardStore.getCurrentGameOnTheBoard
+    },
+
+    lastPlayedMoveIndex() {
+      return this.gameOnTheBoardStore.lastPlayedMoveIndex
+    },
+
     movePairs() {
       const pairs = [];
-      for (let i = 0; i < this.parsedPgnGameData.halfMoves.length; i += 2) {
+      for (let i = 0; i < this.parsedPgnGameData.length; i += 2) {
         pairs.push({
-          white: this.parsedPgnGameData.halfMoves[i].color === 'white' ? this.parsedPgnGameData.halfMoves[i] : null,
-          black: this.parsedPgnGameData.halfMoves[i + 1] &&
-          this.parsedPgnGameData.halfMoves[i + 1].color === 'black' ? this.parsedPgnGameData.halfMoves[i + 1] : null
+          white: this.parsedPgnGameData[i].color === 'white' ? this.parsedPgnGameData[i] : null,
+          black: this.parsedPgnGameData[i + 1] &&
+          this.parsedPgnGameData[i + 1].color === 'black' ? this.parsedPgnGameData[i + 1] : null
         });
       }
       return pairs;
@@ -81,7 +97,7 @@ export default {
      */
     isActiveMove(move) {
       this.scrollToActiveMove();
-      return this.currentMoveIndex === move.id;
+      return this.lastPlayedMoveIndex === move.id;
     },
 
     /**
@@ -89,6 +105,7 @@ export default {
      */
     toggleMovement() {
       this.isButtonsDisabled = !this.isButtonsDisabled;
+
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
     },
 
@@ -138,10 +155,9 @@ export default {
 
     /**
      * Loads the game move list from the parsed PGN data and scrolls to the active move.
-     * @param {Object} parsedPgnData - The parsed PGN data containing the move list.
      */
-    loadGameMoveList(parsedPgnData) {
-      this.parsedPgnGameData = parsedPgnData;
+    loadGameMoveList() {
+      this.parsedPgnGameData = this.loadCurrentGameFromStore.halfMoves;
       this.scrollToActiveMove();
     },
 
@@ -169,17 +185,10 @@ export default {
     },
   },
   created() {
-    bus.$on('updateCurrentMove', (moveIndex) => {
-      this.currentMoveIndex = moveIndex;
-    });
-
-    bus.$on('loadGameMoveList', (parsedPgnData) => {
-      this.loadGameMoveList(parsedPgnData);
-    });
-
     bus.$on('disableMovementAndControlsWhenChangingGame', () => {
       this.isViewOnlyMod = false;
       this.isButtonsDisabled = false;
+      console.log("disableMovementAndControlsWhenChangingGame", this.isViewOnlyMod);
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
     });
 
