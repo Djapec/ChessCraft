@@ -6,7 +6,6 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
             currentGameOnTheBoard: {},
             lastPlayedCurrentGameMove: null,
             lastPlayedMoveIndex: 1,
-            disableMovementAndControls: true,
             actionType: 'load', //just two possible values: load or update
         }
     },
@@ -25,6 +24,10 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
         getCurrentGameOnTheBoardMoveHistory() {
             return this.currentGameOnTheBoard.chess.history();
         },
+
+        getLastPlayedCurrentGameMove() {
+            return this.lastPlayedCurrentGameMove
+        }
     },
     actions: {
         setLastPlayedMoveIndex(moveId) {

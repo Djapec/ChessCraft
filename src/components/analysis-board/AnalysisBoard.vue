@@ -14,20 +14,17 @@ export default {
   computed: {
     ...mapStores(useGameOnTheBoardStore),
 
-    testGameStore() {
+    getCurrentGameFromStore() {
       return this.gameOnTheBoardStore.getCurrentGameOnTheBoard
     },
 
-    testViewOnlyValue() {
-      return this.gameOnTheBoardStore.disableMovementAndControls
+    getCurrentGameLastPlayedMove() {
+      return this.gameOnTheBoardStore.getLastPlayedCurrentGameMove
     }
   },
   watch: {
-    testGameStore: 'loadOrUpdateGameOnTheBoard',
-    testViewOnlyValue: function () {
-      console.log('Pravi',this.viewOnly)
-      console.log('State',this.gameOnTheBoardStore.disableMovementAndControls)
-    }
+    getCurrentGameFromStore: 'loadOrUpdateGameOnTheBoard',
+    getCurrentGameLastPlayedMove : 'updatePlayersClock',
   },
   data() {
     return {
@@ -41,9 +38,9 @@ export default {
   methods: {
     loadOrUpdateGameOnTheBoard() {
       if (this.gameOnTheBoardStore.actionType === 'load') {
-        this.loadGame(this.testGameStore)
+        this.loadGame(this.getCurrentGameFromStore)
       } else {
-        this.updateGame(this.testGameStore)
+        this.updateGame(this.getCurrentGameFromStore)
       }
     },
 
@@ -60,7 +57,6 @@ export default {
      * @param {boolean} isViewOnly - A flag indicating whether the mode should be view-only.
      */
     toggleMovement(isViewOnly) {
-      console.log("Pedja", isViewOnly)
       this.setOnlyViewMod(isViewOnly);
 
       if (isViewOnly) {
@@ -220,14 +216,13 @@ export default {
 
     /**
      * Updates the players' clocks based on the provided move details.
-     * @param {Object} moveDetails - The details of the current move to process.
      */
-    updatePlayersClock(moveDetails) {
+    updatePlayersClock() {
       if (!this.viewOnly || this.parsedPgnData === null) {
         return;
       }
 
-      const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails);
+      const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, this.getCurrentGameLastPlayedMove);
       if (!movesInfo) return;
 
       this.updateClockForMove(movesInfo.currentMoveInfo);
@@ -254,9 +249,6 @@ export default {
     });
   },
   created() {
-      bus.$on('updatePlayersClock', (moveDetails) => {
-        this.updatePlayersClock(moveDetails)
-      })
       bus.$on('loadRandomMove', (move) => {
         this.loadRandomMove(move)
       })
@@ -275,6 +267,7 @@ export default {
       bus.$on('lastMove', () => {
         this.lastMove()
       })
+      // toliko je zamrseno da ga je nemoguce prebaciti na state
       bus.$on('toggleMovement', (isViewOnly) => {
         this.toggleMovement(isViewOnly)
       })

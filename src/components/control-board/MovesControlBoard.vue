@@ -60,9 +60,6 @@ export default {
   },
   watch: {
     loadCurrentGameFromStore: 'loadGameMoveList',
-    isViewOnlyMod: function () {
-      this.gameOnTheBoardStore.disableMovementAndControls = !this.isViewOnlyMod
-    }
   },
   computed: {
     ...mapStores(useGameOnTheBoardStore),
@@ -105,7 +102,6 @@ export default {
      */
     toggleMovement() {
       this.isButtonsDisabled = !this.isButtonsDisabled;
-
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
     },
 
@@ -188,7 +184,6 @@ export default {
     bus.$on('disableMovementAndControlsWhenChangingGame', () => {
       this.isViewOnlyMod = false;
       this.isButtonsDisabled = false;
-      console.log("disableMovementAndControlsWhenChangingGame", this.isViewOnlyMod);
       bus.$emit('toggleMovement', !this.isViewOnlyMod);
     });
 

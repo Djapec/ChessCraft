@@ -34,6 +34,8 @@ import gameSelectionManager from '../components/game-selection-manager/GameSelec
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
 import {getFirstLetter, getLastMove} from "../utils/util";
+import {mapStores} from "pinia";
+import {useGameOnTheBoardStore} from "../store/CurrentGameStore";
 
 export default {
   name: 'userView',
@@ -43,6 +45,9 @@ export default {
     engine,
     gameSelectionManager,
     movesControlBoard,
+  },
+  computed: {
+    ...mapStores(useGameOnTheBoardStore),
   },
   data() {
     return {
@@ -63,7 +68,7 @@ export default {
       this.positionInfo = data;
       bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
       if (this.positionInfo.history.length !== 0) {
-        bus.$emit('updatePlayersClock', getLastMove(this.positionInfo.history, this.positionInfo.turn));
+        this.gameOnTheBoardStore.lastPlayedCurrentGameMove = getLastMove(this.positionInfo.history, this.positionInfo.turn)
       }
     }
   }
