@@ -51,20 +51,22 @@ import bus from "../../bus";
 import {
   createGameLookupMap,
   fetchPairsData,
-  fetchTournament, generatePgn,
-  getGamesUrls,
-  getGamesInfo,
-  validateRoundNumber, isToday, isTwentyMinutesLater
-} from "../../utils/util";
-import { generatePgnForRound } from "../../api/round/getRound";
-import {
-  partlyClonePgn,
+  fetchTournament,
+  generatePgn,
   getCurrentMoveScheduledByTime,
-  parseTimeToDate
+  getGamesInfo,
+  getGamesUrls,
+  isToday,
+  isTwentyMinutesLater,
+  parseTimeToDate,
+  partlyClonePgn,
+  validateRoundNumber
 } from "../../utils/util";
-import { parsePgnWithDelay } from "../../pgn-parser/pgnParserWithDelay";
-import { mapStores } from "pinia";
-import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
+import {generatePgnForRound} from "../../api/round/getRound";
+import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
+import {mapStores} from "pinia";
+import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
+import {useMosaicViewStore} from "../../store/MosaicViewStore";
 
 export default {
   name: 'gameSelectionManager',
@@ -103,7 +105,7 @@ export default {
     routeRound() {
       return Number(this.$route.params.roundNumber)
     },
-    ...mapStores(useGameOnTheBoardStore),
+    ...mapStores(useGameOnTheBoardStore, useMosaicViewStore),
   },
   watch: {
     selectedRound: 'generatePgnForActiveRound'
@@ -375,8 +377,7 @@ export default {
      * Collects parsed game data and sends it to the mosaic view.
      */
     sendParsedGamesToMosaicView() {
-      const mosaicViewGameList = this.getParsedGamesForMosaicView();
-      bus.$emit('generateMosaicView', mosaicViewGameList);
+      this.mosaicViewStore.mosaicViewGameList = this.getParsedGamesForMosaicView();
     },
 
     /**
@@ -431,8 +432,7 @@ export default {
     updateMosaicViewGames(pgn) {
       if (!pgn) return;
 
-      const parsedDataArray = this.getUpdatedGamesFromPgn(pgn);
-      this.emitMosaicViewUpdate(parsedDataArray);
+      this.mosaicViewStore.mosaicViewGameList = this.getUpdatedGamesFromPgn(pgn);
     },
 
     /**
@@ -471,14 +471,6 @@ export default {
      */
     updateGameAtIndex(index, newGameData) {
       this.games[index] = newGameData;
-    },
-
-    /**
-     * Emits an event to update the mosaic view with the provided parsed data array.
-     * @param {Array<Object>} parsedDataArray - An array of parsed game data for the mosaic view.
-     */
-    emitMosaicViewUpdate(parsedDataArray) {
-      bus.$emit('generateMosaicView', parsedDataArray);
     },
 
     // single game mod

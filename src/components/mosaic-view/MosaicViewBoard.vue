@@ -11,7 +11,7 @@
     data() {
       return {
         viewOnly: true,
-        liveGame: false
+        isLive: false
       }
     },
     props: {
@@ -53,7 +53,7 @@
        * @returns {boolean} - True if the game should be reset, false otherwise.
        */
       shouldResetGame(parsedData) {
-        return areListsEqual(this.game.history(), parsedData.chess.history()) && !this.liveGame;
+        return areListsEqual(this.game.history(), parsedData.chess.history()) && !this.isLive;
       },
 
       /**

@@ -11,11 +11,31 @@
 import MosaicViewBoard from "@/components/mosaic-view/MosaicViewBoard.vue";
 import bus from "@/bus";
 import {getCurrentMoveScheduledByTime, partlyClonePgn} from "../../utils/util";
+import {mapStores} from "pinia";
+import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
+import {useMosaicViewStore} from "../../store/MosaicViewStore";
 
 export default {
   name: 'mosaicView',
   components: { MosaicViewBoard },
   inject: ['config'],
+  computed: {
+    ...mapStores(useMosaicViewStore),
+
+    getMosaicViewGameList() {
+      return this.mosaicViewStore.mosaicViewGameList;
+    }
+  },
+  watch: {
+    getMosaicViewGameList: {
+      handler() {
+        this.isVisible = true;
+        this.mosaicViewChessGames = this.getMosaicViewGameList;
+        this.isLive ? this.startProcessingLiveGames() : this.startProcessingGamesWithDelay();
+      },
+      deep: true
+    }
+  },
   data() {
     return {
       mosaicViewChessGames: [{}, {}, {}, {}],
@@ -26,16 +46,6 @@ export default {
   },
   created() {
     this.isLive = this.config.isLive;
-
-    bus.$on('generateMosaicView', (chessGames) => {
-      this.isVisible = true
-      this.mosaicViewChessGames = chessGames
-      if (this.isLive) {
-        this.startProcessingLiveGames()
-      } else {
-        this.startProcessingGamesWithDelay();
-      }
-    });
 
     bus.$on('hideMosaicView', () => {
       this.hideMosaicView();
