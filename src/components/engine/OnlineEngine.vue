@@ -42,7 +42,7 @@ import axios from 'axios';
 import { ref, watch, onUnmounted } from 'vue';
 import { Chess } from "../../../public/chess.min.js";
 import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
-import {groupMoves, replaceChessNotationWithIcons} from "../../utils/util";
+import {formatMovesToSanNotation, groupMoves, replaceChessNotationWithIcons} from "../../utils/util";
 
 /**
  * OnlineEngine Component
@@ -83,80 +83,116 @@ export default {
     const continuationInSanNotation = ref(null);
 
     /**
-     * Sends a POST request to the chess API with the given FEN data.
-     * Cancels any ongoing request if a new one is made.
+     * Fetches chess evaluation and continuation data based on a given FEN string.
+     * Manages request cancellation, handles errors, and updates relevant state variables.
      *
-     * @async
-     * @function fetchChessData
-     * @param {string} fen - The FEN notation representing the chess position.
-     * @returns {Promise<void>} - Resolves when the API call completes.
+     * @param {string} fen - The FEN string representing the chess board state.
      */
     async function fetchChessData(fen) {
       if (cancelTokenSource.value) {
         cancelTokenSource.value.cancel('Previous request canceled due to new request.');
       }
-
       cancelTokenSource.value = axios.CancelToken.source();
 
-      error.value = null;
-      isLoading.value = true;
-      evaluation.value = null;
-      continuationArr.value =null;
-      continuationInSanNotation.value = null;
+      resetState();
 
       try {
-        const response = await axios.post(API_URL, { fen, depth: 15 }, {
-          cancelToken: cancelTokenSource.value.token,
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.data?.eval && response.data?.continuationArr && response.data?.move) {
-          const { eval: evaluationValue, continuationArr: rawContinuationArr, move, turn } = response.data;
-
-          evaluation.value = evaluationValue;
-          const formatedContinuationLine =
-              formatMovesToFigureNotation(formatMovesToSanNotation([move, ...rawContinuationArr].slice(0, 5)))
-
-          const currentMovesNumber = Math.round(gameOnTheBoardStore.getChessHistoryForEngineAnalyze.length / 2)
-          continuationArr.value = groupMoves(formatedContinuationLine, currentMovesNumber, turn)
+        const response = await makeApiRequest(fen);
+        if (isValidResponse(response)) {
+          processResponseData(response.data);
         }
       } catch (err) {
-        if (axios.isCancel(err)) {
-          console.log('Request canceled:', err.message);
-        } else {
-          error.value = 'An error occurred while fetching data.';
-          console.error('API Error:', err);
-        }
+        handleError(err);
       } finally {
         isLoading.value = false;
       }
     }
 
-    function formatMovesToSanNotation(moveLine) {
-      let chess = new Chess();
-      const validSanMoves = [];
-
-      const currentGameHistory = gameOnTheBoardStore.getChessHistoryForEngineAnalyze;
-
-      for (let i = 0; i < currentGameHistory.length; i++) {
-        let move = currentGameHistory[i];
-        chess.move(move);
-      }
-
-      for (const move of moveLine) {
-        let moveInSanFormat = chess.move({from: move.substring(0, 2), to: move.substring(2, 4)})
-        if (moveInSanFormat)
-          validSanMoves.push(moveInSanFormat.san);
-      }
-
-      return validSanMoves
+    /**
+     * Resets state variables to their initial values before a new API request.
+     */
+    function resetState() {
+      error.value = null;
+      isLoading.value = true;
+      evaluation.value = null;
+      continuationArr.value = null;
+      continuationInSanNotation.value = null;
     }
 
+    /**
+     * Sends an API request to fetch chess data based on a FEN string.
+     *
+     * @param {string} fen - The FEN string representing the chess board state.
+     * @returns {Promise<Object>} - The response object from the API.
+     */
+    async function makeApiRequest(fen) {
+      return await axios.post(API_URL, { fen, depth: 15 }, {
+        cancelToken: cancelTokenSource.value.token,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    /**
+     * Checks if the API response contains valid evaluation and continuation data.
+     *
+     * @param {Object} response - The response object from the API request.
+     * @returns {boolean} - Returns true if the response contains valid data, otherwise false.
+     */
+    function isValidResponse(response) {
+      return response.data?.eval && response.data?.continuationArr && response.data?.move;
+    }
+
+    /**
+     * Processes the valid API response data and updates state variables accordingly.
+     *
+     * @param {Object} data - The data object from the API response.
+     * @param {string} data.turn - The color to move next ("w" or "b").
+     * @param {number} data.eval - The evaluation score from the response.
+     * @param {string} data.move - The initial move of the continuation sequence.
+     * @param {Array} data.continuationArr - The continuation moves array from the response.
+     */
+    function processResponseData(data) {
+      const { eval: evaluationValue, continuationArr: rawContinuationArr, move, turn } = data;
+      evaluation.value = evaluationValue;
+
+      const formattedContinuationLine = formatMovesToFigureNotation(
+          formatMovesToSanNotation(
+              [move, ...rawContinuationArr].slice(0, 5),
+              gameOnTheBoardStore.getChessHistoryForEngineAnalyze
+          )
+      );
+
+      const currentMoveNumber = Math.round(gameOnTheBoardStore.getChessHistoryForEngineAnalyze.length / 2);
+      continuationArr.value = groupMoves(formattedContinuationLine, currentMoveNumber, turn);
+    }
+
+    /**
+     * Handles errors by checking if the error is a cancellation or an API failure.
+     * Sets the appropriate error message or logs a cancellation message.
+     *
+     * @param {Error} err - The error object from the API request or processing.
+     */
+    function handleError(err) {
+      if (axios.isCancel(err)) {
+        console.log('Request canceled:', err.message);
+      } else {
+        error.value = 'An error occurred while fetching data.';
+        console.error('API Error:', err);
+      }
+    }
+
+    /**
+     * Transform each move from the moves list to figure notation
+     * @param moves - the list of the moves written in san notation
+     */
     function formatMovesToFigureNotation(moves) {
       return moves.map(line =>
           replaceChessNotationWithIcons(line)).join(' ');
     }
 
+    /**
+     * Toggle visibility of the engine analysis
+     */
     function toggleHide() {
       this.isHidden = !this.isHidden;
     }
