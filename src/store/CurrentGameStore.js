@@ -6,6 +6,7 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
             currentGameOnTheBoard: {},
             lastPlayedCurrentGameMove: null,
             lastPlayedMoveIndex: 1,
+            chessHistoryForEngineAnalyze: [],
             actionType: 'load', //just two possible values: load or update
         }
     },
@@ -21,8 +22,8 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
             return this.currentGameOnTheBoard.chess;
         },
 
-        getCurrentGameOnTheBoardMoveHistory() {
-            return this.currentGameOnTheBoard.chess.history();
+        getChessHistoryForEngineAnalyze() {
+            return this.chessHistoryForEngineAnalyze;
         },
 
         getLastPlayedCurrentGameMove() {
