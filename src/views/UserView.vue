@@ -15,7 +15,8 @@
           <div class="side-container">
             <movesControlBoard/>
             <br>
-            <engine/>
+<!--            <engine/>-->
+            <onlineEngine :fen="analyzePositionFen" />
           </div>
         </div>
       </div>
@@ -34,12 +35,14 @@ import gameSelectionManager from '../components/game-selection-manager/GameSelec
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
 import {getFirstLetter, getLastMove} from "../utils/util";
-import {mapStores} from "pinia";
-import {useGameOnTheBoardStore} from "../store/CurrentGameStore";
+import { mapStores } from "pinia";
+import { useGameOnTheBoardStore } from "../store/CurrentGameStore";
+import onlineEngine from "../components/engine/OnlineEngine.vue";
 
 export default {
   name: 'userView',
   components: {
+    onlineEngine,
     MosaicView,
     analysis,
     engine,
@@ -52,6 +55,7 @@ export default {
   data() {
     return {
       currentFen: "",
+      analyzePositionFen: "",
       positionInfo: null,
       isViewOnly: true,
       buttonsDisabled: false,
@@ -66,7 +70,9 @@ export default {
   methods: {
     sendPositionInfoToEngineAndUpdateClock(data) {
       this.positionInfo = data;
-      bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
+      this.gameOnTheBoardStore.chessHistoryForEngineAnalyze = this.positionInfo.history;
+      this.analyzePositionFen = this.positionInfo.fen;
+      //bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
       if (this.positionInfo.history.length !== 0) {
         this.gameOnTheBoardStore.lastPlayedCurrentGameMove = getLastMove(this.positionInfo.history, this.positionInfo.turn)
       }
