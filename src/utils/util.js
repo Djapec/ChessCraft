@@ -324,6 +324,24 @@ export function getFirstLetter(str) {
     return str.charAt(0);
 }
 
+export function formatMovesToSanNotation(moveLine, currentGameHistory) {
+    let chess = new Chess();
+    const validSanMoves = [];
+
+    for (let i = 0; i < currentGameHistory.length; i++) {
+        let move = currentGameHistory[i];
+        chess.move(move);
+    }
+
+    for (const move of moveLine) {
+        let moveInSanFormat = chess.move({from: move.substring(0, 2), to: move.substring(2, 4)})
+        if (moveInSanFormat)
+            validSanMoves.push(moveInSanFormat.san);
+    }
+
+    return validSanMoves
+}
+
 export function replaceChessNotationWithIcons(notation) {
     return notation
         .replace(/N/g, '♞')
