@@ -219,7 +219,7 @@ function getFormattedMoves(moves) {
     return str;
 }
 
-function getPlayerFullName(player) {
+export function getPlayerFullName(player) {
     const full = `${player?.title || ''} ${player?.lname || ''} ${player?.fname || ''} ${player?.federation || ''}`;
     return full.trim() === ',' ? '?' : full;
 }

@@ -21,9 +21,10 @@
     <input type="text" v-model="search" placeholder="Search..." class="search-input" />
     <div v-if="games.length" class="games-list">
       <ul>
+        <!-- da bi ovo funkcionisalo potreban je ID i game Index -->
         <li v-for="(game, index) in filteredGames"
             :key="index"
-            :class="{ 'focused': game.parsedData.id === currentActiveGame?.parsedData.id && !isMosaicViewEnabled }"
+            :class="{ 'focused': game.id === currentActiveGame?.id && !isMosaicViewEnabled }"
             class="game-round"
             @click="isMosaicViewEnabled ? addGameToMosaicView(index, game) : selectGame(index, game)"
         >
@@ -32,13 +33,13 @@
               v-if="isMosaicViewEnabled"
               name="mosaic-view-option"
               class="mosaic-view-selection-checkbox"
-              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.findIndex(x => x.id === game.parsedData.id) === -1"
-              :checked="mosaicViewGamesIndices.some(x => x.id === game.parsedData.id)"
+              :disabled="mosaicViewGamesIndices.length >= 4 && mosaicViewGamesIndices.findIndex(x => x.id === game.id) === -1"
+              :checked="mosaicViewGamesIndices.some(x => x.id === game.id)"
           >
           <div class="filtered-game-container">
             <span class="game-index">{{ index + 1 }}.</span>
             <span class="game-name">{{ game.name }}</span>
-            <span class="game-result">{{ this.checkGameResult(game) }}</span>
+            <span class="game-result">{{ game.result }}</span> <!--nadji nacin da popravis ovo this.checkGameResult(game)-->
           </div>
         </li>
       </ul>
@@ -51,20 +52,22 @@ import bus from "../../bus";
 import {
   createGameLookupMap,
   fetchPairsData,
-  fetchTournament, generatePgn,
-  getGamesUrls,
-  getGamesInfo,
-  validateRoundNumber, isToday, isTwentyMinutesLater
-} from "../../utils/util";
-import { generatePgnForRound } from "../../api/round/getRound";
-import {
-  partlyClonePgn,
+  fetchTournament,
+  generatePgn,
   getCurrentMoveScheduledByTime,
-  parseTimeToDate
+  getGamesInfo,
+  getGamesUrls,
+  isToday,
+  isTwentyMinutesLater,
+  parseTimeToDate,
+  partlyClonePgn,
+  validateRoundNumber
 } from "../../utils/util";
-import { parsePgnWithDelay } from "../../pgn-parser/pgnParserWithDelay";
-import { mapStores } from "pinia";
-import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
+import {generatePgnForRound} from "../../api/getRound";
+import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
+import {mapStores} from "pinia";
+import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
+import {getPairsForRound} from "../../api/getPairs";
 
 export default {
   name: 'gameSelectionManager',
@@ -159,13 +162,14 @@ export default {
     processPgnEntry(pgn) {
       const parsedData = parsePgnWithDelay(pgn, this.startTournamentTime, this.delay);
       const { gameName, result } = this.getGameMetadata(parsedData);
-      parsedData.id = `${this.selectedRound}-${gameName}`;
+      const id = `${this.selectedRound}-${gameName}`;
 
       return {
-        pgn,
+        id: id,
+        pgn: pgn,
         name: gameName,
-        parsedData,
-        result
+        result: result,
+        parsedData: parsedData,
       };
     },
 
@@ -189,15 +193,27 @@ export default {
      * @param {number} index - The index of the selected game.
      * @param {Object} game - The game object to select.
      */
-    selectGame(index, game) {
-      this.updateCurrentGameState(game, index);
+    async selectGame(index, game) {
+      // todo: ovde se ucitava nova igra u tablu
+      await this.updateCurrentGameState(game, index);
       bus.$emit('disableMovementAndControlsWhenChangingGame');
 
       const gameResult = this.checkGameResult(this.currentActiveGame);
       if (gameResult === '*') {
         this.presentGameBasedOnDelay();
       } else {
-        this.loadSelectedGame(game);
+        this.loadSelectedGame(this.currentActiveGame);
+      }
+    },
+
+    async updateCurrentSelectedGameAfter(index, game) {
+      await this.updateCurrentGameState(game, index);
+
+      const gameResult = this.checkGameResult(this.currentActiveGame);
+      if (gameResult === '*') {
+        this.presentGameBasedOnDelay();
+      } else {
+        this.loadSelectedGame(this.currentActiveGame);
       }
     },
 
@@ -236,10 +252,10 @@ export default {
      * @param {number} index - The index of the selected game.
      * @param {Object} game - The game object to select.
      */
-    updateCurrentGameState(game, index) {
+    async updateCurrentGameState(game, index) {
       this.currentGameIndex = index;
-      this.currentGameId = game.parsedData.id
-      this.currentActiveGame = game;
+      this.currentGameId = game.id
+      this.currentActiveGame = await this.testFetchGameById();
     },
 
     // mosaic view game mod
@@ -270,7 +286,7 @@ export default {
       this.resetPreviousGame();
 
       const currentCount = this.getArrayLength(this.mosaicViewGamesIndices);
-      const gameIndexInMosaic = this.getGameIndexInMosaic(game.parsedData.id);
+      const gameIndexInMosaic = this.getGameIndexInMosaic(game.id);
 
       if (this.shouldAddGameToMosaic(currentCount, gameIndexInMosaic)) {
         this.addGame(index, game);
@@ -314,7 +330,7 @@ export default {
      * @param {Object} game - The game object containing parsed data.
      */
     addGame(index, game) {
-      this.mosaicViewGamesIndices.push({ id: game.parsedData.id, gameIndex: index });
+      this.mosaicViewGamesIndices.push({ id: game.id, gameIndex: index });
     },
 
     /**
@@ -375,8 +391,9 @@ export default {
      * Collects parsed game data and sends it to the mosaic view.
      */
     sendParsedGamesToMosaicView() {
-      const mosaicViewGameList = this.getParsedGamesForMosaicView();
-      bus.$emit('generateMosaicView', mosaicViewGameList);
+      this.updateActiveMosaicViewGames() // pedjaa
+      //const mosaicViewGameList = this.getParsedGamesForMosaicView();
+      //bus.$emit('generateMosaicView', mosaicViewGameList);
     },
 
     /**
@@ -395,7 +412,7 @@ export default {
      * @returns {Object|undefined} - The game object if found, otherwise undefined.
      */
     findFilteredGameById(gameId) {
-      return this.filteredGames.find(game => game.parsedData.id === gameId)
+      return this.filteredGames.find(game => game.id === gameId)
     },
 
     /**
@@ -448,7 +465,7 @@ export default {
         const gameIndex = this.findGameIndexByName(parsedGame.name);
         if (gameIndex !== -1) {
           this.updateGameAtIndex(gameIndex, parsedGame);
-          parsedDataArray.push(this.games[gameIndex].parsedData);
+          parsedDataArray.push(this.games[gameIndex].parsedData); //todo: ovde pedja
         }
       });
 
@@ -529,12 +546,49 @@ export default {
       }
     },
 
+    async testFetchGameById() {
+      const tournament = await fetchTournament(this.tournamentId);
+      const round = validateRoundNumber(this.selectedRound);
+      const game = validateRoundNumber(this.currentGameIndex + 1);
+      const pairsData = await fetchPairsData(this.tournamentId, [round]);
+
+      const extendedGamesUrls = getGamesUrls(
+          this.tournamentId,
+          [round],
+          pairsData
+      ).filter((g) => g.game === game);
+
+      const gamesData = await getGamesInfo(extendedGamesUrls);
+      const lookupMap = createGameLookupMap(extendedGamesUrls);
+      const pgn = generatePgn(
+          tournament,
+          pairsData,
+          gamesData,
+          extendedGamesUrls,
+          lookupMap
+      );
+
+      return this.parsePgnFile(pgn)[0]
+    },
+
     /**
      * Checks the result of a game and determines if it should be considered in progress based on specific conditions.
      * @param {Object} game - The game object to check, containing result and parsed data.
      * @returns {string} - The game result or '*' if the game is in progress under certain conditions.
      */
     checkGameResult(game) {
+      if (this.isGameOngoingWithDelay(game)) {
+        const partlyClonedGame = this.getPartlyClonedGame(game);
+        if (!partlyClonedGame) return game.result;
+
+        return this.shouldUpdateResult(partlyClonedGame, game) ? game.result : '*';
+      }
+      return game.result;
+    },
+
+    checkGameResultForGameById(game) {
+
+
       if (this.isGameOngoingWithDelay(game)) {
         const partlyClonedGame = this.getPartlyClonedGame(game);
         if (!partlyClonedGame) return game.result;
@@ -667,7 +721,7 @@ export default {
      * Loads the active game from the provided PGN data, updates the game list, and updates or loads the game.
      * @param {string} pgn - The PGN (Portable Game Notation) data for the game to load.
      */
-    updateOrLoadCurrentActiveGame(pgn) {
+    updateOrLoadCurrentActiveGame(pgn) { //todo: ovo treba dobro istestirati ali mislim da ce da radi
       this.currentActiveGame = this.parsePgnFile(pgn)[0];
       this.updateGameList(this.currentActiveGame);
       const actionType = this.isMoveListChangeForCurrentGame ? 'update' : 'load';
@@ -688,18 +742,25 @@ export default {
     /**
      * Pulls data from the server for all games within the selected round, then generates and parses the PGN file.
      */
+    // ova funkcija se poziva na 15 min
     async generatePgnForActiveRound() { //todo: refactor this someday :D
       if (this.selectedRound) {
         clearInterval(this.intervalActiveRoundFetch);
         this.intervalActiveRoundFetch =
             setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay * 0.6) * 60000));
-        const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound);
-        if (pgn !== null) {
-          this.games = this.parsePgnFile(pgn);
+        //const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound); // ovde treba da generise samo parove
+        const pairings = await getPairsForRound(this.tournamentId, this.selectedRound);
+        if (pairings !== null) {
+          this.games = pairings; // generise listu partija tj ceo chess objekat za svaku partiju
           if (this.mosaicViewGamesIndices.length > 1) {
-            this.sendParsedGamesToMosaicView()
+            this.sendParsedGamesToMosaicView() // osvezava podatke za mosaic view, hmm mozda i moze da ostane
           } else if (this.delay > 0 && this.currentActiveGame) {
-            this.currentActiveGame = this.filteredGames.find(game => game.parsedData.id === this.currentActiveGame.parsedData.id);
+            // todo: izgleda da interval ne osvezava partuju kako treba, a ni listu
+            //this.currentActiveGame = this.filteredGames.find(game => game.id === this.currentActiveGame.id);
+            // todo: ovo bi trebalo da osvezava partiju i da
+            console.log('Micimirka');
+            await this.updateCurrentSelectedGameAfter(this.currentGameIndex, this.currentActiveGame)
+            this.updateGameState(this.currentActiveGame, 'load');
             if (this.currentActiveGame) {
               this.clearAllTimeouts()
               this.presentAndScrapeGameWithDelayedMove()

@@ -6,8 +6,10 @@ import {
     getGamesUrls,
     getGamesInfo,
     validateRoundNumber,
-} from "../../utils/util.js";
+} from "../utils/util.js";
+import {getPairsForRound} from "./getPairs";
 
+// desiredPairs ovo je lista sa ID-jevima npr: [1,2,3,4]
 export async function generatePgnForRound(tournamentId, roundStr, desiredPairs = null) {
     try {
         const tournament = await fetchTournament(tournamentId);
