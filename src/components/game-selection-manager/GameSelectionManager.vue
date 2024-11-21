@@ -21,7 +21,6 @@
     <input type="text" v-model="search" placeholder="Search..." class="search-input" />
     <div v-if="games.length" class="games-list">
       <ul>
-        <!-- da bi ovo funkcionisalo potreban je ID i game Index -->
         <li v-for="(game, index) in filteredGames"
             :key="index"
             :class="{ 'focused': game.id === currentActiveGame?.id && !isMosaicViewEnabled }"
@@ -52,6 +51,7 @@ import bus from "../../bus";
 import {
   createGameLookupMap,
   fetchPairsData,
+  fetchGames,
   fetchTournament,
   generatePgn,
   getCurrentMoveScheduledByTime,
@@ -194,26 +194,31 @@ export default {
      * @param {Object} game - The game object to select.
      */
     async selectGame(index, game) {
-      // todo: ovde se ucitava nova igra u tablu
-      await this.updateCurrentGameState(game, index);
-      bus.$emit('disableMovementAndControlsWhenChangingGame');
+      const parsedData = await this.fetchGameById(index) // ovde mora da ide ID
+      if (parsedData) {
+        this.updateCurrentGameState(game, index, parsedData);
+        bus.$emit('disableMovementAndControlsWhenChangingGame');
 
-      const gameResult = this.checkGameResult(this.currentActiveGame);
-      if (gameResult === '*') {
-        this.presentGameBasedOnDelay();
-      } else {
-        this.loadSelectedGame(this.currentActiveGame);
+        const gameResult = this.checkGameResult(this.currentActiveGame);
+        if (gameResult === '*') {
+          this.presentGameBasedOnDelay();
+        } else {
+          this.loadSelectedGame(this.currentActiveGame);
+        }
       }
     },
 
     async updateCurrentSelectedGameAfter(index, game) {
-      await this.updateCurrentGameState(game, index);
+      const parsedData = await this.fetchGameById(index)
+      if (parsedData) {
+        this.updateCurrentGameState(game, index, parsedData);
 
-      const gameResult = this.checkGameResult(this.currentActiveGame);
-      if (gameResult === '*') {
-        this.presentGameBasedOnDelay();
-      } else {
-        this.loadSelectedGame(this.currentActiveGame);
+        const gameResult = this.checkGameResult(this.currentActiveGame);
+        if (gameResult === '*') {
+          this.presentGameBasedOnDelay();
+        } else {
+          this.loadSelectedGame(this.currentActiveGame);
+        }
       }
     },
 
@@ -251,11 +256,12 @@ export default {
      * Updates the current game state
      * @param {number} index - The index of the selected game.
      * @param {Object} game - The game object to select.
+     * @param parsedData
      */
-    async updateCurrentGameState(game, index) {
+    updateCurrentGameState(game, index, parsedData) {
       this.currentGameIndex = index;
       this.currentGameId = game.id
-      this.currentActiveGame = await this.testFetchGameById();
+      this.currentActiveGame = parsedData;
     },
 
     // mosaic view game mod
@@ -378,7 +384,7 @@ export default {
     /**
      * Calculate and return length for mosaicViewGamesIndices array
      */
-    getArrayLength(array) { //todo - there has to be a better way than this!
+    getArrayLength(array) { // todo: there has to be a better way than this!
       let count = 0;
       for (const item of array) {
         count++;
@@ -436,8 +442,10 @@ export default {
 
       // todo: update only result active games
       if (updatableMosaicViewGames.length > 1) {
-        const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound, updatableMosaicViewGames);
-        this.updateMosaicViewGames(pgn)
+        const pgn = await this.fetchMosaicViewGameById(updatableMosaicViewGames.join(','))
+        if (pgn) {
+          this.updateMosaicViewGames(pgn)
+        }
       }
     },
 
@@ -546,29 +554,41 @@ export default {
       }
     },
 
-    async testFetchGameById() {
-      const tournament = await fetchTournament(this.tournamentId);
+    async fetchMosaicViewGameById(mosaicViewGameList) {
       const round = validateRoundNumber(this.selectedRound);
-      const game = validateRoundNumber(this.currentGameIndex + 1);
-      const pairsData = await fetchPairsData(this.tournamentId, [round]);
+      const result = await fetchGames(this.tournamentId, round, mosaicViewGameList);
+      if (result) {
 
-      const extendedGamesUrls = getGamesUrls(
-          this.tournamentId,
-          [round],
-          pairsData
-      ).filter((g) => g.game === game);
+        const pgn = generatePgn(
+            result.tournament,
+            result.pairsData,
+            result.gamesData,
+            result.extendedGamesUrls,
+            result.lookupMap
+        );
 
-      const gamesData = await getGamesInfo(extendedGamesUrls);
-      const lookupMap = createGameLookupMap(extendedGamesUrls);
-      const pgn = generatePgn(
-          tournament,
-          pairsData,
-          gamesData,
-          extendedGamesUrls,
-          lookupMap
-      );
+        console.log(pgn)
 
-      return this.parsePgnFile(pgn)[0]
+        return pgn
+      }
+    },
+
+    async fetchGameById(index) {
+      const round = validateRoundNumber(this.selectedRound);
+      const game = validateRoundNumber(index + 1);
+      const result = await fetchGames(this.tournamentId, round, game);
+      if (result) {
+
+        const pgn = generatePgn(
+            result.tournament,
+            result.pairsData,
+            result.gamesData,
+            result.extendedGamesUrls,
+            result.lookupMap
+        );
+
+        return this.parsePgnFile(pgn)[0]
+      }
     },
 
     /**
@@ -742,23 +762,17 @@ export default {
     /**
      * Pulls data from the server for all games within the selected round, then generates and parses the PGN file.
      */
-    // ova funkcija se poziva na 15 min
     async generatePgnForActiveRound() { //todo: refactor this someday :D
       if (this.selectedRound) {
         clearInterval(this.intervalActiveRoundFetch);
         this.intervalActiveRoundFetch =
             setInterval(this.fetchActiveRound, this.delay - 1 <= 0 ? 900000 : ((this.delay * 0.6) * 60000));
-        //const pgn = await generatePgnForRound(this.tournamentId, this.selectedRound); // ovde treba da generise samo parove
         const pairings = await getPairsForRound(this.tournamentId, this.selectedRound);
         if (pairings !== null) {
-          this.games = pairings; // generise listu partija tj ceo chess objekat za svaku partiju
+          this.games = pairings;
           if (this.mosaicViewGamesIndices.length > 1) {
-            this.sendParsedGamesToMosaicView() // osvezava podatke za mosaic view, hmm mozda i moze da ostane
+            this.sendParsedGamesToMosaicView()
           } else if (this.delay > 0 && this.currentActiveGame) {
-            // todo: izgleda da interval ne osvezava partuju kako treba, a ni listu
-            //this.currentActiveGame = this.filteredGames.find(game => game.id === this.currentActiveGame.id);
-            // todo: ovo bi trebalo da osvezava partiju i da
-            console.log('Micimirka');
             await this.updateCurrentSelectedGameAfter(this.currentGameIndex, this.currentActiveGame)
             this.updateGameState(this.currentActiveGame, 'load');
             if (this.currentActiveGame) {
