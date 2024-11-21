@@ -166,6 +166,10 @@ export function getGameUrl(id, round, game) {
     return `${PROXY_LOCALHOST_URL}?id=${id}&round=${round}&game=${game}`;
 }
 
+export function getGamesUrl(id, round, game) {
+    return `${PROXY_LOCALHOST_URL}/game?id=${id}&round=${round}&game=${game}`;
+}
+
 export function getGamesUrls(id, roundsWithGames, pairsData, desiredPairs = null) {
     return roundsWithGames.flatMap((round, roundIndex) => {
         const pairingsCount = pairsData[roundIndex].pairings.length;
@@ -403,6 +407,30 @@ export function getPreviousMoveFenPosition(moveHistory) {
 const axios = require('axios');
 const CancelToken = axios.CancelToken;
 let cancel;
+
+export const fetchGames = async (tournamentId, roundId, gameIndex) => {
+    const endpoint = getGamesUrl(tournamentId, roundId, gameIndex);
+    if (cancel) {
+        cancel();
+    }
+    try {
+        const response = await axios.get(endpoint, {
+            cancelToken: new CancelToken(function executor(c) {
+                cancel = c;
+            }),
+        });
+        const encryptedData = response.data;
+        const decryptedBytes = CryptoJS.AES.decrypt(encryptedData.data, secretKey);
+        return JSON.parse(decryptedBytes.toString(CryptoJS.enc.Utf8));
+    } catch (error) {
+        if (axios.isCancel(error)) {
+            // console.error('Request canceled:', error.message);
+        } else {
+            console.error('Error fetching or decrypting tournament data:', error);
+        }
+        return null;
+    }
+};
 
 export const getStockfishEvaluation = async (fen, depth) => {
     const endpoint = 'https://stockfish.online/api/s/v2.php';
