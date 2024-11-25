@@ -34,7 +34,7 @@ import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
 import { getLastMove } from "../utils/util";
 import { mapStores } from "pinia";
-import { useGameOnTheBoardStore } from "../store/CurrentGameStore";
+import { useGameOnTheBoardStore } from "../store/currentGameStore";
 import onlineEngine from "../components/engine/OnlineEngine.vue";
 
 export default {

@@ -5,7 +5,7 @@ import bus from '../../bus.js'
 import chessBoardCraft from "../chess-board/ChessBoardCraft.vue";
 import { getInfoForLastTwoMoves } from "../chess-board/Util";
 import {clockUsageTest} from "../clock";
-import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
+import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import { mapStores} from "pinia";
 
 export default {

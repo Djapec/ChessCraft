@@ -46,7 +46,7 @@
 import bus from "../../bus";
 import { replaceChessNotationWithIcons } from "../../utils/util";
 import { mapStores } from "pinia";
-import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
+import { useGameOnTheBoardStore } from "../../store/currentGameStore";
 
 export default {
   name: "movesControlBoard",

@@ -41,7 +41,7 @@
 import axios from 'axios';
 import { ref, watch, onUnmounted } from 'vue';
 import { Chess } from "../../../public/chess.min.js";
-import { useGameOnTheBoardStore } from "../../store/CurrentGameStore";
+import { useGameOnTheBoardStore } from "../../store/currentGameStore";
 import {formatMovesToSanNotation, groupMoves, replaceChessNotationWithIcons} from "../../utils/util";
 
 /**
