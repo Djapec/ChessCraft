@@ -18,7 +18,7 @@ export async function getPairsForRound(tournamentId, roundStr) {
     }
 }
 
-function generatePairObject(pair, round) {
+export function generatePairObject(pair, round) {
     const whitePlayer = getPlayerFullName(pair.white)
     const blackPlayer = getPlayerFullName(pair.black)
     const name = `${whitePlayer} - ${blackPlayer}`

@@ -49,25 +49,20 @@
 <script>
 import bus from "../../bus";
 import {
-  createGameLookupMap,
-  fetchPairsData,
   fetchGames,
   fetchTournament,
   generatePgn,
   getCurrentMoveScheduledByTime,
-  getGamesInfo,
-  getGamesUrls,
   isToday,
   isTwentyMinutesLater,
   parseTimeToDate,
   partlyClonePgn,
   validateRoundNumber
 } from "../../utils/util";
-import {generatePgnForRound} from "../../api/getRound";
 import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
 import {mapStores} from "pinia";
 import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
-import {getPairsForRound} from "../../api/getPairs";
+import {generatePairObject, getPairsForRound} from "../../api/getPairs";
 
 export default {
   name: 'gameSelectionManager',
@@ -512,40 +507,11 @@ export default {
      * Pulls data from the server for the game that is currently displayed on the board and, depending on the conditions,
      * will display the game or will constantly update it if the result is still active.
      */
-    async fetchActiveGame() { //todo: refactor this someday :D
+    async fetchActiveGame() {
       if (this.currentGameIndex !== null && this.currentActiveGame.result === '*' && this.delay === 0) {
-        const gameStr = this.currentGameIndex + 1;
         try {
-          const tournament = await fetchTournament(this.tournamentId);
-          const round = validateRoundNumber(this.selectedRound);
-          const game = validateRoundNumber(gameStr);
-          const pairsData = await fetchPairsData(this.tournamentId, [round]);
-
-          const extendedGamesUrls = getGamesUrls(
-              this.tournamentId,
-              [round],
-              pairsData
-          ).filter((g) => g.game === game);
-
-          const gamesData = await getGamesInfo(extendedGamesUrls);
-          const isMoveListChange = this.previousResponseMoveLength !== gamesData[0].value.moves.length
-          const isActiveGameChange = this.previousGameId !== this.currentGameId
-
-          this.isMoveListChangeForCurrentGame = isMoveListChange && !isActiveGameChange
-
-          if (isMoveListChange || isActiveGameChange) {
-            this.previousResponseMoveLength = gamesData[0].value.moves.length;
-            this.previousGameId = this.currentGameId;
-            const lookupMap = createGameLookupMap(extendedGamesUrls);
-            const pgn = generatePgn(
-                tournament,
-                pairsData,
-                gamesData,
-                extendedGamesUrls,
-                lookupMap
-            );
-            this.updateOrLoadCurrentActiveGame(pgn)
-          }
+          const chessGame = await this.fetchGameById(this.currentGameIndex)
+          this.updateOrLoadCurrentActiveGame(chessGame)
         } catch (error) {
           throw new Error(error);
         }
@@ -559,17 +525,13 @@ export default {
       const result = await fetchGames(this.tournamentId, round, mosaicViewGameList);
       if (result) {
 
-        const pgn = generatePgn(
+        return generatePgn(
             result.tournament,
             result.pairsData,
             result.gamesData,
             result.extendedGamesUrls,
             result.lookupMap
-        );
-
-        console.log(pgn)
-
-        return pgn
+        )
       }
     },
 
@@ -579,6 +541,8 @@ export default {
       const result = await fetchGames(this.tournamentId, round, game);
       if (result) {
 
+        //todo: razmisli da li ovo treba
+        this.games =result.pairsData[0].pairings.map(pair => generatePairObject(pair, round))
         const pgn = generatePgn(
             result.tournament,
             result.pairsData,
@@ -739,12 +703,13 @@ export default {
 
     /**
      * Loads the active game from the provided PGN data, updates the game list, and updates or loads the game.
-     * @param {string} pgn - The PGN (Portable Game Notation) data for the game to load.
+     * @param {string} chessGame - The PGN (Portable Game Notation) data for the game to load.
      */
-    updateOrLoadCurrentActiveGame(pgn) { //todo: ovo treba dobro istestirati ali mislim da ce da radi
-      this.currentActiveGame = this.parsePgnFile(pgn)[0];
+    updateOrLoadCurrentActiveGame(chessGame) { //todo: ovo treba dobro istestirati ali mislim da ce da radi
+      this.currentActiveGame = chessGame
       this.updateGameList(this.currentActiveGame);
-      const actionType = this.isMoveListChangeForCurrentGame ? 'update' : 'load';
+      const actionType = this.previousGameId === this.currentGameId ? 'update' : 'load';
+      this.previousGameId = this.currentGameId
       this.updateGameState(this.currentActiveGame.parsedData, actionType);
     },
 
@@ -801,8 +766,6 @@ export default {
   async created() {
     this.delay = this.config.delay;
     await this.initializeRoundsForTournament();
-    // selectedRound: 'generatePgnForActiveRound' zbog oboga cu zaomentarisati ovo
-    //await this.generatePgnForActiveRound();
   },
   mounted() {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);

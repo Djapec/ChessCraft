@@ -13,7 +13,6 @@
                 @onMove="sendPositionInfoToEngineAndUpdateClock"/>
           </div>
         </div>
-        <engine/>
         <onlineEngine :fen="analyzePositionFen" />
       </div>
       <div v-if="isAnalysisBoardVisible" class="side-container">
@@ -71,7 +70,6 @@ export default {
       this.positionInfo = data;
       this.gameOnTheBoardStore.chessHistoryForEngineAnalyze = this.positionInfo.history;
       this.analyzePositionFen = this.positionInfo.fen;
-      //bus.$emit('analyzePosition', this.positionInfo.fen, getFirstLetter(this.positionInfo.turn), this.positionInfo.history);
       if (this.positionInfo.history.length !== 0) {
         this.gameOnTheBoardStore.lastPlayedCurrentGameMove = getLastMove(this.positionInfo.history, this.positionInfo.turn)
       }
