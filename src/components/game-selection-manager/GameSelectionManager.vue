@@ -392,19 +392,9 @@ export default {
      * Collects parsed game data and sends it to the mosaic view.
      */
     sendParsedGamesToMosaicView() {
-      this.updateActiveMosaicViewGames() // pedjaa
+      this.updateActiveMosaicViewGames()
       //const mosaicViewGameList = this.getParsedGamesForMosaicView();
       //bus.$emit('generateMosaicView', mosaicViewGameList);
-    },
-
-    /**
-     * Retrieves a list of parsed game data from the mosaic view game indices.
-     * @returns {Array<Object>} - An array of parsed game data objects.
-     */
-    getParsedGamesForMosaicView() {
-      return this.mosaicViewGamesIndices
-          .map(gameData => this.findFilteredGameById(gameData.id)?.parsedData)
-          .filter(parsedData => parsedData);
     },
 
     /**
@@ -541,8 +531,10 @@ export default {
       const result = await fetchGames(this.tournamentId, round, game);
       if (result) {
 
-        //todo: razmisli da li ovo treba
-        this.games =result.pairsData[0].pairings.map(pair => generatePairObject(pair, round))
+        if (this.delay > 0) {
+          this.games = result.pairsData[0].pairings.map(pair => generatePairObject(pair, round))
+        }
+
         const pgn = generatePgn(
             result.tournament,
             result.pairsData,
@@ -571,8 +563,6 @@ export default {
     },
 
     checkGameResultForGameById(game) {
-
-
       if (this.isGameOngoingWithDelay(game)) {
         const partlyClonedGame = this.getPartlyClonedGame(game);
         if (!partlyClonedGame) return game.result;
@@ -705,7 +695,7 @@ export default {
      * Loads the active game from the provided PGN data, updates the game list, and updates or loads the game.
      * @param {string} chessGame - The PGN (Portable Game Notation) data for the game to load.
      */
-    updateOrLoadCurrentActiveGame(chessGame) { //todo: ovo treba dobro istestirati ali mislim da ce da radi
+    updateOrLoadCurrentActiveGame(chessGame) {
       this.currentActiveGame = chessGame
       this.updateGameList(this.currentActiveGame);
       const actionType = this.previousGameId === this.currentGameId ? 'update' : 'load';
