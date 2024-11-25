@@ -61,7 +61,7 @@ import {
 } from "../../utils/util";
 import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
 import {mapStores} from "pinia";
-import {useGameOnTheBoardStore} from "../../store/CurrentGameStore";
+import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import {generatePairObject, getPairsForRound} from "../../api/getPairs";
 
 export default {
@@ -331,7 +331,7 @@ export default {
      * @param {Object} game - The game object containing parsed data.
      */
     addGame(index, game) {
-      this.mosaicViewGamesIndices.push({ id: game.id, gameIndex: index });
+      this.mosaicViewGamesIndices.push({ id: game.id, gameIndex: index, result: game.result });
     },
 
     /**
@@ -411,8 +411,8 @@ export default {
      */
     async fetchActiveMosaicViewGames() {
       const isMosaicViewGameActiveForLiveMod = this.delay === 0 && this.mosaicViewGamesIndices.length >= 1
-
-      if (isMosaicViewGameActiveForLiveMod) {
+      const isSomeGameActive = this.mosaicViewGamesIndices.find(game => game.result !== "*")
+      if (isMosaicViewGameActiveForLiveMod && !isSomeGameActive) {
         await this.updateActiveMosaicViewGames()
       } else {
         clearInterval(this.intervalActiveMosaicViewGamesFetch);
