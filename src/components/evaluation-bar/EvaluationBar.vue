@@ -54,27 +54,39 @@ export default {
     const overlayHeight = computed(() => {
       const absEval = Math.abs(localEvaluation.value);
 
-      if (absEval === 100) {
-        return 50;
+      // Exact maximum case
+      if (absEval === 50) {
+        return 50; // Full half
       }
 
-      if (absEval > 7) {
-        return (90 / 2);
+      // Get dynamic alpha and maxFill based on evaluation range
+      let alpha;
+      let maxFill;
+
+      if (absEval <= 3) {
+        alpha = 1.5;  // Steeper curve for small advantages
+        maxFill = 85; // 85% fill maximum
+      } else if (absEval <= 6) {
+        alpha = 1.2;  // Medium curve
+        maxFill = 87.5; // 87.5% fill maximum
+      } else if (absEval <= 9) {
+        alpha = 1;  // Gentler curve
+        maxFill = 90; // 90% fill maximum
+      } else if (absEval <= 12) {
+        alpha = 0.8;  // Even gentler
+        maxFill = 92.5; // 92.5% fill maximum
+      } else {
+        alpha = 0.6;  // Most gentle curve
+        maxFill = 93.75; // 93.75% fill maximum
       }
 
-      if (absEval > 10) {
-        return (93.75 / 2);
-      }
+      // Calculate the fill percentage using the dynamic alpha
+      const normalizedValue = absEval / 7;
+      const scale = 1 - Math.exp(-alpha * normalizedValue);
+      const basePercentage = (scale * maxFill) / 2;
 
-      if (absEval > 13) {
-        return (95.75 / 2);
-      }
-
-      if (absEval > 15) {
-        return (95.75 / 2);
-      }
-
-      return (absEval / 7) * (93.75 / 2);
+      // Cap at the appropriate maximum fill for this range
+      return Math.min(basePercentage, maxFill / 2);
     });
 
     return {
