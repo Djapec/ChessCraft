@@ -6,11 +6,14 @@
       </div>
       <div v-if="isAnalysisBoardVisible" class="single-game-view">
         <div class="board-with-controls">
-          <div class="analysis-board">
-            <analysis
-                :fen="currentFen"
-                :showThreats="false"
-                @onMove="sendPositionInfoToEngineAndUpdateClock"/>
+          <div class="chess-board-screen">
+            <evaluationBar :evaluation="value"/>
+            <div class="analysis-board">
+              <analysis
+                  :fen="currentFen"
+                  :showThreats="false"
+                  @onMove="sendPositionInfoToEngineAndUpdateClock"/>
+            </div>
           </div>
           <div class="side-container">
             <movesControlBoard/>
@@ -34,10 +37,11 @@ import engine from '../components/engine/Stockfish.vue';
 import gameSelectionManager from '../components/game-selection-manager/GameSelectionManager.vue';
 import bus from '../bus.js';
 import MosaicView from "@/components/mosaic-view/MosaicView.vue";
-import {getFirstLetter, getLastMove} from "../utils/util";
+import { getLastMove } from "../utils/util";
 import { mapStores } from "pinia";
 import { useGameOnTheBoardStore } from "../store/currentGameStore";
 import onlineEngine from "../components/engine/OnlineEngine.vue";
+import evaluationBar from "../components/evaluation-bar/EvaluationBar.vue";
 
 export default {
   name: 'userView',
@@ -48,6 +52,7 @@ export default {
     engine,
     gameSelectionManager,
     movesControlBoard,
+    evaluationBar
   },
   computed: {
     ...mapStores(useGameOnTheBoardStore),
@@ -59,7 +64,8 @@ export default {
       positionInfo: null,
       isViewOnly: true,
       buttonsDisabled: false,
-      isAnalysisBoardVisible: true
+      isAnalysisBoardVisible: true,
+      value: 0,
     };
   },
   created() {
@@ -92,6 +98,14 @@ export default {
   align-items: center;
   -webkit-justify-content: center;
   justify-content: center;
+}
+
+.chess-board-screen {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 @media screen and (max-width: 2100px) {

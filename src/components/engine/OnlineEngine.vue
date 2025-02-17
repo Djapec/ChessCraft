@@ -43,6 +43,7 @@ import { ref, watch, onUnmounted } from 'vue';
 import { Chess } from "../../../public/chess.min.js";
 import { useGameOnTheBoardStore } from "../../store/currentGameStore";
 import {formatMovesToSanNotation, groupMoves, replaceChessNotationWithIcons} from "../../utils/util";
+import bus from "../../bus";
 
 /**
  * OnlineEngine Component
@@ -81,6 +82,12 @@ export default {
     const evaluation = ref(null);
     const continuationArr = ref(null);
     const continuationInSanNotation = ref(null);
+
+    watch(() => evaluation.value, (newValue) => {
+      if (newValue !== null) {
+        bus.$emit('evaluation', newValue);
+      }
+    })
 
     /**
      * Fetches chess evaluation and continuation data based on a given FEN string.
