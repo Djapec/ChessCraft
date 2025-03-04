@@ -55,29 +55,27 @@ export default {
       const absEval = Math.abs(localEvaluation.value);
 
       // Exact maximum case
-      if (absEval === 50) {
+      if (absEval >= 50) {
         return 50; // Full half
       }
+
 
       // Get dynamic alpha and maxFill based on evaluation range
       let alpha;
       let maxFill;
 
       if (absEval <= 3) {
-        alpha = 1.5;  // Steeper curve for small advantages
-        maxFill = 85; // 85% fill maximum
+        alpha = 1.7;  // Steeper curve for small advantages
+        maxFill = 85;
       } else if (absEval <= 6) {
-        alpha = 1.2;  // Medium curve
-        maxFill = 87.5; // 87.5% fill maximum
+        alpha = 1.7;  // Medium curve
+        maxFill = 90;
       } else if (absEval <= 9) {
-        alpha = 1;  // Gentler curve
-        maxFill = 90; // 90% fill maximum
+        alpha = 1.2;  // Gentler curve
+        maxFill = 94;
       } else if (absEval <= 12) {
-        alpha = 0.8;  // Even gentler
-        maxFill = 92.5; // 92.5% fill maximum
-      } else {
-        alpha = 0.6;  // Most gentle curve
-        maxFill = 93.75; // 93.75% fill maximum
+        alpha = 1;  // Even gentler
+        maxFill = 97.5;
       }
 
       // Calculate the fill percentage using the dynamic alpha
