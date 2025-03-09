@@ -80,13 +80,15 @@
         if (this.viewOnly || this.parsedPgnData?.halfMoves.length > 0) {
           const moveDetails = {
             moveNumber: this.parsedPgnData.halfMoves.length - 1,
-            playedMove: this.parsedPgnData.halfMoves[this.parsedPgnData.halfMoves.length - 1].move
+            playedMove: this.parsedPgnData.halfMoves[this.parsedPgnData.halfMoves.length - 1]?.move
           }
-          const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
+          if (moveDetails.playedMove) {
+            const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, moveDetails)
 
-          this.updateClockForMove(movesInfo.currentMoveInfo)
-          if (movesInfo.previousMoveInfo !== null) {
-            this.updateClockForMove(movesInfo.previousMoveInfo)
+            this.updateClockForMove(movesInfo.currentMoveInfo)
+            if (movesInfo.previousMoveInfo !== null) {
+              this.updateClockForMove(movesInfo.previousMoveInfo)
+            }
           }
         }
       },

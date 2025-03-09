@@ -50,7 +50,7 @@
 import bus from "../../bus";
 import {
   fetchGames,
-  fetchTournament,
+  fetchTournament, formatPlayerInfo,
   generatePgn,
   getCurrentMoveScheduledByTime,
   isToday,
@@ -93,7 +93,7 @@ export default {
       if(this.$route.params.id) {
         return this.$route.params.id
       }
-      return 'd35090fa8fad1-5a19p-1194p-2dca1-ea8d3d38p';
+      return '0435bbba78625-eb8b4-eac43-e5442-91bf534c1';
     },
     filteredGames() {
       return this.games.filter(game => game.name.toLowerCase().includes(this.search.toLowerCase()));
@@ -107,6 +107,7 @@ export default {
     selectedRound: 'generatePgnForActiveRound'
   },
   methods: {
+    formatPlayerInfo,
     /**
      * Trigger fetchActiveRound method when user comeback to the page again
      */
@@ -869,7 +870,7 @@ export default {
 .game-name {
   flex-grow: 1;
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
 }
 

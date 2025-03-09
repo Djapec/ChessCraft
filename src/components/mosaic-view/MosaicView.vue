@@ -137,7 +137,7 @@ export default {
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   grid-gap: 15px 4rem;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 @media (max-width: 600px) {

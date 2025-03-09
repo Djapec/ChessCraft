@@ -224,7 +224,7 @@ function getFormattedMoves(moves) {
 }
 
 export function getPlayerFullName(player) {
-    const full = `${player?.title || ''} ${player?.lname || ''} ${player?.fname || ''} ${player?.rating || ''} ${player?.federation || ''}`;
+    const full = `${player?.federation || ''} ${player?.title || ''} ${player?.lname || ''} ${player?.fname || ''} ${player?.rating || ''}`;
     return full.trim() === ',' ? '?' : full;
 }
 
@@ -507,4 +507,45 @@ export function isTwentyMinutesLater(givenTime) {
 
     const differenceInMinutes = (currentTime - givenDate) / (1000 * 60);
     return differenceInMinutes >= 20;
+}
+/**
+ * Formats chess player information by removing any 4-digit number (rating).
+ * Handles both single player format and paired players separated by a hyphen.
+ *
+ * For paired players format like "SLO GM Fedoseev Vladimir 2731 - MNE Djukanovic Mitar 2033",
+ * it will return "SLO GM Fedoseev Vladimir - MNE Djukanovic Mitar"
+ *
+ * @param {string} input - Player information string (single player or paired players)
+ * @returns {string} - Formatted string with ratings removed
+ */
+export function formatPlayerInfo(input) {
+    // Check if the input contains a hyphen (paired players)
+    if (input.includes(' - ')) {
+        // Split by the hyphen and process each player separately
+        const players = input.split(' - ');
+        const formattedPlayers = players.map(player => removeRating(player.trim()));
+        return formattedPlayers.join(' - ');
+    } else {
+        // Single player format
+        return removeRating(input);
+    }
+}
+
+/**
+ * Helper function to remove the rating from a single player's information
+ *
+ * @param {string} playerInfo - Single player information string
+ * @returns {string} - Player information with rating removed
+ */
+function removeRating(playerInfo) {
+    // Check if the string ends with a 4-digit number (rating)
+    const hasRating = /\d{4}$/.test(playerInfo);
+
+    if (!hasRating) {
+        // If there's no rating, return the input as is
+        return playerInfo;
+    }
+
+    // Remove the 4-digit number at the end
+    return playerInfo.trim().replace(/\s?\d{4}$/, '');
 }

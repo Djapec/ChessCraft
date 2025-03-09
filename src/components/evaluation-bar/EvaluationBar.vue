@@ -47,10 +47,6 @@ export default {
       bus.$on('evaluation', handleEvaluation);
     });
 
-    onUnmounted(() => {
-      bus.$off('evaluation', handleEvaluation);
-    });
-
     const overlayHeight = computed(() => {
       const absEval = Math.abs(localEvaluation.value);
 
