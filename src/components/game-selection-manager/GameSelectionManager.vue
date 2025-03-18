@@ -871,7 +871,7 @@ export default {
 .game-name {
   flex-grow: 1;
   text-align: left;
-  font-size: 12px;
+  font-size: 13px;
   color: #333;
 }
 
