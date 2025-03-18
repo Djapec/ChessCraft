@@ -37,7 +37,7 @@
           >
           <div class="filtered-game-container">
             <span class="game-index">{{ index + 1 }}.</span>
-            <span class="game-name">{{ game.name }}</span>
+            <span class="game-name">{{ formatPlayerInfo(game.name) }}</span>
             <span class="game-result">{{ game.result }}</span> <!--nadji nacin da popravis ovo this.checkGameResult(game)-->
           </div>
         </li>
@@ -865,12 +865,13 @@ export default {
   text-align: center;
   font-weight: 500;
   color: #333;
+  font-size: 12px;
 }
 
 .game-name {
   flex-grow: 1;
   text-align: left;
-  font-size: 13px;
+  font-size: 12px;
   color: #333;
 }
 
@@ -878,7 +879,7 @@ export default {
   width: 60px;
   text-align: right;
   font-weight: 400;
-  font-size: 14px;
+  font-size: 12px;
   color: #555;
 }
 

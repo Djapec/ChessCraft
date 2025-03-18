@@ -100,6 +100,12 @@ export default {
   margin-bottom: 16px;
 }
 
+@media (max-width: 600px) {
+  .eval-bar-container {
+    height: 330px;
+  }
+}
+
 .eval-bar-background {
   position: absolute;
   inset: 0;
