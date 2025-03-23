@@ -25,7 +25,7 @@
             :key="index"
             :class="{ 'focused': game.id === currentActiveGame?.id && !isMosaicViewEnabled }"
             class="game-round"
-            @click="isMosaicViewEnabled ? addGameToMosaicView(index, game) : selectGame(index, game)"
+            @click="isMosaicViewEnabled ? addGameToMosaicView(game) : selectGame(game)"
         >
           <input
               type="checkbox"
@@ -186,13 +186,13 @@ export default {
     /**
      * Selects a game, updates the current game state, disables movement controls,
      * and manages game fetching or loading based on game result.
-     * @param {number} index - The index of the selected game.
      * @param {Object} game - The game object to select.
      */
-    async selectGame(index, game) {
-      const parsedData = await this.fetchGameById(index) // ovde mora da ide ID
+    async selectGame(game) {
+      const gameIndex = this.findGameIndexByName(game.name);
+      const parsedData = await this.fetchGameById(gameIndex);
       if (parsedData) {
-        this.updateCurrentGameState(game, index, parsedData);
+        this.updateCurrentGameState(game, gameIndex, parsedData);
         bus.$emit('disableMovementAndControlsWhenChangingGame');
 
         const gameResult = this.checkGameResult(this.currentActiveGame);
@@ -280,18 +280,18 @@ export default {
 
     /**
      * Adds or removes a game to the mosaic view, manages game intervals, and adjusts the analysis board visibility.
-     * @param {number} index - The index of the game in the full game list.
      * @param {Object} game - The game object containing parsed data.
      */
-    addGameToMosaicView(index, game) {
+    addGameToMosaicView(game) {
       // Clear the previous game state
       this.resetPreviousGame();
 
+      const gameIndex = this.findGameIndexByName(game.name);
       const currentCount = this.getArrayLength(this.mosaicViewGamesIndices);
       const gameIndexInMosaic = this.getGameIndexInMosaic(game.id);
 
       if (this.shouldAddGameToMosaic(currentCount, gameIndexInMosaic)) {
-        this.addGame(index, game);
+        this.addGame(gameIndex, game);
       } else if (gameIndexInMosaic > -1) {
         this.removeGame(gameIndexInMosaic);
       }
