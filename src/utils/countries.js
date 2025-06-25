@@ -19,7 +19,8 @@ const alpha3ToAlpha2 = {
     CHE: 'CH', SUI: 'CH', SYR: 'SY', TJK: 'TJ', THA: 'TH', TLS: 'TL', TGO: 'TG', TON: 'TO', TTO: 'TT', TUN: 'TN',
     TUR: 'TR', TKM: 'TM', TUV: 'TV', UGA: 'UG', UKR: 'UA', ARE: 'AE', GBR: 'GB', ENG: 'GB', SCO: 'GB', WAL: 'GB',
     WLS: 'GB', NIR: 'GB', USA: 'US', URY: 'UY', UZB: 'UZ', BFA: 'BF', DEN: 'DK', ETH: 'ET', GRE: 'GR', PRK: 'KP',
-    VUT: 'VU', VAT: 'VA', VEN: 'VE', VNM: 'VN', YEM: 'YE', ZMB: 'ZM', ZWE: 'ZW', KOS: 'XK', SWE: 'SE'
+    VUT: 'VU', VAT: 'VA', VEN: 'VE', VNM: 'VN', YEM: 'YE', ZMB: 'ZM', ZWE: 'ZW', KOS: 'XK', SWE: 'SE', POR: 'PT',
+    LAT: 'LV', MNC: 'MC'
 };
 
 export function getEmojiFlag(alpha3) {

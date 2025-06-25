@@ -146,7 +146,7 @@ export default {
      * @returns {boolean} - Returns true if the response contains valid data, otherwise false.
      */
     function isValidResponse(response) {
-      return response.data?.eval && response.data?.continuationArr && response.data?.move;
+      return response.data?.continuationArr && response.data?.move;
     }
 
     /**
