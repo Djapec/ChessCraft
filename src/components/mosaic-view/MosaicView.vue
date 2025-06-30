@@ -25,9 +25,8 @@ export default {
     }
   },
   created() {
-    this.isLive = this.config.isLive;
-
-    bus.$on('generateMosaicView', (chessGames) => {
+    bus.$on('generateMosaicView', (chessGames, delay) => {
+      this.isLive = delay === 0;
       this.isVisible = true
       this.mosaicViewChessGames = chessGames
       if (this.isLive) {

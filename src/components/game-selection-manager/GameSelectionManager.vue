@@ -63,6 +63,7 @@ import {parsePgnWithDelay} from "../../pgn-parser/pgnParserWithDelay";
 import {mapStores} from "pinia";
 import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import {generatePairObject, getPairsForRound} from "../../api/getPairs";
+import {delayFormatMap} from "../../utils/maps";
 
 export default {
   name: 'gameSelectionManager',
@@ -90,10 +91,24 @@ export default {
   },
   computed: {
     tournamentId() {
-      if(this.$route.params.id) {
-        return this.$route.params.id
+      const routeId = this.$route.params.id;
+
+      if (routeId) {
+        if (routeId.length === 43) {
+          const delayCode = routeId.slice(-2);
+          const idWithoutDelay = routeId.slice(0, -2);
+
+          if (delayFormatMap.has(delayCode)) {
+            this.delay = delayFormatMap.get(delayCode);
+            return idWithoutDelay;
+          }
+        }
+
+        return routeId;
       }
-      return '0435bbba78625-eb8b4-eac43-e5442-91bf534c1';
+
+      return '69041cf16c2b0-703b5-01a41-db13e-d346c3da5';
+      // return '0435bbba78625-eb8b4-eac43-e5442-91bf534c1';
     },
     filteredGames() {
       return this.games.filter(game => game.name.toLowerCase().includes(this.search.toLowerCase()));
@@ -489,7 +504,7 @@ export default {
      * @param {Array<Object>} parsedDataArray - An array of parsed game data for the mosaic view.
      */
     emitMosaicViewUpdate(parsedDataArray) {
-      bus.$emit('generateMosaicView', parsedDataArray);
+      bus.$emit('generateMosaicView', parsedDataArray, this.delay);
     },
 
     // single game mod

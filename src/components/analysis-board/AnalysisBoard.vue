@@ -4,7 +4,6 @@ import { Chess } from "../../../public/chess.min.js"
 import bus from '../../bus.js'
 import chessBoardCraft from "../chess-board/ChessBoardCraft.vue";
 import { getInfoForLastTwoMoves } from "../chess-board/Util";
-import {clockUsageTest} from "../clock";
 import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import { mapStores} from "pinia";
 
@@ -270,7 +269,6 @@ export default {
       bus.$on('lastMove', () => {
         this.lastMove()
       })
-      // toliko je zamrseno da ga je nemoguce prebaciti na state
       bus.$on('toggleMovement', (isViewOnly) => {
         this.toggleMovement(isViewOnly)
       })
