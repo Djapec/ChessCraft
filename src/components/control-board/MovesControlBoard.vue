@@ -1,5 +1,16 @@
 <template>
   <div class="move-list-container">
+    <div>
+      <ChessClock
+          :game-id="clockObject.gameId"
+          :move-number='clockObject.moveNumber'
+          :white-time='clockObject.whiteTime'
+          :black-time='clockObject.blackTime'
+          :current-player='clockObject.currentPlayer'
+          :is-active='clockObject.isActive'
+          :move-start-time='clockObject.moveStartTime'
+      />
+    </div>
     <div class="move-controls">
       <button class="button" @click="loadFirstMove()" :disabled="isButtonsDisabled">&#171;</button>
       <button class="button" id="prevMove" @click="loadPrevMove()" :disabled="isButtonsDisabled">&#8249;</button>
@@ -47,19 +58,31 @@ import bus from "../../bus";
 import { replaceChessNotationWithIcons } from "../../utils/util";
 import { mapStores } from "pinia";
 import { useGameOnTheBoardStore } from "../../store/currentGameStore";
+import ChessClock from "../game-selection-manager/ChessClock.vue";
 
 export default {
   name: "movesControlBoard",
+  components: {ChessClock},
   data() {
     return {
       isViewOnlyMod: false,
       isButtonsDisabled: false,
       currentMoveIndex: 1,
-      parsedPgnGameData: []
+      parsedPgnGameData: [],
+      clockObject: {
+          gameId: 'gameId',
+          moveNumber: 0,
+          whiteTime: 5400,
+          blackTime: 5400,
+          currentPlayer: 'white',
+          isActive: false,
+          moveStartTime: '00:00:00',
+      }
     }
   },
   watch: {
     loadCurrentGameFromStore: 'loadGameMoveList',
+    getClockObject: 'updateClockObject'
   },
   computed: {
     ...mapStores(useGameOnTheBoardStore),
@@ -70,6 +93,10 @@ export default {
 
     lastPlayedMoveIndex() {
       return this.gameOnTheBoardStore.lastPlayedMoveIndex
+    },
+
+    getClockObject() {
+      return this.gameOnTheBoardStore.getClockObject
     },
 
     movePairs() {
@@ -95,6 +122,10 @@ export default {
     isActiveMove(move) {
       this.scrollToActiveMove();
       return this.lastPlayedMoveIndex === move.id;
+    },
+
+    updateClockObject() {
+      this.clockObject = this.gameOnTheBoardStore.getClockObject;
     },
 
     /**

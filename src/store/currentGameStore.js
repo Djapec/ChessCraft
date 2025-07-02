@@ -4,10 +4,12 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
     state: () => {
         return {
             currentGameOnTheBoard: {},
+            currentGameOnTheBoardId: null,
             lastPlayedCurrentGameMove: null,
             lastPlayedMoveIndex: 1,
             chessHistoryForEngineAnalyze: [],
             actionType: 'load', //just two possible values: load or update
+            clockObject: {}
         }
     },
     getters: {
@@ -17,17 +19,17 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
         getHalfMovesForCurrentGameOnTheBoard() {
             return this.currentGameOnTheBoard.halfMoves;
         },
-
         getChessObjectFromCurrentGameOnTheBoard() {
             return this.currentGameOnTheBoard.chess;
         },
-
         getChessHistoryForEngineAnalyze() {
             return this.chessHistoryForEngineAnalyze;
         },
-
         getLastPlayedCurrentGameMove() {
             return this.lastPlayedCurrentGameMove
+        },
+        getClockObject() {
+            return this.clockObject
         }
     },
     actions: {

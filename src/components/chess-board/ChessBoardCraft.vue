@@ -2,7 +2,8 @@
   <div class='chessboard-craft-container'>
     <div class='player-name-clock'>
       <p>
-        {{ blackPlayer }} | <span id="blackPlayerClock">{{ blackPlayerClock }}</span>
+<!--        {{ blackPlayer }} | <span id="blackPlayerClock">{{ blackPlayerClock }}</span>-->
+        {{blackPlayer}}
       </p>
     </div>
     <div class="blue merida">
@@ -10,7 +11,8 @@
     </div>
     <div class='player-name-clock'>
       <p>
-        {{ whitePlayer }} | <span id="whitePlayerClock">{{ whitePlayerClock }}</span>
+<!--        {{ whitePlayer }} | <span id="whitePlayerClock">{{ whitePlayerClock }}</span>-->
+        {{whitePlayer}}
       </p>
     </div>
     <Modal :isVisible="isModalVisible" @close="closeModal" @select="selectPromotion" />

@@ -117,9 +117,14 @@ export default {
       return Number(this.$route.params.roundNumber)
     },
     ...mapStores(useGameOnTheBoardStore),
+
+    getClockObject() {
+      return this.gameOnTheBoardStore.getClockObject
+    }
   },
   watch: {
-    selectedRound: 'generatePgnForActiveRound'
+    selectedRound: 'generatePgnForActiveRound',
+    getClockObject: 'updateClockObject'
   },
   methods: {
     formatPlayerInfo,
@@ -130,6 +135,10 @@ export default {
       if (document.visibilityState === 'visible') {
         this.fetchActiveRound()
       }
+    },
+
+    updateClockObject() {
+      this.clockObject = this.gameOnTheBoardStore.getClockObject;
     },
 
     /**
@@ -272,6 +281,8 @@ export default {
     updateCurrentGameState(game, index, parsedData) {
       this.currentGameIndex = index;
       this.currentGameId = game.id
+      // todo: ovo mozda treba da bude na drugom mestu
+      this.gameOnTheBoardStore.currentGameOnTheBoardId = game.id;
       this.currentActiveGame = parsedData;
     },
 

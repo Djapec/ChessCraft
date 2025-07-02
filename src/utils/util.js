@@ -551,3 +551,9 @@ function removeRating(playerInfo) {
     // Remove the 4-digit number at the end
     return playerInfo.trim().replace(/\s?\d{4}$/, '');
 }
+
+export function timeStringToSeconds(timeStr) {
+    if (!timeStr) return null;
+    const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+    return hours * 3600 + minutes * 60 + seconds;
+}

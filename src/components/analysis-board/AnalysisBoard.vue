@@ -6,6 +6,7 @@ import chessBoardCraft from "../chess-board/ChessBoardCraft.vue";
 import { getInfoForLastTwoMoves } from "../chess-board/Util";
 import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import { mapStores} from "pinia";
+import {timeStringToSeconds} from "../../utils/util";
 
 export default {
   name: 'analysis',
@@ -227,8 +228,24 @@ export default {
       const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, this.getCurrentGameLastPlayedMove);
       if (!movesInfo) return;
 
+      console.log(movesInfo);
+
+      const whiteTime = movesInfo.currentMoveInfo.color === "white" ? timeStringToSeconds(movesInfo.currentMoveInfo.clock) : timeStringToSeconds(movesInfo.previousMoveInfo.clock);
+      const blackTime = movesInfo.currentMoveInfo.color === "black" ? timeStringToSeconds(movesInfo.currentMoveInfo.clock) : timeStringToSeconds(movesInfo.previousMoveInfo.clock);
+      const lastPlayedMoveId = this.parsedPgnData.halfMoves.at(-1).id;
+      const isActive = (lastPlayedMoveId === movesInfo.currentMoveInfo.id) && this.parsedPgnData.metadata.Result === '*';
+
       this.updateClockForMove(movesInfo.currentMoveInfo);
       this.gameOnTheBoardStore.lastPlayedMoveIndex = movesInfo.currentMoveInfo.id
+      this.gameOnTheBoardStore.clockObject = {
+        gameId: this.gameOnTheBoardStore.currentGameOnTheBoardId, // gameId
+        moveNumber: movesInfo.currentMoveInfo.id, // 0
+        whiteTime: whiteTime, // 5400
+        blackTime: blackTime, // 5400
+        currentPlayer: movesInfo.currentMoveInfo.color, // white
+        isActive: isActive, // false
+        moveStartTime: movesInfo.currentMoveInfo.time,
+      }
 
       if (movesInfo.previousMoveInfo !== null) {
         this.updateClockForMove(movesInfo.previousMoveInfo);
