@@ -6,7 +6,10 @@ import chessBoardCraft from "../chess-board/ChessBoardCraft.vue";
 import { getInfoForLastTwoMoves } from "../chess-board/Util";
 import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import { mapStores} from "pinia";
-import {timeStringToSeconds} from "../../utils/util";
+import {
+  findPreviousNonNullClockByColorFromId,
+  timeStringToSeconds
+} from "../../utils/util";
 
 export default {
   name: 'analysis',
@@ -227,23 +230,46 @@ export default {
 
       const movesInfo = getInfoForLastTwoMoves(this.parsedPgnData, this.getCurrentGameLastPlayedMove);
       if (!movesInfo) return;
+      const whiteMoveId = movesInfo.currentMoveInfo.color === "white" ? movesInfo.currentMoveInfo.id : movesInfo.previousMoveInfo.id;
+      const blackMoveId = movesInfo.currentMoveInfo.color === "black" ? movesInfo.currentMoveInfo.id : movesInfo?.previousMoveInfo?.id;
 
-      console.log(movesInfo);
+      const currentMoveWhiteTime = movesInfo.currentMoveInfo.color === "white" ? movesInfo.currentMoveInfo.clock : movesInfo.previousMoveInfo.clock;
+      const currentMoveBlackTime = movesInfo.currentMoveInfo.color === "black" ? movesInfo.currentMoveInfo.clock : movesInfo?.previousMoveInfo?.clock;
 
-      const whiteTime = movesInfo.currentMoveInfo.color === "white" ? timeStringToSeconds(movesInfo.currentMoveInfo.clock) : timeStringToSeconds(movesInfo.previousMoveInfo.clock);
-      const blackTime = movesInfo.currentMoveInfo.color === "black" ? timeStringToSeconds(movesInfo.currentMoveInfo.clock) : timeStringToSeconds(movesInfo.previousMoveInfo.clock);
-      const lastPlayedMoveId = this.parsedPgnData.halfMoves.at(-1).id;
-      const isActive = (lastPlayedMoveId === movesInfo.currentMoveInfo.id) && this.parsedPgnData.metadata.Result === '*';
+      const whiteTime = currentMoveWhiteTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'white', whiteMoveId);
+      const blackTime = currentMoveBlackTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'black', blackMoveId);
+
+      let isActive;
+
+      const test = this.gameOnTheBoardStore.lastPlayedCurrentGameMoveWithoutDelay.id
+      if (test === movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result === '*') {
+        isActive = true
+      } else if (test === movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') {
+        isActive = false
+      } else if (test !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result === '*') {
+        isActive = movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id;
+      } else {
+          // console.log('ovde 4');
+          // console.log(test !== movesInfo.currentMoveInfo.id);
+          // console.log(this.parsedPgnData.metadata.Result !== '*');
+        isActive = (test !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') && (movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id);
+      }
+
+        // console.log(test);
+        // console.log(movesInfo.currentMoveInfo.id);
+        // console.log(this.getCurrentGameFromStore.halfMoves.at(-1).id);
+        // console.log(this.parsedPgnData.metadata.Result);
+        // console.log(isActive);
 
       this.updateClockForMove(movesInfo.currentMoveInfo);
       this.gameOnTheBoardStore.lastPlayedMoveIndex = movesInfo.currentMoveInfo.id
       this.gameOnTheBoardStore.clockObject = {
-        gameId: this.gameOnTheBoardStore.currentGameOnTheBoardId, // gameId
-        moveNumber: movesInfo.currentMoveInfo.id, // 0
-        whiteTime: whiteTime, // 5400
-        blackTime: blackTime, // 5400
-        currentPlayer: movesInfo.currentMoveInfo.color, // white
-        isActive: isActive, // false
+        gameId: this.gameOnTheBoardStore.currentGameOnTheBoardId,
+        moveNumber: movesInfo.currentMoveInfo.id,
+        whiteTime: timeStringToSeconds(whiteTime),
+        blackTime: timeStringToSeconds(blackTime),
+        currentPlayer: movesInfo.previousMoveInfo ? movesInfo.previousMoveInfo.color : 'white',
+        isActive: isActive,
         moveStartTime: movesInfo.currentMoveInfo.time,
       }
 

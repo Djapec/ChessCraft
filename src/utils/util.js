@@ -240,12 +240,13 @@ export function parseToPgn(tournament, pairing, game, round, date) {
         `[Black "${getPlayerFullName(pairing.black)}"]`,
         `[Result "${getGameResult(game.result)}"]`,
         `[StartTime "${game.firstMove || '?'}"]`,
-        `[PlyCount "${game.moves.length}"]`,
         `[TimeControl "${tournament.timecontrol || '?'}"]`,
     ].join('\n');
     pgn += '\n\n';
-    pgn += getFormattedMoves(game.moves);
-    pgn += ` ${getGameResult(game.result)}`;
+    if (game.moves) {
+        pgn += getFormattedMoves(game.moves);
+        pgn += ` ${getGameResult(game.result)}`;
+    }
     return pgn;
 }
 
@@ -304,7 +305,7 @@ export function generatePgn(tournament, pairsInfo, gamesInfo, gamesUrls, lookupM
     const pgn = pgnList.join('\n\n');
 
     if (!pgn) {
-        throw new Error('No valid PGN found.');
+        console.error('No valid PGN found');
     }
     return pgn;
 }
@@ -556,4 +557,36 @@ export function timeStringToSeconds(timeStr) {
     if (!timeStr) return null;
     const [hours, minutes, seconds] = timeStr.split(':').map(Number);
     return hours * 3600 + minutes * 60 + seconds;
+}
+
+export function findPreviousNonNullClockByColorFromId(array, color, currentId) {
+    const sorted = array.slice().sort((a, b) => a.id - b.id);
+
+    if (!currentId) return '01:30:00';
+
+    // Handle the special case where currentId === 1
+    if (currentId === 1) {
+        const firstWhiteMove = sorted.find(item => item.id === 1 && item.color === color);
+        if (!firstWhiteMove || firstWhiteMove.clock === null || firstWhiteMove.clock === undefined) {
+            return '01:30:00';
+        }
+        return firstWhiteMove.clock;
+    }
+
+    // General case: search for previous move
+    for (let i = sorted.length - 1; i >= 0; i--) {
+        const item = sorted[i];
+
+        if (
+            item.id < currentId &&
+            item.color === color &&
+            item.clock !== null &&
+            item.clock !== undefined
+        ) {
+            return item.clock;
+        }
+    }
+
+    // No match found
+    return null;
 }

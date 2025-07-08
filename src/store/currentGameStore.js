@@ -6,6 +6,7 @@ export const useGameOnTheBoardStore = defineStore('gameOnTheBoard',{
             currentGameOnTheBoard: {},
             currentGameOnTheBoardId: null,
             lastPlayedCurrentGameMove: null,
+            lastPlayedCurrentGameMoveWithoutDelay: null, // only in use for delay games
             lastPlayedMoveIndex: 1,
             chessHistoryForEngineAnalyze: [],
             actionType: 'load', //just two possible values: load or update

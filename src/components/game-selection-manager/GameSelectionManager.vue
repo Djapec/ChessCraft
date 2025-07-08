@@ -219,6 +219,7 @@ export default {
         this.updateCurrentGameState(game, gameIndex, parsedData);
         bus.$emit('disableMovementAndControlsWhenChangingGame');
 
+        this.gameOnTheBoardStore.lastPlayedCurrentGameMoveWithoutDelay = this.currentActiveGame.parsedData.halfMoves.at(-1)
         const gameResult = this.checkGameResult(this.currentActiveGame);
         if (gameResult === '*') {
           this.presentGameBasedOnDelay();

@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import {onMounted, onUnmounted, reactive, ref, watch} from 'vue';
+import {onMounted, onUnmounted, reactive, ref, watch, watchEffect} from 'vue';
 
 /**
  * ChessClock Component
@@ -262,12 +262,16 @@ export default {
     /**
      * Watches for changes in game props and updates display accordingly.
      */
-    watch(
-        () => [props.gameId, props.moveNumber, props.whiteTime, props.blackTime, props.moveStartTime],
-        () => {
-          updateDisplayTimes();
-        }
-    );
+    watchEffect(() => {
+      // This automatically tracks dependencies
+      props.gameId;
+      props.moveNumber;
+      props.whiteTime;
+      props.blackTime;
+      props.moveStartTime;
+
+      updateDisplayTimes();
+    });
 
     /**
      * Watches for timer state changes (active/inactive).
