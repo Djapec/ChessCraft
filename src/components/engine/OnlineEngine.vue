@@ -181,7 +181,7 @@ export default {
      */
     function handleError(err) {
       if (axios.isCancel(err)) {
-        console.log('Request canceled:', err.message);
+        // console.log('Request canceled:', err.message);
       } else {
         error.value = 'An error occurred while fetching data.';
         console.error('API Error:', err);

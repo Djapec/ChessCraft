@@ -43,6 +43,8 @@ export default {
      * Determine whether the game should be loaded or updated based on actionType
      */
     loadOrUpdateGameOnTheBoard() {
+      // mozda ovde
+      // this.gameOnTheBoardStore.lastPlayedCurrentGameMoveWithoutDelay = this.currentActiveGame.parsedData.halfMoves.at(-1)
       if (this.gameOnTheBoardStore.actionType === 'load') {
         this.loadGame(this.getCurrentGameFromStore)
       } else {
@@ -120,9 +122,14 @@ export default {
      * @param {Object} parsedData - An object that contains information about the game including chess.js object.
      */
     updateGameIfViewOnlyModeIsActive(parsedData) {
+      //iskljuciti da automatski skace na poslednji potez kad gledans neki random move LIVE game problem
       this.game = parsedData.chess;
       this.parsedPgnData = parsedData;
       this.currentMoveHistory = this.game.history();
+      // console.log('-------------------------')
+      // console.log('updateGameIfViewOnlyModeIsActive')
+      // console.log(this.game.history().length - 1)
+      // console.log(this.currentMoveHistory)
 
       if (this.currentHistoryIndex === this.game.history().length - 1) {
         this.currentHistoryIndex = this.game.history().length;
@@ -160,8 +167,14 @@ export default {
      * Loads a previous move and updates the game state accordingly.
      */
     prevMove() {
+      // verovatno je ovde problem
       if (this.currentHistoryIndex !== 0) {
         this.currentHistoryIndex = this.currentHistoryIndex - 1;
+        // console.log('-------------------------')
+        // console.log('prevMove')
+        // console.log(this.game.history().length - 1)
+        // console.log(this.gameOnTheBoardStore.lastPlayedMoveIndex)
+        // na osnovu poslednjeg aktivnog move id treba da se radi prev i next move
         this.game = this.reconstructGameState(this.game.history().length - 1);
         this.loadPosition();
         this.setOnlyViewMod(true)
@@ -239,27 +252,33 @@ export default {
       const whiteTime = currentMoveWhiteTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'white', whiteMoveId);
       const blackTime = currentMoveBlackTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'black', blackMoveId);
 
-      let isActive;
+      // todo: Kad se promeni runda neka se ne selektuje ni jedan partija. Nisam siguran da li ovo treba
+      let isActive = false;
 
-      const test = this.gameOnTheBoardStore.lastPlayedCurrentGameMoveWithoutDelay.id
-      if (test === movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result === '*') {
-        isActive = true
-      } else if (test === movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') {
-        isActive = false
-      } else if (test !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result === '*') {
-        isActive = movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id;
-      } else {
+      if (this.gameOnTheBoardStore?.lastPlayedCurrentGameMoveWithoutDelay?.id != null && this.parsedPgnData.metadata.IsRoundLive === 'true') {
+        const lastPlayedMoveWithoutDelay = this.gameOnTheBoardStore?.lastPlayedCurrentGameMoveWithoutDelay?.id;
+        if (lastPlayedMoveWithoutDelay === movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result === '*') {
+          isActive = true
+          //console.log('ovde 1');
+        } else if (lastPlayedMoveWithoutDelay === movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') {
+          isActive = false
+          //console.log('ovde 2');
+        } else if (lastPlayedMoveWithoutDelay !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result === '*') {
+          isActive = movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id;
+          //console.log('ovde 3');
+        } else {
           // console.log('ovde 4');
-          // console.log(test !== movesInfo.currentMoveInfo.id);
+          // console.log(lastPlayedMoveWithoutDelay !== movesInfo.currentMoveInfo.id);
           // console.log(this.parsedPgnData.metadata.Result !== '*');
-        isActive = (test !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') && (movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id);
+          isActive = (lastPlayedMoveWithoutDelay !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') &&
+              (movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id);
+        }
+          console.log(lastPlayedMoveWithoutDelay);
+          console.log(movesInfo.currentMoveInfo.id);
+          console.log(this.getCurrentGameFromStore.halfMoves.at(-1).id);
+          console.log(this.parsedPgnData.metadata.Result);
+          console.log(isActive);
       }
-
-        // console.log(test);
-        // console.log(movesInfo.currentMoveInfo.id);
-        // console.log(this.getCurrentGameFromStore.halfMoves.at(-1).id);
-        // console.log(this.parsedPgnData.metadata.Result);
-        // console.log(isActive);
 
       this.updateClockForMove(movesInfo.currentMoveInfo);
       this.gameOnTheBoardStore.lastPlayedMoveIndex = movesInfo.currentMoveInfo.id

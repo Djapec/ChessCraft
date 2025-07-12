@@ -529,7 +529,9 @@ export default {
       if (this.currentGameIndex !== null && this.currentActiveGame.result === '*' && this.delay === 0) {
         try {
           const chessGame = await this.fetchGameById(this.currentGameIndex)
-          this.updateOrLoadCurrentActiveGame(chessGame)
+          if (chessGame != null) {
+            this.updateOrLoadCurrentActiveGame(chessGame)
+          }
         } catch (error) {
           throw new Error(error);
         }

@@ -1,5 +1,5 @@
 <template>
-  <div class="eval-bar-container">
+  <div class="eval-bar-container hover-wrapper">
     <div class="eval-bar-background">
       <div class="eval-bar-black" />
       <div class="eval-bar-white" />
@@ -19,6 +19,9 @@
         />
       </template>
     </div>
+
+
+      <div class="hover-content"> {{localEvaluation}}</div>
 
     <div class="eval-bar-center-line" />
   </div>
@@ -159,5 +162,29 @@ export default {
   background-color: #a3a3a3;
   top: 50%;
   transform: translateY(-50%);
+}
+
+ .hover-wrapper {
+   /*position: relative;
+   //display: inline-block; */
+   cursor: pointer;
+ }
+
+.hover-content {
+  display: none;
+  position: absolute;
+  top: 50%; /* show below the wrapper */
+  left: 0;
+  background-color: #333;
+  color: white;
+  padding: 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+  font-size: 11px;
+}
+
+.hover-wrapper:hover .hover-content {
+  display: block;
 }
 </style>

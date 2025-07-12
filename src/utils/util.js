@@ -230,12 +230,23 @@ export function getPlayerFullName(player) {
     return full.trim() === ',' ? '?' : full;
 }
 
+function checkRoundIsLive(rounds, roundNumber) {
+    if (roundNumber < 0 || roundNumber >= rounds.length) {
+        return false;
+    }
+
+    const round = rounds[roundNumber];
+    return round.count > 0 && round.live > 0;
+}
+
 export function parseToPgn(tournament, pairing, game, round, date) {
+    const isRoundLive = checkRoundIsLive(tournament.rounds, round -1)
     let pgn = [
         `[Event "${tournament.name || '?'}"]`,
         `[Site "${tournament.location || '?'}"]`,
         `[Date "${date ? convertDateFormat(date) : '?'}"]`,
         `[Round "${round}"]`,
+        `[IsRoundLive "${isRoundLive}"]`,
         `[White "${getPlayerFullName(pairing.white)}"]`,
         `[Black "${getPlayerFullName(pairing.black)}"]`,
         `[Result "${getGameResult(game.result)}"]`,
