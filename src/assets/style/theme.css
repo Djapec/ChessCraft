@@ -197,7 +197,7 @@ cg-board piece.fading {
  * Board
  */
 .blue .cg-wrap {
-  background-image: url('board/board2.svg');
+  background-image: url('board/brown.svg');
 }
 
 .merida .cg-wrap piece.pawn.white {
