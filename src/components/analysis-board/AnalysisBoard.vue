@@ -253,6 +253,7 @@ export default {
       const blackTime = currentMoveBlackTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'black', blackMoveId);
 
       // todo: Kad se promeni runda neka se ne selektuje ni jedan partija. Nisam siguran da li ovo treba
+      // todo: Next i Prev move idu preko ID-ja partije
       let isActive = false;
 
       if (this.gameOnTheBoardStore?.lastPlayedCurrentGameMoveWithoutDelay?.id != null && this.parsedPgnData.metadata.IsRoundLive === 'true') {
