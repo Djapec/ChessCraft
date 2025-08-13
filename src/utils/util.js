@@ -505,7 +505,7 @@ function isPositiveOrNegative(numberString) {
     else return null
 }
 
-export function isTwentyMinutesLater(givenTime) {
+export function isTenMinutesLater(givenTime) {
     if (typeof givenTime !== 'string') {
         throw new Error('givenTime must be a string in the format "HH:MM:SS"');
     }
@@ -520,7 +520,7 @@ export function isTwentyMinutesLater(givenTime) {
     }
 
     const differenceInMinutes = (currentTime - givenDate) / (1000 * 60);
-    return differenceInMinutes >= 20;
+    return differenceInMinutes >= 10;
 }
 /**
  * Formats chess player information by removing any 4-digit number (rating).
@@ -600,4 +600,8 @@ export function findPreviousNonNullClockByColorFromId(array, color, currentId) {
 
     // No match found
     return null;
+}
+
+export function findIndexById(array, targetId) {
+    return array.findIndex(obj => obj.id === targetId);
 }

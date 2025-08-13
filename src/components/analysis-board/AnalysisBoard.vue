@@ -7,6 +7,7 @@ import { getInfoForLastTwoMoves } from "../chess-board/Util";
 import {useGameOnTheBoardStore} from "../../store/currentGameStore";
 import { mapStores} from "pinia";
 import {
+  findIndexById,
   findPreviousNonNullClockByColorFromId,
   timeStringToSeconds
 } from "../../utils/util";
@@ -167,17 +168,14 @@ export default {
      * Loads a previous move and updates the game state accordingly.
      */
     prevMove() {
-      // verovatno je ovde problem
       if (this.currentHistoryIndex !== 0) {
-        this.currentHistoryIndex = this.currentHistoryIndex - 1;
-        // console.log('-------------------------')
-        // console.log('prevMove')
-        // console.log(this.game.history().length - 1)
-        // console.log(this.gameOnTheBoardStore.lastPlayedMoveIndex)
-        // na osnovu poslednjeg aktivnog move id treba da se radi prev i next move
-        this.game = this.reconstructGameState(this.game.history().length - 1);
-        this.loadPosition();
-        this.setOnlyViewMod(true)
+        const prevMoveIndex = findIndexById(this.parsedPgnData.halfMoves, this.gameOnTheBoardStore.lastPlayedMoveIndex)
+        if (prevMoveIndex > 0) {
+          this.currentHistoryIndex = prevMoveIndex;
+          this.game = this.reconstructGameState(prevMoveIndex);
+          this.loadPosition();
+          this.setOnlyViewMod(true)
+        }
       }
     },
 
@@ -197,17 +195,15 @@ export default {
      * Moves to the next step in the move history if available.
      */
     nextMove() {
-      if (this.currentHistoryIndex !== this.currentMoveHistory.length) {
+      if (this.gameOnTheBoardStore.lastPlayedMoveIndex !== this.currentMoveHistory.length) {
         this.currentHistoryIndex = this.currentHistoryIndex + 1;
+        const startIndex = this.gameOnTheBoardStore.lastPlayedMoveIndex;
 
-        let startIndex = this.currentHistoryIndex - 1;
-        let lastGameMove = this.game.history()[this.game.history().length - 1];
-
-        if (lastGameMove === this.currentMoveHistory[startIndex - 1]) {
-          this.game.move(this.currentMoveHistory[startIndex])
-          this.loadPosition()
-          this.setOnlyViewMod(true)
-        }
+        const nextMoveObj = this.parsedPgnData.halfMoves.find(obj => obj.id === startIndex + 1)
+        this.currentHistoryIndex = nextMoveObj.id;
+        this.game = this.reconstructGameState(this.currentHistoryIndex);
+        this.loadPosition()
+        this.setOnlyViewMod(true)
       }
     },
 
@@ -252,8 +248,6 @@ export default {
       const whiteTime = currentMoveWhiteTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'white', whiteMoveId);
       const blackTime = currentMoveBlackTime ?? findPreviousNonNullClockByColorFromId(this.parsedPgnData.halfMoves, 'black', blackMoveId);
 
-      // todo: Kad se promeni runda neka se ne selektuje ni jedan partija. Nisam siguran da li ovo treba
-      // todo: Next i Prev move idu preko ID-ja partije
       let isActive = false;
 
       if (this.gameOnTheBoardStore?.lastPlayedCurrentGameMoveWithoutDelay?.id != null && this.parsedPgnData.metadata.IsRoundLive === 'true') {
@@ -269,16 +263,9 @@ export default {
           //console.log('ovde 3');
         } else {
           // console.log('ovde 4');
-          // console.log(lastPlayedMoveWithoutDelay !== movesInfo.currentMoveInfo.id);
-          // console.log(this.parsedPgnData.metadata.Result !== '*');
           isActive = (lastPlayedMoveWithoutDelay !== movesInfo.currentMoveInfo.id && this.parsedPgnData.metadata.Result !== '*') &&
               (movesInfo.currentMoveInfo.id === this.getCurrentGameFromStore.halfMoves.at(-1).id);
         }
-          console.log(lastPlayedMoveWithoutDelay);
-          console.log(movesInfo.currentMoveInfo.id);
-          console.log(this.getCurrentGameFromStore.halfMoves.at(-1).id);
-          console.log(this.parsedPgnData.metadata.Result);
-          console.log(isActive);
       }
 
       this.updateClockForMove(movesInfo.currentMoveInfo);
