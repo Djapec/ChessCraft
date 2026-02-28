@@ -54,7 +54,7 @@ import {
   generatePgn,
   getCurrentMoveScheduledByTime,
   isToday,
-  isTwentyMinutesLater,
+  isTenMinutesLater,
   parseTimeToDate,
   partlyClonePgn,
   validateRoundNumber
@@ -131,9 +131,13 @@ export default {
     /**
      * Trigger fetchActiveRound method when user comeback to the page again
      */
-    handleVisibilityChange() {
+    async handleVisibilityChange() {
       if (document.visibilityState === 'visible') {
-        this.fetchActiveRound()
+        await this.fetchActiveRound()
+        //todo: refresh current active game
+        if (this.delay > 0 && this.currentActiveGame) {
+          await this.updateCurrentSelectedGameAfter(this.currentGameIndex, this.currentActiveGame)
+        }
       }
     },
 
@@ -230,7 +234,8 @@ export default {
     },
 
     async updateCurrentSelectedGameAfter(index, game) {
-      const parsedData = await this.fetchGameById(index)
+      const gameRound = game.parsedData.metadata.Round;
+      const parsedData = await this.fetchGameByIdAndRoundWithoutGameList(index, gameRound)
       if (parsedData) {
         this.updateCurrentGameState(game, index, parsedData);
 
@@ -556,13 +561,21 @@ export default {
     },
 
     async fetchGameById(index) {
-      const round = validateRoundNumber(this.selectedRound);
+      return this.fetchGameByIdAndRound(index, this.selectedRound);
+    },
+
+    async fetchGameByIdAndRoundWithoutGameList(index, gameRound) {
+      return this.fetchGameByIdAndRound(index, gameRound, false);
+    },
+
+    async fetchGameByIdAndRound(index, gameRound, updateGameList = true) {
+      const round = validateRoundNumber(gameRound);
       const game = validateRoundNumber(index + 1);
       const result = await fetchGames(this.tournamentId, round, game);
-      if (result) {
 
-        if (this.delay > 0) {
-          this.games = result.pairsData[0].pairings.map(pair => generatePairObject(pair, round))
+      if (result) {
+        if (updateGameList && this.delay > 0) {
+          this.games = result.pairsData[0].pairings.map(pair => generatePairObject(pair, round));
         }
 
         const pgn = generatePgn(
@@ -573,7 +586,7 @@ export default {
             result.lookupMap
         );
 
-        return this.parsePgnFile(pgn)[0]
+        return this.parsePgnFile(pgn)[0];
       }
     },
 
@@ -625,7 +638,7 @@ export default {
     shouldUpdateResult(partlyClonedGame, game) {
       const isHalfMovesEqual = partlyClonedGame.halfMoves.length === game.parsedData.halfMoves.length;
       const lastMoveTime = partlyClonedGame.halfMoves[partlyClonedGame.halfMoves.length - 1].time;
-      const isTwentyMinutesPassed = isTwentyMinutesLater(lastMoveTime);
+      const isTwentyMinutesPassed = isTenMinutesLater(lastMoveTime);
 
       return isHalfMovesEqual && isTwentyMinutesPassed;
     },
@@ -757,17 +770,10 @@ export default {
           this.games = pairings;
           if (this.mosaicViewGamesIndices.length > 1) {
             this.sendParsedGamesToMosaicView()
-          } else if (this.delay > 0 && this.currentActiveGame) {
-            await this.updateCurrentSelectedGameAfter(this.currentGameIndex, this.currentActiveGame)
-            this.updateGameState(this.currentActiveGame, 'load');
-            if (this.currentActiveGame) {
-              this.clearAllTimeouts()
-              this.presentAndScrapeGameWithDelayedMove()
-            }
           }
-        }
-        else
+        } else {
           this.games = [];
+        }
       }
     },
 

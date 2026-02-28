@@ -39,6 +39,8 @@ export function getEmojiFlag(alpha3) {
             // Northern Ireland doesn't have an official emoji flag
             // Using the UK flag as fallback since the Ulster Banner isn't in Unicode
             return '🇬🇧'; // UK flag for Northern Ireland
+        case 'FAI':
+            return '🌐';
     }
 
     const alpha2 = alpha3ToAlpha2[alpha3Upper];

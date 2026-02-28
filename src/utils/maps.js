@@ -6,3 +6,5 @@ export const delayFormatMap = new Map([
     ['g3', 1],
     ['h8', 0],
 ]);
+
+// todo: kad mi sat ostane na 00:00 onda nece raditi ni na ostalim treba videti to da se sat restartuje svaki put kad predje na novu partiju

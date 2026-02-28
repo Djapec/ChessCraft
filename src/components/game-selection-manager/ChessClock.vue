@@ -214,7 +214,7 @@ export default {
         // Check for time expiry
         if (displayTimes[props.currentPlayer] <= 0) {
           console.log(`${props.currentPlayer} time expired`);
-          stopTimer();
+          //stopTimer();
         }
       }, 100); // Update every 100ms for smooth display
     }
